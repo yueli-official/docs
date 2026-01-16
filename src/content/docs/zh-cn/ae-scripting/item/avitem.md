@@ -232,7 +232,10 @@ CompItem 或 FootageItem 可以用作图层的替代源，但有一些限制：
 
 #### 描述
 
-项目从项目面板直接预览时的当前时间。该值以秒为单位。使用全局方法 [timeToCurrentFormat()](../../general/globals#timetocurrentformat) 将其转换为以帧表示时间的字符串值。对于 `mainSource` 是静态的 FootageItem（`item.mainSource.isStill` 为 `true`），设置此值是错误的。
+当项目面板中的素材被直接预览时，该属性表示该项目的当前时间。该值以秒为单位的数值表示。  
+可以使用全局方法 [timeToCurrentFormat()](../../general/globals#timetocurrentformat) 将其转换为以帧为单位表示时间的字符串值。  
+
+如果 FootageItem 的 `mainSource` 仍然是静态图像（即 `item.mainSource.isStill` 为 `true`），设置该值会产生错误。
 
 #### 类型
 

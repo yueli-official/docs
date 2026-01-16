@@ -71,9 +71,7 @@ CameraLayer 对象；只读。
 
 #### 描述
 
-此属性在整个应用程序中起作用：如果在一个 CompItem 上更改，它将更改项目中每个 CompItem 的值。该值会一直保持，直到重新启动 AE。重新启动后，它将恢复为 `false`。
-
-此参数没有任何作用。
+如果修改了某一个 CompItem 的counters，那么本项目所有的 CompItem 的counters都会随之改变。重新启动 AE后，会恢复为 `false`, 否则会一直保持不变。
 
 #### 类型
 
@@ -621,18 +619,20 @@ Essential Graphics 面板中的名称用于 Motion Graphics 模板的文件名�
 
 返回一个图层对象，可以通过名称、该合成中图层的索引位置或相对于另一个图层的索引位置来指定。
 
+※月离注: 索引是从 `1` 开始, 而不是0, 因此索引范围是`[1 ~ numLayers]`
+
 #### 参数
 
-| 参数 | 类型 (范围 `[1..numLayers]`，其中`numLayers`是合成中的图层数量) | 描述 |
+| 参数 | 类型 | 描述 |
 | --- | --- | --- |
 | `index` | 整数 | 该合成中所需图层的索引编号 |
 
 或：
 
-| 参数 | 类型 (本合成中的[图层对象](../../layer/layer)) | 描述 |
+| 参数 | 类型 | 描述 |
 | --- | --- | --- |
 | `otherLayer` | 图层对象 | `relIndex`值将添加到此图层的索引值以查找所需图层的位置 |
-| `relIndex` | 整数 (范围 `[1 - otherLayer.index .. numLayers - otherLayer.index]`) | 所需图层相对于`otherLayer`的位置。此值将添加到`otherLayer`值以派生绝对索引 |
+| `relIndex` | 整数 | 所需图层相对于`otherLayer`的位置。此值将添加到`otherLayer`值以派生绝对索引 |
 
 或：
 
@@ -674,7 +674,7 @@ Essential Graphics 面板中的名称用于 Motion Graphics 模板的文件名�
 
 #### 描述
 
-在合成面板中打开合成，并将合成面板置于前端并给予焦点。
+在合成面板中打开合成，并将合成面板置于前端并激活。
 
 #### 参数
 

@@ -49,7 +49,7 @@ ExtendScript 还定义了用于标准用户 I/O 的额外全局函数（`alert`�
 
 #### 描述
 
-将帧时间值的格式化字符串转换为秒数，给定指定的帧速率。例如，如果格式化的帧时间值为 0:00:12（确切的字符串格式由项目设置决定），并且帧速率为 24 fps，则时间为 0.5 秒（12/24）。如果帧速率为 30 fps，则时间为 0.4 秒（12/30）。如果时间是持续时间，则帧从 0 开始计数。否则，帧从项目的起始帧开始计数（参见 [Project.displayStartFrame](https://project.md/#projectdisplaystartframe)）。
+将帧时间值的格式化字符串转换为秒数，给定指定的帧速率。例如，如果格式化的帧时间值为 0:00:12（确切的字符串格式由项目设置决定），并且帧速率为 24 fps，则时间为 0.5 秒（12/24）。如果帧速率为 30 fps，则时间为 0.4 秒（12/30）。如果时间是持续时间，则帧从 0 开始计数。否则，帧从项目的起始帧开始计数（参见 [Project.displayStartFrame](../project#projectdisplaystartframe)）。
 
 #### 参数
 
@@ -139,7 +139,7 @@ alert(getEnumAsString(5220));
 
 #### 描述
 
-确定指定的 After Effects 对象（例如，合成、图层、遮罩等）是否仍然存在。某些操作，例如 [PropertyBase.moveTo()](.https://../property/propertybase#propertybasemoveto)，可能会使现有变量赋值失效。此函数允许您在尝试访问这些赋值之前测试它们是否仍然有效。
+确定指定的 After Effects 对象（例如，合成、图层、遮罩等）是否仍然存在。某些操作，例如 [PropertyBase.moveTo()](../../property/propertybase#propertybasemoveto)，可能会使现有变量赋值失效。此函数允许您在尝试访问这些赋值之前测试它们是否仍然有效。
 
 #### 参数
 
