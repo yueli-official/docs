@@ -14,6 +14,7 @@ import { aiScripting } from "./src/nav/ai-scripting";
 import { prScripting } from "./src/nav/pr-scripting";
 import { prPlugin } from "./src/nav/pr-plugin";
 import { houdiniVexNav } from "./src/nav/houdini-vex";
+import { sapphire } from "./src/nav/sapphire";
 
 import starlightGiscus from "starlight-giscus";
 
@@ -86,6 +87,7 @@ export default defineConfig({
           prPlugin,
           aiScripting,
           houdiniVexNav,
+          sapphire,
         ]),
 
         starlightGiscus({
