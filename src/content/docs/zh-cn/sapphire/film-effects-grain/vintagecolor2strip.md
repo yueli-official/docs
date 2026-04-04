@@ -4,128 +4,118 @@ title: VintageColor2Strip
 
 ## S_VintageColor2Strip
 
-Simulates the old color 2-strip film
-process from the 1920s. The scene is exposed twice, through red and
-green filters, onto alternating frames of a monochrome film strip.
-Then the red print is dyed with a red dye, and the green print is
-dyed cyan. Those two strips are cemented together back-to-back to
-form the final print. The result contains mostly red and green
-colors, with some synthetic blue from the blue components of the
-dyes.
-This effect simulates the two filter colors and the two dye colors,
-and also allows adding grain and color correction.
+模拟 1920 年代的老式双色胶片工艺。场景通过红色和绿色滤镜两次曝光到单色胶片条的交替帧上。然后红色印刷品用红色染料染色，绿色印刷品用青色染料染色。这两条胶片背靠背粘合在一起形成最终的印刷品。结果主要包含红色和绿色，以及一些由染料的蓝色成分合成的蓝色。此效果模拟两种滤镜颜色和两种染料颜色，还允许添加颗粒和色彩校正。
 
-In the Sapphire Stylize effects submenu.
+在 Sapphire Stylize 效果子菜单中。
 
 ![VintageColor2Strip](../_static/VintageColor2Strip.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的片段。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果和 Source 输入之间进行插值。白色区域使用效果的结果。黑色区域使用 Source 片段。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成蒙版。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数量模糊 Mocha 蒙版。可用于柔化蒙版的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 蒙版的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果之前反转 Mocha 蒙版的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 蒙版。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 蒙版的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 蒙版的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 蒙版的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素数量膨胀或腐蚀 Mocha 蒙版。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 蒙版，以便快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 蒙版，以获得更好的蒙版形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 蒙版，将效果应用于整个源片段。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 蒙版本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当同时提供 Mocha 蒙版和输入蒙版时，确定如何组合它们。
+  - **Union**: 使用两个蒙版共同覆盖的区域。
+  - **Intersect**: 使用两个蒙版之间重叠的区域。
+  - **Mocha Only**: 忽略输入蒙版，仅使用 Mocha 蒙版。
 
 - **Amount** (Default: 1, Range: 0 or greater)
-  Amount of the effect to use. Set to zero to get the original source. Increase beyond to to oversaturate.
+  使用的效果量。设为零可获得原始源。增大超过 1 可过度饱和。
 
 - **Red Filter** (Default rgb: [1 0 0])
-  The color of the red filter.
+  红色滤镜的颜色。
 
 - **Bluegreen Filter** (Default rgb: [0 1 0.5])
-  The color of the green filter.
+  绿色滤镜的颜色。
 
 - **Red Dye** (Default rgb: [1 0 0])
-  The dye color for the red strip.
+  红色条的染料颜色。
 
 - **Cyan Dye** (Default rgb: [0.02 1 0.91])
-  The dye color for the cyan strip. Adjust slightly greener for a warmer look.
+  青色条的染料颜色。略微调绿可获得更暖的外观。
 
 - **Grain Amp** (Default: 0, Range: 0 or greater)
-  Scales the amplitude of the film grain that is added to the result. Set this to 0 to disable all grain.
+  缩放添加到结果中的胶片颗粒的振幅。设为 0 可禁用所有颗粒。
 
 - **Grain Blur** (Default: 0, Range: 0 or greater)
-  The grain is smoothed by this amount. Increase for coarser grain.
+  按此数量平滑颗粒。增大以获得更粗的颗粒。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Saturation** (Default: 1, Range: -2 to 10)
-  Scales the color saturation. Increase for more intense colors. Set to 0 for monochrome.
+  缩放色彩饱和度。增大以获得更鲜艳的颜色。设为 0 可获得单色效果。
 
 - **Offset Darks** (Default: 0, Range: -8 to 2)
-  Adds this gray value to the darker regions of the result. This can be negative to increase contrast.
+  将此灰度值添加到结果的较暗区域。可以为负值以增加对比度。
 
 - **Show** (Popup menu, Default: Result)
-  Shows either the final result, or any of various intermediate parts of the process.
-  - **Result**: Shows the final result.
-  - **Red Strip**: Shows the red-filtered source as monochrome, as it would be on the real film.
-  - **BlueGreen Strip**: Shows the blue-green-filtered source as monochrome, as it would be on the real film.
-  - **Red Dye**: Shows the red-dyed red strip.
-  - **Cyan Dye**: Shows the cyan-dyed green strip.
+  显示最终结果或过程中各种中间部分。
+  - **Result**: 显示最终结果。
+  - **Red Strip**: 显示红色滤镜后的源为单色，如同在实际胶片上的样子。
+  - **BlueGreen Strip**: 显示蓝绿色滤镜后的源为单色，如同在实际胶片上的样子。
+  - **Red Dye**: 显示红色染料染色的红色条。
+  - **Cyan Dye**: 显示青色染料染色的绿色条。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来创建单色蒙版。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数量模糊 Matte 输入。可以在蒙版区域和非蒙版区域之间提供更平滑的过渡。除非提供了 Matte 输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果开启，反转 Matte 输入，使效果应用于 Matte 为黑色而非白色的区域。除非提供了 Matte 输入，否则无效。
 

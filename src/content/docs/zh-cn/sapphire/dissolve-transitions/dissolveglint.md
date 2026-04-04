@@ -4,96 +4,92 @@ title: DissolveGlint
 
 ## S_DissolveGlint
 
-Transitions between two input clips using a bright glowing glint.
-The clips dissolve into each other, while each one gets a glint which
-ramps up and down over the duration of the effect.
-The Dissolve Percent parameter should be animated
-to control the transition speed.
+使用明亮发光的闪点在两个输入素材之间转场。素材相互溶解，同时每个素材都会获得一个在效果持续时间内渐入和渐出的闪点。应通过动画 Dissolve Percent 参数来控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveGlint](../_static/DissolveGlint.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Dissolve Speed** (Default: 3, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips. When set to 1, the dissolve takes place over the entire duration of the effect. When set higher, the dissolve is shorter, although the glint ramp-up and ramp-down still takes the entire duration. Setting this to 10 can make the transition snappier and more like a flash-frame cut.
+  从一个素材到另一个素材的溶解速度。设为 1 时，溶解在效果的整个持续时间内进行。设为更高值时，溶解更短，但闪点的渐入和渐出仍占据整个持续时间。设为 10 可使转场更快捷，更像闪帧切换。
 
 - **Glint Brightness** (Default: 1.5, Range: 0 or greater)
-  The maximum brightness of the glint in the middle of the transition.
+  转场中间闪点的最大亮度。
 
 - **Glint Threshold** (Default: 0.7, Range: 0 or greater)
-  Glints are generated from locations in the From and To clips there are brighter than this valuye. A value of 0.9 causes glints at only the brightest spots. A value of 0 causes glints for every non-black area.
+  从 From 和 To 素材中亮度超过此值的位置生成闪点。值为 0.9 时仅在最亮的位置产生闪点。值为 0 时在每个非黑色区域都产生闪点。
 
 - **Glint Threshold Blur** (Default: 0.0896, Range: 0 or greater)
-  Increase to smooth out the areas creating glints. This can be used to eliminate glints generated from small speckles or to simply soften the glints. Increasing this may put more highlights below the threshold and darken the resulting glints, but you can decrease the Threshold parameter to compensate.
+  增大可平滑产生闪点的区域。可用于消除由小斑点产生的闪点或简单地柔化闪点。增大此值可能会使更多高光低于阈值并使结果变暗，但可以降低 Threshold 参数来补偿。
 
 - **Glint Scale Colors** (Default rgb: [1 1 1])
-  Scales the color of the glints. The colors and brightnesses of the glints are also affected by the From and To inputs.
+  缩放闪点的颜色。闪点的颜色和亮度也受 From 和 To 输入的影响。
 
 - **Brightness X** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the horizontal glint rays.
+  缩放水平闪点光线的亮度。
 
 - **Brightness Y** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the vertical glint rays.
+  缩放垂直闪点光线的亮度。
 
 - **Brightness Diag1** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the diagonal rays from top right to bottom left.
+  缩放从右上到左下方向对角线光线的亮度。
 
 - **Brightness Diag2** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the diagonal rays from top left to bottom right.
+  缩放从左上到右下方向对角线光线的亮度。
 
 - **Glint Size** (Default: 2, Range: 0 or greater)
-  The maximum size of the glint at the middle of the transition.
+  转场中间闪点的最大大小。
 
 - **Glint Shrink** (Default: 0.8, Range: 0 to 1)
-  The fraction by which the glint size is reduced at the beginning and end of the transition.
+  在转场开始和结束时闪点大小缩减的比例。
 
 - **Size X** (Default: 1, Range: 0 or greater)
-  Scales the length of the horizontal glint rays.
+  缩放水平闪点光线的长度。
 
 - **Size Y** (Default: 1, Range: 0 or greater)
-  Scales the length of the vertical glint rays.
+  缩放垂直闪点光线的长度。
 
 - **Size Diag1** (Default: 0.75, Range: 0 or greater)
-  Scales the length of the diagonal rays from top left to bottom right.
+  缩放从左上到右下方向对角线光线的长度。
 
 - **Size Diag2** (Default: 0.75, Range: 0 or greater)
-  Scales the length of the diagonal rays from top right to bottom left.
+  缩放从右上到左下方向对角线光线的长度。
 
 - **Size Red** (Default: 0.5, Range: 0 or greater)
-  Scales the length of the red component of the rays. If the red, green, and blue sizes are equal the glints will be uniform in color and will match the color of the source clip. If they are not equal, the glint colors can vary along the lengths of the rays.
+  缩放光线红色分量的长度。如果红、绿、蓝大小相等，闪点颜色将均匀一致并匹配源素材的颜色。如果不相等，闪点颜色将沿光线长度变化。
 
 - **Size Green** (Default: 1, Range: 0 or greater)
-  Scales the length of the green component of the rays.
+  缩放光线绿色分量的长度。
 
 - **Size Blue** (Default: 1.5, Range: 0 or greater)
-  Scales the length of the blue component of the rays.
+  缩放光线蓝色分量的长度。
 
 
 ### Rel From Parameters:
@@ -102,24 +98,24 @@ Rel From Brightness:
 *Default:
 *1,
 *Range:
-*0 or greater.Relative brightness of the glint on the outgoing (From) clip.
+*0 or greater.出场 (From) 素材上闪点的相对亮度。
 
 Rel From Size:
 *Default:
 *1,
 *Range:
-*0 or greater.Relative size of the glint on the outgoing (From) clip.
+*0 or greater.出场 (From) 素材上闪点的相对大小。
 
 From Offset Threshold:
 *Default:
 *0,
 *Range:
-*any.Extra threshold to apply to the glint on the outgoing (From) clip.
+*any.应用于出场 (From) 素材闪点的额外阈值。
 
 Rel From Color:
 *Default rgb:
 *[1 1 1].
-Relative color of the glint on the outgoing (From) clip.
+出场 (From) 素材上闪点的相对颜色。
 
 ### Rel To Parameters:
 
@@ -127,61 +123,47 @@ Rel To Brightness:
 *Default:
 *1,
 *Range:
-*0 or greater.Relative brightness of the glint on the incoming (To) clip.
+*0 or greater.入场 (To) 素材上闪点的相对亮度。
 
 Rel To Size:
 *Default:
 *1,
 *Range:
-*0 or greater.Relative size of the glint on the incoming (To) clip.
+*0 or greater.入场 (To) 素材上闪点的相对大小。
 
 To Offset Threshold:
 *Default:
 *0,
 *Range:
-*any.Extra threshold to apply to the glint on the incoming (To) clip.
+*any.应用于入场 (To) 素材闪点的额外阈值。
 
 Rel To Color:
 *Default rgb:
-*[1 1 1].Relative color of the glint on the incoming (To) clip.
+*[1 1 1].入场 (To) 素材上闪点的相对颜色。
 
 Affect Alpha:
 *Default:
 *1,
 *Range:
-*0 or greater.If this value is positive the output Alpha channel will
-include some opacity from the dissolves. The maximum of the red, green,
-and blue dissolve brightness is scaled by this value and combined with
-the background Alpha at each pixel.
+*0 or greater.如果此值为正，输出的 Alpha 通道将包含来自溶解效果的一些不透明度。红、绿、蓝溶解亮度的最大值按此值缩放，并在每个像素处与背景 Alpha 合成。
 
 Expand Borders:
 *Check-box, Default:
-*off.If enabled, transparent borders are added to the
-input image before processing. This allows the result to include soft
-edges beyond the original image size. When off, the effect only
-occurs within the frame and the result will retain an edge
-at the borders.
+*off.如果启用，在处理前向输入图像添加透明边框。这允许结果包含超出原始图像大小的柔和边缘。关闭时，效果仅在画面内发生，结果将在边界处保留硬边。
 
 Opacity:
 *Popup menu, Default: Normal
-*.Determines the method used for dealing with
-opacity/transparency.
+*.决定处理不透明度/透明度的方法。
 *All Opaque:
-*Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).*Normal:
-*Process opacity normally.*As Premult:
-*Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+*当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。*Normal:
+*正常处理不透明度。*As Premult:
+*按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 Swap Diagonals:
 *Check-box, Default:
-*off.Flips glints vertically if needed to achieve a consistent look.
+*off.如需保持一致的外观，可垂直翻转闪点。
 
 Show Glint Size:
 *Check-box, Default:
 *on.
-Turns on or off the screen user interface for adjusting the
-Glint Size parameter.This parameter only appears on AE and Premiere,
-where on-screen widgets are supported.
+开启或关闭用于调整 Glint Size 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

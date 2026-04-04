@@ -4,165 +4,156 @@ title: ParallaxStrips
 
 ## S_ParallaxStrips
 
-Applies a collection of 3d refracting glass strips to
-break up the image. The image is shifted within each strip, and the strips
-move over time. The strips gradually fade in or out, so the transition to
-the source is seamless.
+应用一组 3D 折射玻璃条纹来分解图像。图像在每个条纹内偏移，条纹随时间移动。条纹逐渐淡入或淡出，因此与源素材的过渡是无缝的。
 
-In the Sapphire Distort effects submenu.
+在 Sapphire Distort 效果子菜单中。
 
 ![ParallaxStrips](../_static/ParallaxStrips.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果和源输入之间进行插值。白色区域使用效果的结果。黑色区域使用源素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用之前按此量模糊 Mocha 遮罩。这可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，Mocha 遮罩的黑白将在应用效果之前反转。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用之前按此像素量膨胀或侵蚀 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，用于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，以获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩都提供给效果时，确定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Mode** (Popup menu, Default: Automatic)
-  Sets whether the effect evolves automatically with time, or can be controlled manually.
-  - **Automatic**: Automatically move the strips according to the time
-within the clip. Manual Amount is ignored in this mode.
-  - **Manual**: Use Manual Amount to specify control the evolution of the effect.
-0 is the beginning, and 1 is the end.
+  设置效果是随时间自动演变，还是可以手动控制。
+  - **Automatic**: 根据素材中的时间自动移动条纹。在此模式下忽略 Manual Amount。
+  - **Manual**: 使用 Manual Amount 指定控制效果的演变。0 为开始，1 为结束。
 
 - **Manual Amount** (Default: 1, Range: 0 or greater)
-  In Manual mode, this controls the strength and evolution of the effect. With Fade:End selected, 1 puts the strips at their starting position, with the most shift (i.e. the effect is at its strongest). 0 gives the original source: it puts the strips at their end position, and they become invisible because the amount they shift the underlying image goes to zero. With Fade:Start, the values are reversed, so 0 is strongest and 1 fades out.
+  在 Manual 模式下，控制效果的强度和演变。选择 Fade:End 时，1 将条纹放在起始位置，偏移量最大（即效果最强）。0 给出原始源素材：将条纹放在结束位置，它们变得不可见，因为偏移底层图像的量变为零。选择 Fade:Start 时，值相反，0 最强，1 淡出。
 
 - **Ensure Full Coverage** (Push-button)
-  Pressing this button adjusts the number of strips to the minimum needed to fully cover the last frame.
+  按下此按钮将条纹数量调整为完全覆盖最后一帧所需的最小数量。
 
 - **N Strips** (Integer, Default: 50, Range: 1 to 1000)
-  Number of refracting strips to apply. The strips are positioned randomly all over the image.
+  要应用的折射条纹数量。条纹在图像上随机定位。
 
 - **Size** (Default: 0.35, Range: 0 or greater)
-  Size of the strips, in image-widths.
+  条纹的大小，以图像宽度为单位。
 
 - **Rel Height** (Default: 0.3, Range: 0.001 or greater)
-  Height of the strips, relative to their width. Increase to make the strips taller.
+  条纹的高度，相对于其宽度。增大以使条纹更高。
 
 - **Size Vary** (X & Y, Default: [0.1 0.1], Range: 0 to 1)
-  Increase to make each strip randomly larger or smaller.
+  增大以使每个条纹随机变大或变小。
 
 - **Angle** (Default: 0, Range: any)
-  Angle of the strips; 0 is horizontal. The strips move along their angle, and also shift the image along the same angle.
+  条纹的角度；0 为水平。条纹沿其角度移动，也沿同一角度偏移图像。
 
 - **Depth** (Default: 2, Range: 0 or greater)
-  Make the frontmost strips larger and move faster, so it appears they're in front, giving a 3d look.
+  使最前面的条纹更大并移动更快，看起来像在前面，产生 3D 效果。
 
 - **Strip Speed** (Default: 0.4, Range: any)
-  Sets how fast the strips move along their major axis. Note that this doesn't affect how the image refracts, or shifts, within the strip, just how fast the strip itself moves.
+  设置条纹沿其主轴移动的速度。请注意，这不影响条纹内图像的折射或偏移方式，只影响条纹本身移动的速度。
 
 - **Strip Speed Vary** (Default: 0, Range: 0 or greater)
-  Increase to give each strip a bit of randomness in its speed.
+  增大以使每个条纹的速度有一些随机性。
 
 - **Shift Amount** (Default: 0.6, Range: any)
-  Sets how much the image shifts, or refracts, within each strip. Shifting is always along the major axis of the strip. As the effect progresses, the shift amount progressively goes to zero, seamlessly transitioning to the original clip. See the Fade and Slow Fade params for details.
+  设置每个条纹内图像偏移或折射的程度。偏移始终沿条纹的主轴方向。随着效果进展，偏移量逐渐变为零，无缝过渡到原始素材。详情请参阅 Fade 和 Slow Fade 参数。
 
 - **Shift Vary** (Default: 0, Range: 0 or greater)
-  Increase to make the amount of shift in each strip more random.
+  增大以使每个条纹中的偏移量更加随机。
 
 - **All Strips Shift** (X & Y, Default: [0 0], Range: any)
-  Move all strips around on the screen.
+  在屏幕上移动所有条纹。
 
 - **Z Dist** (Default: 1, Range: 0.001 or greater)
-  Zoom in or out on the source image, before applying the parallax strips.
+  在应用视差条纹之前放大或缩小源图像。
 
 - **Show** (Popup menu, Default: Result)
-  Show the effect result, or the strips themselves, which is useful during effect setup.
-  - **Result**: Show the result of the effect.
-  - **Strips Over Source**: Show each strip as a gray rectangle, with brightness set by depth.
-Uncovered areas show the source image.
-  - **Strips Over Black**: Show each strip as a gray rectangle, with brightness set by depth.
-Uncovered areas show as black.
+  显示效果结果或条纹本身（在效果设置期间很有用）。
+  - **Result**: 显示效果的结果。
+  - **Strips Over Source**: 将每个条纹显示为灰色矩形，亮度由深度设置。未覆盖的区域显示源图像。
+  - **Strips Over Black**: 将每个条纹显示为灰色矩形，亮度由深度设置。未覆盖的区域显示为黑色。
 
 - **Slow Fade** (Default: 0.9, Range: 0 to 2)
-  Increase to make the fade in our out slower. Set to 0 for a linear fade.
+  增大以使淡入或淡出更慢。设置为 0 以获得线性淡化。
 
 - **Full Height** (Check-box, Default: off)
-  Turn on to make the strips always full height, ignoring Rel Height. This can make a nice sliding strip effect.
+  打开以使条纹始终为全高，忽略 Rel Height。这可以产生不错的滑动条纹效果。
 
 - **Fade** (Popup menu, Default: End)
-  The effect fades out at one end, to allow a seamless start or end.
-  - **Start**: Make the effect fade in slowly at the start.
-  - **End**: Make the effect fade out slowly at the end.
+  效果在一端淡出，以实现无缝的开始或结束。
+  - **Start**: 使效果在开始时缓慢淡入。
+  - **End**: 使效果在结束时缓慢淡出。
 
 - **Wrap** (Popup menu, Default: Reflect)
-  Determines the method for accessing outside the borders of the source image.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问源图像边界外区域的方法。
+  - **No**: 在边界外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复图像的镜像副本。使用此方法时边缘通常不太明显。
 
 - **Seed** (Default: 0.123, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化随机数生成器。实际种子值并不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。
 
 - **Flip Tiles** (Check-box, Default: off)
-  Flips tiles vertically if needed to achieve a consistent look.
+  如有需要垂直翻转图块以获得一致的外观。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来创建单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用之前按此量模糊 Matte 输入。这可以在遮罩区域和非遮罩区域之间提供更平滑的过渡。除非提供了 Matte 输入，否则此选项无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果启用，反转 Matte 输入，使效果应用于 Matte 为黑色而非白色的区域。除非提供了 Matte 输入，否则此选项无效。
 

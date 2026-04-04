@@ -4,120 +4,110 @@ title: WhipLash
 
 ## S_WhipLash
 
-2D-only version of Swish3D, with optional Whip Out motion and RGB Split.
-Cuts between two input clips while performing 2D moves on each.
-During the transition the clips are transformed by the Rotate,
-Shift, and Scale parameters.
+Swish3D 的纯 2D 版本，带有可选的 Whip Out 运动和 RGB 分离效果。在对两个输入片段执行 2D 运动的同时进行切换转场。在转场过程中，片段由 Rotate、Shift 和 Scale 参数进行变换。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![WhipLash](../_static/WhipLash.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此片段结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Whip Percent parameter.
+  启用后，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Whip Percent 参数进行动画设置来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它确定 From 和 To 输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制擦除的时序。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  The center position about which to scale or rotate.
+  缩放或旋转的中心位置。
 
 - **Motion Blur** (Default: 1, Range: 0 or greater)
-  Scales the amount of motion blur to use.
+  缩放要使用的运动模糊量。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotates by the specified angle in degrees.
+  按指定角度旋转，以度为单位。
 
 - **Shift** (X & Y, Default: [-4 0], Range: any)
-  Translates horizontally or vertically.
+  水平或垂直平移。
 
 - **Scale** (Default: 1, Range: 0 to 2)
-  Scales the size of the clips.
+  缩放片段的大小。
 
 - **Whip Out** (Popup menu, Default: Smooth)
-  End of transition motion
-  - **Smooth**: Smooth decelerate
-  - **Bounce**: Overshoot with bounce to stop
-  - **Snap**: Overshoot then snap to stop
+  转场结束时的运动方式。
+  - **Smooth**: 平滑减速。
+  - **Bounce**: 超调后弹跳至停止。
+  - **Snap**: 超调后迅速卡到停止位置。
 
 - **Mix RGB** (Default: 0, Range: 0 to 1)
-  Blend in optional RGB split / blur
+  混入可选的 RGB 分离/模糊效果。
 
 - **Blur Amount** (Default: 1.25, Range: 0 or greater)
-  Scales the width of the blur.
+  缩放模糊的宽度。
 
 - **Angle** (Default: 0, Range: any)
-  The rotation of the overall lash pattern used for the wipe, in degrees.
+  用于擦除的整体鞭动模式的旋转角度，以度为单位。
 
 - **Shift RGB** (Default: 2, Range: any)
-  Shifts the image in the direction of the blur. A negative shift amount shifts the image in the opposite direction.
+  沿模糊方向偏移图像。负偏移量将图像沿相反方向偏移。
 
 - **Bias** (Default: 0.5, Range: 0 to 1)
-  Varies the weight of the pixels along the path of the blur, which gives the appearance of trails or streaks in a single direction. A value of 0.5 weights all pixels evenly. A value of 1 causes the weight to increase toward the direction of the blur, while a value of 0 has the opposite effect.
+  改变沿模糊路径上像素的权重，使其呈现出单方向的拖尾或条纹效果。值为 0.5 时所有像素权重均等。值为 1 时权重向模糊方向增加，值为 0 时效果相反。
 
 - **Blur Red** (Default: 1, Range: 0 or greater)
-  The blur width of the red channel, relative to Blur Amount.
+  红色通道的模糊宽度，相对于 Blur Amount。
 
 - **Blur Green** (Default: 0.5, Range: 0 or greater)
-  The blur width of the green channel, relative to Blur Amount.
+  绿色通道的模糊宽度，相对于 Blur Amount。
 
 - **Blur Blue** (Default: 0, Range: 0 or greater)
-  The blur width of the blue channel, relative to Blur Amount.
+  蓝色通道的模糊宽度，相对于 Blur Amount。
 
 - **Shift Red** (Default: 0.5, Range: any)
-  Additional amount to shift the red color channel.
+  红色通道的额外偏移量。
 
 - **Shift Green** (Default: 0.25, Range: any)
-  Additional amount to shift the green color channel.
+  绿色通道的额外偏移量。
 
 - **Shift Blue** (Default: 0, Range: any)
-  Additional amount to shift the blue color channel.
+  蓝色通道的额外偏移量。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Offset Darks** (Default: 0, Range: -8 to 2)
-  Adds this gray value to the darker regions of the result. This can be negative to increase contrast.
+  向结果的较暗区域添加此灰度值。可以为负值以增加对比度。
 
 - **Edge Mode** (Popup menu, Default: Reflect)
-  Determines the behavior when accessing areas outside the source image.
-  - **Transparent**: Areas outside the source image are treated as transparent, which can produce
-transparency around the edges of the image.
-Select this for fastest rendering.
-  - **Repeat**: Repeats the last pixel outside the border of the image.
-  - **Reflect**: Reflects the image outside the border.
+  确定访问源图像之外区域时的行为。
+  - **Transparent**: 源图像之外的区域被视为透明，这可能在图像边缘周围产生透明区域。选择此选项可获得最快的渲染速度。
+  - **Repeat**: 重复图像边界之外的最后一个像素。
+  - **Reflect**: 在边界之外反射图像。
 
 - **Soft Borders** (Check-box, Default: off)
-  If enabled, transparent borders are added to the input image before processing. This allows the result to include soft edges beyond the original image size. When off, the effect only occurs within the frame and the result will retain an edge at the borders.
+  启用后，在处理之前向输入图像添加透明边框。这允许结果包含超出原始图像大小的柔和边缘。关闭时，效果仅在画面内发生，结果将在边界处保留硬边。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时，使用此选项可以稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将以预乘形式呈现，有时不太准确。

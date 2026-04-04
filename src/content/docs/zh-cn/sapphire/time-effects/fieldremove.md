@@ -4,133 +4,117 @@ title: FieldRemove
 
 ## S_FieldRemove
 
-Adaptively removes video field interlacing artifacts
-from areas with motion, without blurring the stationary parts of the
-image. A 'Motion Matte' is generated internally and the moving areas
-are deinterlaced with the usual loss of vertical resolution, but the
-stationary areas are not deinterlaced and should remain sharp.
+自适应地从运动区域移除视频场隔行扫描伪影，而不模糊图像的静止部分。内部会生成一个"运动遮罩"，运动区域以通常的垂直分辨率损失进行去隔行处理，但静止区域不会被去隔行处理，应保持清晰。
 
-In the Sapphire Time effects submenu.
+在 Sapphire Time effects 子菜单中。
 
 ![FieldRemove](../_static/FieldRemove.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果和源素材输入之间进行插值。白色区域使用效果结果。黑色区域使用源素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mode** (Popup menu, Default: Same Speed)
-  Selects speed-change options.
-  - **Same Speed**: No change in speed.
-  - **NTSC to Film**: Converts 60 field/sec input to 24 frame/sec
-output. Every 5 frames of input are converted to 4 frames of
-output, so in this mode only 4/5 of your output clip will be
-useful.
-  - **Half Speed**: Every field of input is converted to one frame
-of output. In this mode, you should normally first pad your input
-clip to make it twice as long, so the correct number of output frames
-will be generated.
+  选择速度变换选项。
+  - **Same Speed**: 不改变速度。
+  - **NTSC to Film**: 将 60 场/秒的输入转换为 24 帧/秒的输出。每 5 帧输入转换为 4 帧输出，因此在此模式下只有 4/5 的输出素材是有用的。
+  - **Half Speed**: 每个输入场转换为一帧输出。在此模式下，您通常应先填充输入素材使其长度加倍，以便生成正确数量的输出帧。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，Mocha 遮罩的黑白将在应用效果之前反转。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素量扩展或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的快速模式下快速调整，还是在高质量模式下获得更好的效果。
+  - **Fast**: 在快速模式下扩展 Mocha 遮罩以进行快速调整。
+  - **High**: 在高质量模式下扩展 Mocha 遮罩以获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  绕过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩同时提供给效果时，决定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Scale Mo Matte** (Default: 4, Range: 0 or greater)
-  Increase to remove more field artifacts, or decrease to remove fewer and keep the image sharper.
+  增大以移除更多场伪影，或减小以移除较少并保持图像更清晰。
 
 - **Threshold Matte** (Default: 0.05, Range: 0 or greater)
-  This value is subtracted from the Motion Matte and can be increased to reduce unwanted deinterlacing due just to noise.
+  从运动遮罩中减去此值，可增大以减少仅由噪声引起的不必要去隔行处理。
 
 - **Blur Mo Matte** (Default: 0.112, Range: 0 or greater)
-  Determines how much the Motion Matte is smoothed out to avoid sharp transitions between the interlaced and deinterlaced areas.
+  确定运动遮罩平滑的程度，以避免隔行和去隔行区域之间的尖锐过渡。
 
 - **Show** (Popup menu, Default: Result)
-  Selects the output option.
-  - **Result**: output the deinterlaced result normally.
-  - **MotionMatte**: this allows viewing the Motion Matte itself, and can
-be helpful when adjusting the other parameters above.
+  选择输出选项。
+  - **Result**: 正常输出去隔行结果。
+  - **MotionMatte**: 允许查看运动遮罩本身，在调整上述其他参数时会有帮助。
 
 - **Use Field** (Popup menu, Default: Lower)
-  Selects which field to preserve in areas with field artifacts. This parameter only has an affect when using Same Speed mode.
-  - **Lower**: keeps the lower field.
-  - **Upper**: keeps the upper field.
-  - **Merge**: Uses the average of both fields.
+  选择在有场伪影的区域中保留哪个场。此参数仅在使用 Same Speed 模式时有效。
+  - **Lower**: 保留下场。
+  - **Upper**: 保留上场。
+  - **Merge**: 使用两个场的平均值。
 
 - **Field Dominance** (Popup menu, Default: Lower First)
-  Selects the ordering of the output fields. This parameter only has an affect when NOT using Same Speed mode.
-  - **Lower First**: The lower field is first in time.
-  - **Upper First**: The upper field is first in time.
+  选择输出场的顺序。此参数仅在未使用 Same Speed 模式时有效。
+  - **Lower First**: 下场在时间上优先。
+  - **Upper First**: 上场在时间上优先。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按照图像已为预乘形式（颜色已按不透明度缩放）进行处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将为预乘形式，有时不太准确。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来创建单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊遮罩输入。这可以在遮罩区域和非遮罩区域之间提供更平滑的过渡。除非提供了遮罩输入，否则不起作用。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果启用，反转遮罩输入，使效果应用于遮罩为黑色而非白色的区域。除非提供了遮罩输入，否则不起作用。
 

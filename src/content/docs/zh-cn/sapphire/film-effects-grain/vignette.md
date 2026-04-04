@@ -4,142 +4,124 @@ title: Vignette
 
 ## S_Vignette
 
-Darkens the border areas of the source clip to create a
-vignette effect. Use the Squareness, Radius, and Edge Softness
-parameters to affect the shape of the vignette. Use the Opacity and
-Color parameters to adjust its strength and color.
+使源片段的边框区域变暗，以创建暗角效果。使用 Squareness、Radius 和 Edge Softness 参数来影响暗角的形状。使用 Opacity 和 Color 参数来调整其强度和颜色。
 
-In the Sapphire Stylize effects submenu.
+在 Sapphire Stylize 效果子菜单中。
 
 ![Vignette](../_static/Vignette.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的片段。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mode** (Popup menu, Default: Vignette)
-  Selects between several variations on generating the Vignette shape.
-  - **Vignette**: The Vignette shape and location are defined by specific parameters.
-  - **VignetteMocha**: The Vignette shape and location are defined using a Mocha Mask.
+  在几种生成暗角形状的变体之间进行选择。
+  - **Vignette**: 暗角形状和位置由特定参数定义。
+  - **VignetteMocha**: 暗角形状和位置使用 Mocha 蒙版定义。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  The center location of the vignette effect. This parameter can be adjusted using the Center Widget.
+  暗角效果的中心位置。此参数可通过 Center 小部件进行调整。
 
 - **Squareness** (Default: 0, Range: 0 to 1)
-  Determines how square the vignette shape is. Set to 1.0 for a square or rectangle shape. Set to 0 for a circle or ellipse. Values in between give rectangles with rounded corners by varying amounts.
+  确定暗角形状的方形程度。设为 1.0 表示正方形或矩形。设为 0 表示圆形或椭圆。介于两者之间的值通过不同程度产生圆角矩形。
 
 - **Radius** (Default: 0.9, Range: 0 or greater)
-  Distance from the center to apply the vignette. This parameter can be adjusted using the Radius Widget.
+  从中心到应用暗角的距离。此参数可通过 Radius 小部件进行调整。
 
 - **Rel Height** (Default: 0.75, Range: 0.05 or greater)
-  The relative vertical size of the vignette shape. Increase for a taller shape, decrease for a wider one.
+  暗角形状的相对垂直大小。增大以获得更高的形状，减小以获得更宽的形状。
 
 - **Rel Width** (Default: 1, Range: 0.05 or greater)
-  The relative horizontal size of the vignette shape. Increase for a wider shape, decrease for a taller one.
+  暗角形状的相对水平大小。增大以获得更宽的形状，减小以获得更高的形状。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotation in degrees of the vignette shape. Note that rotation will have no effect if Squareness is zero, and Rel Width and Rel Height are equal. This parameter can be adjusted using the Rotate Widget.
+  暗角形状的旋转角度（度）。请注意，如果 Squareness 为零且 Rel Width 和 Rel Height 相等，则旋转不会产生效果。此参数可通过 Rotate 小部件进行调整。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成蒙版。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数量模糊 Mocha 蒙版。可用于柔化蒙版的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 蒙版的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果之前反转 Mocha 蒙版的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 or greater)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 蒙版。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 or greater)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 蒙版的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 or greater)
-  The relative vertical size of the Mocha Mask.
+  Mocha 蒙版的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 蒙版的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素数量膨胀或腐蚀 Mocha 蒙版。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 蒙版，以便快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 蒙版，以获得更好的蒙版形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 蒙版，将效果应用于整个源片段。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 蒙版本身。
 
 - **Edge Softness** (Default: 1, Range: 0 or greater)
-  The width of the vignette's soft edge. Larger values give softer, less visible edges.
+  暗角柔和边缘的宽度。较大的值产生更柔和、更不明显的边缘。
 
 - **Smooth Curve** (Default: 0.4, Range: 0 to 1)
-  If zero, a linear gradient is used across the screen in the soft edge area. Increase this value to use a smoother 'S' shaped curve for interpolation which can reduce the visual perception of the gradient's start and end locations.
+  如果为零，则在柔和边缘区域使用线性渐变。增大此值以使用更平滑的"S"形曲线进行插值，这可以减少对渐变起始和结束位置的视觉感知。
 
 - **Color** (Default rgb: [0 0 0])
-  The color of the vignette.
+  暗角的颜色。
 
 - **Opacity** (Default: 1, Range: 0 or greater)
-  The opacity of the vignette; animate to 0 to fade the vignette out.
+  暗角的不透明度；动画到 0 以淡出暗角。
 
 - **Blur Amount** (Default: 0, Range: 0 or greater)
-  Blurs the borders of the image in addition to darkening them.
+  除了使边框变暗外，还对图像边框进行模糊处理。
 
 - **Blur Inside** (Check-box, Default: off)
-  If checked, the center (undarkened) area of the image is blurred instead of the border.
+  如果勾选，则模糊图像的中心（未变暗的）区域，而不是边框。
 
 - **Source Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the source clip. To see only the vignette, set this to zero.
+  缩放源片段的亮度。要仅查看暗角，请将此值设为零。
 
 - **Combine** (Popup menu, Default: Composite)
-  Determines how the vignette is combined with the Source.
-  - **Composite**: composites the vignette over the source clip.
-  - **Mult**: the vignette color is multiplied by the source clip.
-If the Color is not black, this will selectively colorize the
-vignette area.
-  - **Add**: the vignette color is added to the source clip. This
-will have no effect if the vignette color is black.
-  - **Screen**: the vignette color is combined with the source
-clip using a screen operation. This will have no effect if the
-vignette color is black.
-  - **Subtract Inv**: the inverse of the vignette color is
-subtracted from the source clip. Inverse means white for black,
-yellow for blue, and so on. This mode looks similar to Mult, but a
-bit more severe; it crushes the blacks and leaves the highlights
-more. This will have no effect if the vignette color is white.
-  - **Vignette Only**: shows the vignette pattern without the
-source clip. The output will be white where the amount of vignetting
-is greatest (e.g. where the source clip would be darkened
-completely).
-  - **Vignette Only Inv**: shows the inverted vignette pattern
-without the source clip. The output will be white where there is no
-vignetting (e.g. where the source clip would not be darkened at
-all).
+  确定暗角如何与 Source 合并。
+  - **Composite**: 将暗角合成在源片段之上。
+  - **Mult**: 暗角颜色与源片段相乘。如果颜色不是黑色，这将选择性地为暗角区域着色。
+  - **Add**: 暗角颜色添加到源片段。如果暗角颜色为黑色，则不会产生效果。
+  - **Screen**: 暗角颜色使用滤色操作与源片段合并。如果暗角颜色为黑色，则不会产生效果。
+  - **Subtract Inv**: 暗角颜色的反色从源片段中减去。反色表示白色对应黑色，黄色对应蓝色，依此类推。此模式看起来类似于 Mult，但更为强烈；它压制黑部并保留更多高光。如果暗角颜色为白色，则不会产生效果。
+  - **Vignette Only**: 仅显示暗角图案，不包含源片段。输出在暗角效果最大的地方为白色（即源片段会被完全变暗的地方）。
+  - **Vignette Only Inv**: 仅显示反转的暗角图案，不包含源片段。输出在没有暗角的地方为白色（即源片段不会被变暗的地方）。
 
 - **Show Radius** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅出现在支持屏幕小部件的 AE 和 Premiere 中。
 
 - **Show Rotate** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅出现在支持屏幕小部件的 AE 和 Premiere 中。
 
 - **Show Center** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅出现在支持屏幕小部件的 AE 和 Premiere 中。
 

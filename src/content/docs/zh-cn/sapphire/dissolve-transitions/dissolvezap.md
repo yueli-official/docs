@@ -4,101 +4,99 @@ title: DissolveZap
 
 ## S_DissolveZap
 
-Transition between two clips using animated lightning bolts. The clips dissolve
-into each other, while the lightning grows. The Dissolve Percent parameter should be
-animated to control the transition speed.
+使用动态闪电在两个素材之间进行转场。素材相互溶解，同时闪电逐渐增强。
+应对 Dissolve Percent 参数进行动画处理以控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveZap](../_static/DissolveZap.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. The clip to combine the dissolves with. If no background is given, the Source is also used as the Background.
+- **Background**: 默认为无。用于与溶解合成的素材。如果未提供背景，则源也用作背景。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Dissolve Speed** (Default: 5, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips. When set to 1, the dissolve takes place over the entire duration of the effect. When set higher, the dissolve is shorter, although the lightning bolts still change size and brightness over the entire duration. Setting this to 10 can make the transition snappier and more like a flash-frame cut.
+  From 和 To 素材之间的溶解速度。设为 1 时，溶解在效果的整个持续时间内进行。设为更高值时，溶解时间更短，但闪电仍在整个持续时间内改变大小和亮度。设为 10 可使转场更快捷，更像闪帧切换。
 
 - **Max Bolts** (Integer, Default: 35, Range: 1 to 500)
-  The maximum number of lightning bolts at the midpoint of the transition.
+  转场中点处闪电的最大数量。
 
 - **Start** (X & Y, Default: [0 0], Range: any)
-  The starting point of the bolts.
+  闪电的起始点。
 
 - **End** (X & Y, Default: [0 0], Range: any)
-  The end point of the bolts. This parameter can be adjusted using the End Widget.
+  闪电的终点。可以使用 End 控件调整此参数。
 
 - **Vary Endpoint** (Default: 1.4, Range: 0 or greater)
-  Offsets the End location by a random amount within a circle of this radius. If Max Bolts is greater than 1, this can be useful to spread out the different End points.
+  在此半径的圆内随机偏移终点位置。如果 Max Bolts 大于 1，这可以用来分散不同的终点。
 
 - **Bolt Width** (Default: 0.112, Range: 0 or greater)
-  The width of the lightning bolts.
+  闪电的宽度。
 
 - **Branchiness** (Default: 5, Range: 0 to 20)
-  Scales the number of additional bolts that branch from the main bolt. Set this to 0 for basic bolts with no extra branches.
+  缩放从主闪电分支出的附加闪电数量。设为 0 可获得没有额外分支的基本闪电。
 
 - **Zap Bright** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the lightning bolts.
+  缩放闪电的亮度。
 
 - **Zap Color** (Default rgb: [1 1 1])
-  The color of the lightning. If you want to keep the lightning bolt itself bright white, you can still affect the perceived color by adjusting the Glow Color instead.
+  闪电的颜色。如果想保持闪电本身的亮白色，可以通过调整 Glow Color 来影响感知颜色。
 
 - **Zap Glow Bright** (Default: 2, Range: 0 or greater)
-  Scales the brightness of the glow applied to the lightning.
+  缩放应用于闪电的辉光亮度。
 
 - **Zap Glow Color** (Default rgb: [0.5 0.5 1])
-  The color of the glow applied to the lightning.
+  应用于闪电的辉光颜色。
 
 - **Zap Glow Width** (Default: 0.224, Range: 0 or greater)
-  The width of the glow applied to the lightning.
+  应用于闪电的辉光宽度。
 
 - **Bg Glow Bright** (Default: 8, Range: 0 or greater)
-  Scales the brightness of the background glow at the midpoint of the transition.
+  缩放转场中点处背景辉光的亮度。
 
 - **Bg Glow Color** (Default rgb: [1 1 1])
-  Scales of the color of the background glow at the midpoint of the transition. The colors and brighness of the glow is also affected by the inputs.
+  缩放转场中点处背景辉光的颜色。辉光的颜色和亮度也受输入影响。
 
 - **Bg Glow Width** (Default: 0.4, Range: 0 or greater)
-  Scales the background glow distance at the midpoint of the transition. Note that a zero glow width still enhances bright areas; set the brightness parameter to zero if you want no background glow.
+  缩放转场中点处背景辉光的距离。请注意，零辉光宽度仍会增强明亮区域；如果不需要背景辉光，请将亮度参数设为零。
 
 - **Start Offset** (Default: 0, Range: 0 or greater)
-  The offset from the start point to begin drawing the bolts. This can be useful for animating a lightning strike.
+  从起始点开始绘制闪电的偏移量。这对于动画化闪电打击效果很有用。
 
 - **Length** (Default: 1, Range: 0 or greater)
-  The length of the bolts, beginning at Start Offset. If less than 1, the bolts will not be drawn all the way from start to end. This can be useful for animating a lightning strike.
+  从 Start Offset 开始的闪电长度。如果小于 1，闪电将不会从起点完整绘制到终点。这对于动画化闪电打击效果很有用。
 
 - **Rand Seed** (Default: 0, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different random lightning bolts, and the same value should give a repeatable result.
+  用于初始化随机数生成器。实际种子值并不重要，但不同的种子会给出不同的随机闪电，相同的值应给出可重复的结果。
 
 - **Affect Alpha** (Default: 1, Range: 0 or greater)
-  If this value is positive the output Alpha channel will include some opacity from the lightning and its glow. The maximum of the red, green, and blue brightness is scaled by this value and combined with the background Alpha at each pixel.
+  如果此值为正，输出的 Alpha 通道将包含来自闪电及其辉光的部分不透明度。红、绿、蓝亮度的最大值按此值缩放，并在每个像素处与背景 Alpha 合成。
 
 - **Show Start** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Start parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  开启或关闭用于调整 Start 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 - **Show Vary Endpoint** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the End parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整 End 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

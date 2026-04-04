@@ -4,329 +4,297 @@ title: UltraGlow
 
 ## S_UltraGlow
 
-Generates varieties of glowing light from bright areas
-of the source clip. Raise the threshold parameter to produce glows in
-fewer areas. Adjust the Width RGB parameters to make glows with
-different color falloffs, and adjust the Width XY parameters to make
-horizontal or vertical glows. Adjust Glow Falloff and Glow Bias parameters
-to control falloff distance and how far the hottest areas extend. Adjust
-After Glow parameters to generate a secondary glow on the result of the
-primary glow. Optionally enhance the edges or add highlights to the source
-clip or combine the result with atmospheric noise.
+从源素材的明亮区域生成多种辉光效果。提高阈值参数可以减少产生辉光的区域。调整 Width RGB 参数可以制作不同颜色衰减的辉光，调整 Width XY 参数可以制作水平或垂直方向的辉光。调整 Glow Falloff 和 Glow Bias 参数可控制衰减距离和最亮区域的扩展范围。调整 After Glow 参数可在主辉光结果上生成二次辉光。还可以选择增强源素材的边缘、添加高光，或将结果与大气噪声结合。
 
-In the Sapphire Lighting effects submenu.
+在 Sapphire Lighting 效果子菜单中。
 
 ![UltraGlow](../_static/UltraGlow.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The input clip that determines the glow locations and colors.
+- **Source**: 当前图层。用于确定辉光位置和颜色的输入素材。
 
-- **Background**: Defaults to None. The clip to combine the glows with. If no background is given, the Source is also used as the Background.
+- **Background**: 默认为无。用于与辉光合成的素材。如果未提供背景，则源素材也将用作背景。
 
-- **Matte**: Defaults to None. If provided, the source glow colors are scaled by this input. A monochrome matte can be used to choose a subset of Source areas that will generate glows. A color matte can be used to selectively adjust the glow colors in different regions. The matte is applied to the source before the glows are generated so it will not clip the resulting glows.
+- **Matte**: 默认为无。如果提供，源辉光颜色将按此输入进行缩放。单色遮罩可用于选择源素材中生成辉光的子区域。彩色遮罩可用于在不同区域选择性地调整辉光颜色。遮罩在生成辉光之前应用于源素材，因此不会裁剪生成的辉光。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，Mocha 遮罩的黑白将在应用效果之前反转。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素数值膨胀或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，用于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩同时提供给效果时，决定如何合并 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Brightness** (Default: 1.8, Range: 0 or greater)
-  Scales the brightness of all the glows.
+  缩放所有辉光的亮度。
 
 - **Color** (Default rgb: [1 1 1])
-  Scales the color of the primary glow.
+  缩放主辉光的颜色。
 
 - **Threshold** (Default: 0.4, Range: 0 or greater)
-  Glows are generated from locations in the source clip that are brighter than this value. A value of 0.9 causes glows at only the brightest spots. A value of 0 causes glows for every non-black area.
+  从源素材中亮度超过此值的位置生成辉光。值为 0.9 时仅在最亮的位置产生辉光。值为 0 时在每个非黑色区域都产生辉光。
 
 - **Threshold Add Color** (Default rgb: [0 0 0])
-  This can be used to raise the threshold on a specific color and thereby reduce the glows generated on areas of the source clip containing that color.
+  可用于提高特定颜色的阈值，从而减少源素材中包含该颜色的区域所产生的辉光。
 
 - **Glow Width** (Default: 0.371, Range: 0 or greater)
-  Scales the glow distance. This and all the width parameters can be adjusted using the Width Widget. Note that a zero glow width still enhances the bright areas; set the brightness parameter to zero if you want to pass the Source through unchanged.
+  缩放辉光距离。此参数及所有宽度参数均可通过宽度控件进行调整。请注意，辉光宽度为零时仍会增强明亮区域；如果要原样传递源素材，请将亮度参数设为零。
 
 - **Glow Falloff** (Default: 0.35, Range: -2 to 2)
-  Boost or cut the distance that the glow extends.
+  增强或削减辉光扩展的距离。
 
 - **Glow Bias** (Default: 0, Range: -3 to 3)
-  Amount to grow the outskirts of the thresholded result, or shrink if negative.
+  扩展阈值化结果的外围区域，负值则收缩。
 
 - **Width X** (Default: 1, Range: 0 or greater)
-  Scales the horizontal glow width. Set to 0 for vertical only.
+  缩放水平辉光宽度。设为 0 则仅显示垂直方向。
 
 - **Width Y** (Default: 1, Range: 0 or greater)
-  Scales the vertical glow width. Set to 0 for horizontal only.
+  缩放垂直辉光宽度。设为 0 则仅显示水平方向。
 
 - **Width Red** (Default: 1, Range: 0 or greater)
-  Scales the red glow width. If the red, green, and blue widths are equal, the glows will match the color of the source clip. If they are not equal, the glows will vary in color with distance.
+  缩放红色辉光宽度。如果红、绿、蓝宽度相等，辉光将与源素材的颜色一致。如果不相等，辉光颜色将随距离变化。
 
 - **Width Green** (Default: 1, Range: 0 or greater)
-  Scales the green glow width.
+  缩放绿色辉光宽度。
 
 - **Width Blue** (Default: 1, Range: 0 or greater)
-  Scales the blue glow width.
+  缩放蓝色辉光宽度。
 
 - **Subpixel** (Check-box, Default: on)
-  Enables glowing by subpixel widths. Use this for smoother animation of the Width parameters.
+  启用亚像素宽度辉光。用于宽度参数的更平滑动画。
 
 - **Show** (Popup menu, Default: Result)
-  Selects the type of output
-  - **Result**: Shows the final result of combining the glow, source, and background.
-  - **Threshold**: Shows the thresholded image that is used to generate the glow.
+  选择输出类型。
+  - **Result**: 显示辉光、源素材和背景合成后的最终结果。
+  - **Threshold**: 显示用于生成辉光的阈值化图像。
 
 - **After Glow Width** (Default: 0.808, Range: 0 or greater)
-  Scales the glow distance for the secondary glow.
+  缩放二次辉光的辉光距离。
 
 - **After Glow Color** (Default rgb: [1 1 1])
-  Scales the color of the secondary glow.
+  缩放二次辉光的颜色。
 
 - **After Glow Stretch X** (Default: 0.3, Range: 0 or greater)
-  Scales the horizontal secondary glow width.
+  缩放二次辉光的水平宽度。
 
 - **After Glow Stretch Y** (Default: 0.1, Range: 0 or greater)
-  Scales the vertical secondary glow width.
+  缩放二次辉光的垂直宽度。
 
 - **Horizontal Streaks** (Default: 0.25, Range: 0 or greater)
-  Scales the appearance of narrow trails in the horizontal direction.
+  缩放水平方向窄条纹的外观。
 
 - **Vertical Streaks** (Default: 0.25, Range: 0 or greater)
-  Scales the appearance of narrow trails in the vertical direction.
+  缩放垂直方向窄条纹的外观。
 
 - **Edge Detect** (Check-box, Default: off)
-  Enables edge detection.
+  启用边缘检测。
 
 - **Edge Combine** (Popup menu, Default: Screen)
-  Determines how the detected edges are combined with the Source.
-  - **Screen**: detected edges are blended with the Source using a screen operation.
-  - **Add**: detected edges are added to the Source.
-  - **Edges Only**: gives only the detected edges with no Source.
+  决定检测到的边缘如何与源素材合成。
+  - **Screen**: 检测到的边缘使用滤色操作与源素材混合。
+  - **Add**: 检测到的边缘添加到源素材上。
+  - **Edges Only**: 仅显示检测到的边缘，不包含源素材。
 
 - **Edge Smooth** (Default: 0, Range: 0 or greater)
-  Increase for thicker and smoother edges.
+  增大可获得更厚、更平滑的边缘。
 
 - **Edge Mode** (Popup menu, Default: Reflect)
-  Determines the behavior when accessing areas outside the source image.
-  - **Transparent**: Areas outside the source image are treated as transparent, which can produce
-transparency around the edges of the image.
-Select this for fastest rendering.
-  - **Reflect**: Reflects the image outside the border.
+  决定访问源图像外部区域时的行为。
+  - **Transparent**: 源图像外部区域被视为透明，这可能在图像边缘产生透明效果。选择此选项可获得最快的渲染速度。
+  - **Reflect**: 在边界外反射图像。
 
 - **Edge Fill** (Check-box, Default: on)
-  Make areas within detected edges opaque
+  使检测到的边缘内部区域不透明。
 
 - **Edge Thin** (Default: 0, Range: 0 or greater)
-  Subtracts this value from the detected edge result. Increase to remove unwanted noise from minor edges.
+  从检测到的边缘结果中减去此值。增大可去除次要边缘产生的不需要的噪声。
 
 - **Atmosphere** (Check-box, Default: off)
-  Atmosphere gives the effect of the glow shining through a dusty atmosphere and picking up light or getting shadowed. This parameter adjusts the amount, or amplitude, of the atmospheric effect. Zero gives a smooth glow, higher values give more dusty look.
+  大气效果模拟辉光穿过尘土飞扬的大气层并拾取光线或被遮蔽的效果。此参数调整大气效果的数量或振幅。零值产生平滑辉光，较高值产生更具尘土感的外观。
 
 - **Atmosphere Amp** (Default: 1, Range: 0 or greater)
-  Atmosphere gives the effect of the glow shining through a dusty atmosphere and picking up light or getting shadowed. This parameter adjusts the amount, or amplitude, of the atmospheric effect. Zero gives a smooth glow, higher values give more dusty look.
+  大气效果模拟辉光穿过尘土飞扬的大气层并拾取光线或被遮蔽的效果。此参数调整大气效果的数量或振幅。零值产生平滑辉光，较高值产生更具尘土感的外观。
 
 - **Atmosphere Freq** (Default: 11.6, Range: 0.1 to 20)
-  Controls the spatial frequency of the atmospheric noise. Turn this up higher to get finer details, turn down for broader overall variation.
+  控制大气噪声的空间频率。调高可获得更精细的细节，调低可获得更宽泛的整体变化。
 
 - **Atmosphere Detail** (Default: 0.506, Range: 0 to 1)
-  Controls the amount of fine detail in the atmosphere simulation. Decrease to get smoother atmosphere, increase for a more crunchy or grainy look.
+  控制大气模拟中精细细节的数量。降低可获得更平滑的大气效果，增加可获得更粗糙或颗粒感的外观。
 
 - **Atmosphere Speed** (Default: 1, Range: any)
-  The cloudy noise in the atmosphere evolves over time like real dust clouds; this parameter controls how fast the cloud pattern changes over time. Set to zero for a static pattern.
+  大气中的云状噪声会像真实的尘云一样随时间演变；此参数控制云图案随时间变化的速度。设为零可获得静态图案。
 
 - **Atmosphere Lights** (Default: 0.5, Range: 0 or greater)
-  Scales the atmosphere layer by this value. Increase for a more intense result.
+  按此值缩放大气层。增大可获得更强烈的结果。
 
 - **Atmosphere Darks** (Default: 0, Range: 0 or greater)
-  Adds this gray value to the darker regions of the atmosphere layer. This can be negative to increase contrast.
+  向大气层的较暗区域添加此灰度值。可为负值以增加对比度。
 
 - **Atmosphere Seed** (Default: 0.123, Range: 0 or greater)
-  Used to initialize the random number generator for the atmospheric noise. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化大气噪声的随机数生成器。实际种子值本身不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。
 
 - **Apply Pre-Glow** (Check-box, Default: off)
-  Enables combining atmosphere with the Source prior to any glows.
+  启用在任何辉光之前将大气效果与源素材合成。
 
 - **Highlights** (Check-box, Default: off)
-  Enables highlights using a selected texture pattern.
+  启用使用选定纹理图案的高光。
 
 - **Highlights Texture** (Popup menu, Default: Plasma)
-  Selects the texture used for highlights.
-  - **Plasma**: Highlights with an electrical plasma texture.
-  - **Micro**: Highlights with a magnified rough surface texture.
+  选择用于高光的纹理。
+  - **Plasma**: 使用电浆纹理的高光。
+  - **Micro**: 使用放大的粗糙表面纹理的高光。
 
 - **Highlights Freq** (Default: 1.2, Range: 0.01 or greater)
-  The spatial frequency of the highlights. Increase to zoom out, decrease to zoom in.
+  高光的空间频率。增大可缩小视图，减小可放大视图。
 
 - **Highlights Freq Rel X** (Default: 1, Range: 0.01 or greater)
-  The relative horizontal frequency of the highlights. Increase to stretch vertically or decrease to stretch horizontally.
+  高光的相对水平频率。增大可垂直拉伸，减小可水平拉伸。
 
 - **Highlights Octaves** (Integer, Default: 4, Range: 1 to 10)
-  The number of octaves of highlights to include. Each octave is twice the frequency and half the amplitude of the previous.
+  包含的高光倍频程数。每个倍频程的频率是前一个的两倍，振幅是前一个的一半。
 
 - **Highlights Grad X** (Default: 0.1, Range: any)
-  Determines the amplitude and direction of a gradient which orients the highlights. Increasing X makes them more vertical.
+  决定用于定向高光的渐变的振幅和方向。增大 X 值使高光更偏向垂直方向。
 
 - **Highlights Grad Y** (Default: 0, Range: any)
-  Determines the amplitude and direction of a gradient which orients the highlights. Increasing Y makes them more horizontal.
+  决定用于定向高光的渐变的振幅和方向。增大 Y 值使高光更偏向水平方向。
 
 - **Highlights Layers** (Default: 4.5, Range: 0 or greater)
-  The number of layers of highlights. Increase for a more striped effect.
+  高光的层数。增大可获得更多条纹效果。
 
 - **Highlights Threshold** (Default: 0.5, Range: 0 or greater)
-  Determines the thickness of the highlights. Increase for thinner lines, decrease for thicker and brighter ones.
+  决定高光的厚度。增大可获得更细的线条，减小可获得更粗更亮的线条。
 
 - **Highlights Speed** (Default: 1, Range: any)
-  Phase speed of the highlights. If non-zero, the lines are automatically animated to undulate at this rate.
+  高光的相位速度。如果非零，线条会自动以此速率进行波动动画。
 
 - **Highlights Details** (Default: 0.43, Range: 0 to 1)
-  Increases or decreases the amount of fine detail in the texture. Decrease to get a smoother look, increase to get a more high-frequency, noisy look.
+  增加或减少纹理中精细细节的数量。减小可获得更平滑的外观，增加可获得更高频、更嘈杂的外观。
 
 - **Highlights Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the highlights.
+  缩放高光的亮度。
 
 - **Highlights Lights** (Default: 1, Range: 0 or greater)
-  Scales the highlights layer by this value. Increase for a more intense result.
+  按此值缩放高光层。增大可获得更强烈的结果。
 
 - **Highlights Darks** (Default: 0, Range: 0 or greater)
-  Adds this gray value to the darker regions of the highlights layer. This can be negative to increase contrast.
+  向高光层的较暗区域添加此灰度值。可为负值以增加对比度。
 
 - **Highlights Blur** (Default: 0, Range: 0 or greater)
-  Soften the edges of the highlights.
+  柔化高光的边缘。
 
 - **Highlights Combine** (Popup menu, Default: Multiply)
-  Determines which blending method is used to combine the highlights with the background.
-  - **Multiply**: The default method 'intersects' the highlights with the background.
-  - **Highlights Only**: Display only the highlights to suppress outlines.
-  - **Dissolve**: Randomly replaces background pixels with highlights.
-  - **Screen**: Display the 'union' of the highlights with the background
-  - **Overlay**: Combines highlights and background using an overlay function.
-  - **Soft Light**: Darkens or lightens the background depending on the highlights.
-  - **Hard Light**: Similar to overlay but with highlights and background swapped.
-  - **Color Dodge**: Brightens the background depending on the highlights.
-  - **Color Burn**: Darkens the background depending on the highlights.
-  - **Darken**: The minimum of highlights and background. This can
-also be used as an 'intersection' operation with slightly different
-results than Multiply.
-  - **Lighten**: the maximum of highlights and background. This
-can also be used as a 'union' operation with slightly different
-results than Screen.
-  - **Add**: Adds the highlights to the background.
-  - **Subtract**: Subtracts the highlights from the background.
-  - **Difference**: Similar to Subtract but the absolute value of
-the result is used, which tends to give more resulting colors in
-bounds.
-  - **Exclusion**: Similar to Difference but with smoother results.
-  - **Hue**: Combines the hue of the highlights with the saturation
-and luminance of the background.
-  - **Saturation**: Combines the saturation of the highlights with
-the hue and luminance of the background.
-  - **Chroma**: Combines the hue and saturation of the highlights
-with the luminance of the background.
-  - **Luminance**: Combines the luminance of the highlights with
-the hue and saturation of the background.
-  - **Linear Dodge**: Adds highlights and background and clamps the
-result at white.
-  - **Linear Burn**: Adds highlights and background but offsets to
-make the result darker.
-  - **Linear Light**: Performs a linear burn or linear dodge
-depending on if the highlights are more or less than 50 percent gray.
-  - **Vivid Light**: Performs a color burn or color dodge
-depending on if the highlights are more or less than 50 percent gray.
-  - **Pin Light**: Performs a lighten or darken depending on if the
-highlights are more or less than 50 percent gray.
+  决定使用哪种混合方法将高光与背景合成。
+  - **Multiply**: 默认方法，将高光与背景"相交"。
+  - **Highlights Only**: 仅显示高光以抑制轮廓。
+  - **Dissolve**: 随机将背景像素替换为高光。
+  - **Screen**: 显示高光与背景的"并集"。
+  - **Overlay**: 使用叠加函数合成高光和背景。
+  - **Soft Light**: 根据高光使背景变暗或变亮。
+  - **Hard Light**: 类似于叠加，但高光和背景互换。
+  - **Color Dodge**: 根据高光使背景变亮。
+  - **Color Burn**: 根据高光使背景变暗。
+  - **Darken**: 高光和背景的最小值。也可用作"相交"操作，结果与 Multiply 略有不同。
+  - **Lighten**: 高光和背景的最大值。也可用作"并集"操作，结果与 Screen 略有不同。
+  - **Add**: 将高光添加到背景上。
+  - **Subtract**: 从背景中减去高光。
+  - **Difference**: 类似于 Subtract，但使用结果的绝对值，往往能产生更多在范围内的颜色。
+  - **Exclusion**: 类似于 Difference，但结果更平滑。
+  - **Hue**: 将高光的色相与背景的饱和度和亮度合成。
+  - **Saturation**: 将高光的饱和度与背景的色相和亮度合成。
+  - **Chroma**: 将高光的色相和饱和度与背景的亮度合成。
+  - **Luminance**: 将高光的亮度与背景的色相和饱和度合成。
+  - **Linear Dodge**: 将高光和背景相加并将结果钳制为白色。
+  - **Linear Burn**: 将高光和背景相加但偏移使结果更暗。
+  - **Linear Light**: 根据高光是否超过 50% 灰度执行线性加深或线性减淡。
+  - **Vivid Light**: 根据高光是否超过 50% 灰度执行颜色加深或颜色减淡。
+  - **Pin Light**: 根据高光是否超过 50% 灰度执行变亮或变暗。
 
 - **Combine** (Popup menu, Default: Screen)
-  Determines how the glow is combined with the Source or Background. This parameter has no effect if Light BG is set to 1.
-  - **Mult**: the source or background is multiplied by the glow.
-  - **Add**: the glow is added to the source or background.
-  - **Screen**: the glow is blended with the source or background using a screen operation.
-  - **Difference**: the result is the difference between the glow and the
-source or background.
-  - **Overlay**: the glow is combined with the source or background using an overlay function.
+  决定辉光如何与源素材或背景合成。如果 Light BG 设为 1，此参数无效。
+  - **Mult**: 源素材或背景与辉光相乘。
+  - **Add**: 辉光添加到源素材或背景上。
+  - **Screen**: 辉光与源素材或背景使用滤色操作混合。
+  - **Difference**: 结果为辉光与源素材或背景的差值。
+  - **Overlay**: 辉光与源素材或背景使用叠加函数合成。
 
 - **Affect Alpha** (Default: 1, Range: 0 or greater)
-  If this value is positive the output Alpha channel will include some opacity from the glows. The maximum of the red, green, and blue glow brightness is scaled by this value and combined with the background Alpha at each pixel.
+  如果此值为正，输出的 Alpha 通道将包含来自辉光的一些不透明度。红、绿、蓝辉光亮度的最大值按此值缩放，并在每个像素处与背景 Alpha 合成。
 
 - **Glow From Alpha** (Default: 0, Range: 0 to 1)
-  Set to 1 to generate glows from the alpha channel of the source input instead of the RGB channels. In this case the glows will not pick up color from the source and will typically be brighter. Values between 0 and 1 interpolate between using the RGB and the Alpha.
+  设为 1 可从源输入的 Alpha 通道而非 RGB 通道生成辉光。在这种情况下，辉光不会从源素材获取颜色，通常会更亮。0 到 1 之间的值在使用 RGB 和 Alpha 之间插值。
 
 - **Glow Under Source** (Default: 0, Range: 0 to 1)
-  Set to 1 to composite the Source input over the glows.
+  设为 1 可将源输入合成在辉光之上。
 
 - **Light Background** (Default: 0, Range: 0 to 1)
-  Increase this to give a look of the glow casting light onto the background image. To see this more clearly you can also lower the Background Scale parameter or raise the Brightness parameter.
+  增大此值可产生辉光照亮背景图像的效果。要更清楚地看到此效果，还可以降低背景缩放参数或提高亮度参数。
 
 - **Source Opacity** (Default: 1, Range: 0 to 1)
-  Scales the opacity of the Source input when combined with the glows. This does not affect the generation of the glows themselves.
+  缩放源输入与辉光合成时的不透明度。这不影响辉光本身的生成。
 
 - **Bg Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the background. This parameter only has an effect if the background input is provided, and is visible due to a partially transparent Source image or a reduced Source Opacity parameter value.
+  缩放背景的亮度。此参数仅在提供了背景输入，并且由于部分透明的源图像或降低的源不透明度参数值而可见时才有效。
 
 - **Invert Matte** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果开启，反转遮罩输入，使效果应用于遮罩为黑色而非白色的区域。除非提供了遮罩输入，否则此选项无效。
 
 - **Expand Borders** (Check-box, Default: on)
-  If enabled, transparent borders are added to the input image before processing. This allows the result to include soft edges beyond the original image size. When off, the effect only occurs within the frame and the result will retain an edge at the borders.
+  如果启用，在处理前向输入图像添加透明边框。这允许结果包含超出原始图像大小的柔和边缘。关闭时，效果仅在画面内发生，结果将在边界处保留硬边。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 - **Show Glow Width** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Glow Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整 Glow Width 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

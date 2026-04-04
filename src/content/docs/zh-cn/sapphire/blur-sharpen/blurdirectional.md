@@ -4,151 +4,144 @@ title: BlurDirectional
 
 ## S_BlurDirectional
 
-Blurs the source clip in a given direction using a gaussian,
-triangle, or box filter. It can also blur each channel by different amounts.
+使用高斯、三角或方框滤波器在给定方向上模糊源素材。它还可以按不同的量模糊每个通道。
 
-In the Sapphire Blur+Sharpen effects submenu.
+位于 Sapphire Blur+Sharpen 效果子菜单中。
 
 ![BlurDirectional](../_static/BlurDirectional.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Matte**: Defaults to None. If provided, the blur is only performed on regions of the source clip specified by the bright areas of this input. Pixels outside this matte are not blurred, and do not contribute to the resulting blurred pixels within it. This input can be affected using the Invert Matte, or Matte Use parameters.
+- **Matte**: 默认为无。如果提供，模糊仅在此输入的亮区指定的源素材区域上执行。此遮罩外的像素不会被模糊，也不会参与遮罩内的模糊结果像素。此输入可通过 Invert Matte 或 Matte Use 参数进行调整。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此量模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素量膨胀或腐蚀 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，便于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，只显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当同时提供 Mocha 遮罩和输入遮罩时，确定如何组合它们。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，只使用
+Mocha 遮罩。
 
 - **Blur Amount** (Default: 0.4, Range: 0 or greater)
-  Scales the width of the blur. This parameter can be adjusted using the Blur Amount Widget.
+  缩放模糊的宽度。此参数可通过 Blur Amount Widget 调整。
 
 - **Angle** (Default: 45, Range: any)
-  The direction of the blur. An angle of 0 produces a horizontal blur, and an angle of 90 produces a vertical blur. This parameter can be adjusted using the Angle Widget.
+  模糊的方向。角度为 0 产生水平模糊，角度为 90 产生垂直模糊。此参数可通过 Angle Widget 调整。
 
 - **Shift** (Default: 0, Range: any)
-  Shifts the image in the direction of the blur. A negative shift amount shifts the image in the opposite direction.
+  沿模糊方向移动图像。负的移动量会将图像向相反方向移动。
 
 - **Bias** (Default: 0.5, Range: 0 to 1)
-  Varies the weight of the pixels along the path of the blur, which gives the appearance of trails or streaks in a single direction. A value of 0.5 weights all pixels evenly. A value of 1 causes the weight to increase toward the direction of the blur, while a value of 0 has the opposite effect.
+  改变模糊路径上像素的权重，产生单一方向的拖尾或条纹外观。值为 0.5 时均匀加权所有像素。值为 1 时权重向模糊方向增加，值为 0 则效果相反。
 
 - **Blur Red** (Default: 1, Range: 0 or greater)
-  The blur width of the red channel, relative to Blur Amount.
+  红色通道的模糊宽度，相对于 Blur Amount。
 
 - **Blur Green** (Default: 1, Range: 0 or greater)
-  The blur width of the green channel, relative to Blur Amount.
+  绿色通道的模糊宽度，相对于 Blur Amount。
 
 - **Blur Blue** (Default: 1, Range: 0 or greater)
-  The blur width of the blue channel, relative to Blur Amount.
+  蓝色通道的模糊宽度，相对于 Blur Amount。
 
 - **Shift Red** (Default: 0, Range: any)
-  Additional amount to shift the red color channel.
+  红色通道的额外移动量。
 
 - **Shift Green** (Default: 0, Range: any)
-  Additional amount to shift the green color channel.
+  绿色通道的额外移动量。
 
 - **Shift Blue** (Default: 0, Range: any)
-  Additional amount to shift the blue color channel.
+  蓝色通道的额外移动量。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Offset Darks** (Default: 0, Range: -8 to 2)
-  Adds this gray value to the darker regions of the result. This can be negative to increase contrast.
+  向结果的较暗区域添加此灰度值。可以为负值以增加对比度。
 
 - **Mix With Source** (Default: 0, Range: 0 to 1)
-  Interpolates between the blurred result (0) and the original source (1). 0.1 can give a nice misty effect since it mixes only a little of the source in.
+  在模糊结果 (0) 和原始源素材 (1) 之间插值。0.1 可以产生不错的朦胧效果，因为它只混入少量源素材。
 
 - **Edge Mode** (Popup menu, Default: Reflect)
-  Determines the behavior when accessing areas outside the source image.
-  - **Transparent**: Areas outside the source image are treated as transparent, which can produce
-transparency around the edges of the image.
-Select this for fastest rendering.
-  - **Repeat**: Repeats the last pixel outside the border of the image.
-  - **Reflect**: Reflects the image outside the border.
+  确定访问源图像边界外区域时的行为。
+  - **Transparent**: 源图像外的区域被视为透明，这可能在图像边缘产生透明度。选择此项可获得最快的渲染速度。
+  - **Repeat**: 在图像边界外重复最后一个像素。
+  - **Reflect**: 在边界外反射图像。
 
 - **Filter** (Popup menu, Default: Box)
-  The type of convolution filter to blur with.
-  - **Box**: uses a rectangular shaped filter.
-  - **Triangle**: smoother, uses a pyramid shaped filter.
-  - **Gauss**: smoothest, uses a gaussian shaped filter.
+  用于模糊的卷积滤波器类型。
+  - **Box**: 使用矩形滤波器。
+  - **Triangle**: 更平滑，使用金字塔形滤波器。
+  - **Gauss**: 最平滑，使用高斯形滤波器。
 
 - **Invert Matte** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果开启，反转 Matte 输入，使效果应用于 Matte 为黑色而非白色的区域。除非提供了 Matte 输入，否则无效。
 
 - **Matte Use** (Popup menu, Default: Luma)
-  Determines how the Matte input channels are used to make a monochrome matte.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Matte 输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Soft Borders** (Check-box, Default: off)
-  If enabled, transparent borders are added to the input image before processing. This allows the result to include soft edges beyond the original image size. When off, the effect only occurs within the frame and the result will retain an edge at the borders.
+  如果启用，在处理前向输入图像添加透明边框。这允许结果包含超出原始图像大小的柔和边缘。关闭时，效果仅在帧内发生，结果将在边框处保留边缘。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且无透明度 (alpha=1) 时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已为预乘形式处理（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时可能不太准确。
 
 - **Show Blur Amount** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the blur amount parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整模糊量参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些软件支持屏幕控件。
 
 - **Show Angle** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Angle parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Angle 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些软件支持屏幕控件。
 

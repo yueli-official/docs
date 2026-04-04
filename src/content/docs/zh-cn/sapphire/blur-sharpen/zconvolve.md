@@ -4,194 +4,143 @@ title: ZConvolve
 
 ## S_ZConvolve
 
-Convolves areas of the source clip using a kernel which
-is made larger or smaller using depth values from a ZBuffer
-input. Separates the input into a number of layers and applies
-different sized convolution blurs depending on the distance from the
-focal depth, and depth of field. This is similar to ZDefocus but with
-an iris shape (or Kernel) that comes from a clip.
+使用来自 ZBuffer 输入的深度值对卷积核进行放大或缩小，从而对源素材的局部进行卷积模糊。将输入分成若干层，并依据与焦点深度的距离及景深，对不同深度层应用不同尺寸的卷积模糊。此效果与 ZDefocus 类似，但光圈形状（或“Kernel”）来自一个素材片段。
 
-In the Sapphire Blur+Sharpen effects submenu.
+位于 Sapphire Blur+Sharpen 效果子菜单中。
 
 ![ZConvolve](../_static/ZConvolve.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Kernel**: Defaults to None. The filter kernel or shape for the convolution. This should normally be all black around the edges (outside the specified Kernel Crop region), with a non-black central part. A larger shape normally produces blurrier results. Only the part of the kernel within the two Kernel Crop params is considered; the part outside that boundary is ignored.
+- **Kernel**: 默认为无。用于卷积的滤波核或形状。正常情况下，边缘（超出 Kernel Crop 指定区域）应为全黑，中心为非黑色区域。形状越大，通常模糊越强。仅考虑位于 Kernel Crop1 与 Kernel Crop2 两个参数围成区域内的核，边界之外会被忽略。
 
-- **ZBuffer**: Defaults to None. The input clip containing depth values for each Source pixel. These values should be in the range of black to white, and it is best if not anti-aliased. Normally black corresponds to the farthest objects and white to the nearest, though this can be adjusted using Z Buffer parameter.
+- **ZBuffer**: 默认为无。包含每个 Source 像素深度值的输入素材。取值应在黑到白之间，且最好不要抗锯齿。通常黑色表示最远处，白色表示最近处，可通过 Z Buffer 参数进行调整。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Focal Depth** (Default: 0, Range: any)
-  The depth of the focus plane; 0 is near and 1 is far. Areas with this Z value will be in focus. Objects near this depth may be in focus depending on the Depth of Field parameter. You can use Show: In Focus Zone to show the Focal Depth when adjusting. If the effect of this parameter seems backwards, you can invert the depth values using the Z Buffer parameter.
+  焦平面的深度；0 为近，1 为远。具有该 Z 值的区域将处于对焦状态。接近该深度的物体是否清晰取决于 Depth Of Field。可用 Show: In Focus Zone 显示以辅助调节。若该参数效果与预期相反，可用 Z Buffer 参数反转深度值。
 
 - **Depth Of Field** (Default: 0.1, Range: 0 to 1)
-  Specifies how wide a range of depths near the Focal Depth will be in focus. If the Focal Depth is 0.5 and Depth of Field is 0.2, all objects with Z values from 0.4 to 0.6 will be in focus. Set to zero to have only objects exactly at the Focal Depth in focus. You can use Show: In Focus Zone to show this when adjusting.
+  指定 Focal Depth 附近被视为清晰的深度范围宽度。例如 Focal Depth=0.5 且 Depth Of Field=0.2 时，Z 值在 0.4–0.6 的物体都将清晰。设为 0 则只有恰好在 Focal Depth 处的物体清晰。可用 Show: In Focus Zone 显示以辅助调节。
 
 - **Size** (Default: 1, Range: 0 or greater)
-  The maximum amount to resize the kernel larger or smaller. 1.0 is the original size. This parameter can be adjusted using the Size Widget.
+  内核缩放的最大量，既可放大也可缩小。1.0 为原始尺寸。此参数可通过 Size Widget 调整。
 
 - **Size Rel X** (Default: 1, Range: 0 or greater)
-  Increase to make the kernel fatter or wider without changing its height. Decrease to shrink it horizontally, making it thinner.
+  增大可在不改变高度的情况下让内核更“胖/宽”，减小则水平方向收缩使其更“瘦窄”。
 
 - **Size Rel Y** (Default: 1, Range: 0 or greater)
-  Increase to make the kernel taller without changing its wieght. Decrease to shrink it vertically, making it flatter.
+  增大可在不改变宽度的情况下让内核更“高”，减小则垂直方向收缩使其更“扁平”。
 
 - **Z Buffer Type** (Popup menu, Default: White is Near)
-  How to interpret the values in the Z buffer.
-  - **Black is Near**: Black pixels in the Z buffer indicate that
-the object at that point is near (close to you), and white means far
-away.
-  - **White is Near**: White pixels in the Z buffer indicate that
-the object at that point is near (close to you), and black means far
-away.
+  解释 Z 缓冲中的取值方式。
+  - **Black is Near**: Z 缓冲中黑色表示近处，白色表示远处。
+  - **White is Near**: Z 缓冲中白色表示近处，黑色表示远处。
 
 - **Show** (Popup menu, Default: Result)
-  Selects the type of output.
-  - **Result**: Show the final output.
-  - **Kernel**: Show the convolve kernel over the final output. Use
-this to adjust the kernel cropping and threshold parameters.
-  - **In Focus Zone**: Show the in-focus zone highlighted over the
-original image. Use this to adjust the focal depth and depth of
-field.
+  选择输出类型。
+  - **Result**: 显示最终输出。
+  - **Kernel**: 在最终输出上显示卷积核，以便调整裁剪与阈值参数。
+  - **In Focus Zone**: 在原始图像上高亮显示对焦区域，以便调整焦点深度与景深。
 
 - **Layers** (Integer, Default: 5, Range: 2 to 50)
-  The number of depth layers to separate the source into. More layers require more processing but give smoother results in Z. More layers are sometimes needed to avoid visible seams between the layers.
+  将源素材按深度分层的层数。层数越多处理越慢，但 Z 方向过渡更平滑。有时需要更多层以避免层间接缝可见。
 
 - **Layer Mode** (Popup menu, Default: Interp)
-  Determines how the differently blurred layers are combined.
-  - **Comp**: the closer layers are composited over the farther
-layers. This method often gives better results if you have objects
-at different depths overlapping each other with discontinuous values
-in your depth image. However, this option can be slower, and sometimes
-artifacts between layers are visible.
-  - **Interp**: the layers are interpolated using depth
-image values. This method gives smoother transitions between
-layers, and is usually better if there are no sharp changes in your
-depth image.
+  确定不同模糊层的合成方式。
+  - **Comp**: 近处层合成在远处层之上。若不同深度的物体相互遮挡且深度图存在不连续，此方式通常更好，但可能更慢，且偶尔会看到层间伪影。
+  - **Interp**: 依据深度图对各层进行插值。层间过渡更平滑，通常在深度图无剧烈变化时更佳。
 
-- **Kernel Center** (X & Y, Default: [0 0], Range: any)
-  The center point of the kernel; if you think of convolution as repeated stamping of the kernel at each point of the source, the center is where the stamp aligns with the source pixels it's stamped over. If you move the center to the right in the kernel, the whole result image will move to the left, and similarly up and down. This parameter is ignored if AutoCenter is on. It may be helpful to turn on Show Kernel while adjusting this parameter. Note that if Autocenter is off, the center point is always included in the kernel no matter what this param is set to.
+- **Kernel Center** (X 6 Y, Default: [0 0], Range: any)
+  内核的中心点；将卷积理解为在源图每一点上反复“盖章”内核，中心即内核与被卷积源像素对齐的位置。若将中心在内核中向右移动，整体结果图像会向左移动；上下同理。若 AutoCenter 为开，此参数被忽略。调整时可开启 Show Kernel 辅助。注意：若关闭 Autocenter，无论如何设置，该中心点总在内核中被包含。
 
 - **Autocenter** (Check-box, Default: on)
-  Automatically finds the center of the kernel image. Turning this on makes the effect ignore the Kernel Center parameter.
+  自动寻找内核图像的中心。开启后将忽略 Kernel Center 参数。
 
 - **Use Gamma** (Default: 1, Range: 0.1 or greater)
-  Values above 1 cause highlights in the source clip to keep their brightness after the convolution filter is applied.
+  大于 1 时，卷积后源素材中的高光可保持其亮度。
 
 - **Boost Highlights** (Default: 0, Range: 0 or greater)
-  The amount to increase the luma of the highlights in the source clip. Increase this parameter to blow out the highlights without affecting the darks or mid-tones.
+  提升源素材高光的亮度。增大此值可在不影响暗部与中间调的情况下“拉亮”高光。
 
 - **Highlight Threshold** (Default: 0.9, Range: 0 or greater)
-  The minimum luma value for highlights. Pixels brighter than this will be brightened according to the Boost Highlights parameter.
+  高光的最小亮度阈值。高于该阈值的像素将按 Boost Highlights 提升亮度。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果亮度。
 
 - **Threshold** (Default: 0, Range: 0 or greater)
-  Any source value below this will be treated as black. When combining the convolved result with the original, you can increase this value to only convolve bright areas of the source. Typically when using this parameter, you will also set Combine to Screen or Add to get a glare-like effect.
+  低于此值的源像素将视为黑色。将卷积结果与原图合成时，可增大该值以仅卷积源中较亮区域。通常使用此参数时，也会将 Combine 设为 Screen 或 Add 以获得眩光/辉光风格。
 
 - **Threshold Add Color** (Default rgb: [0 0 0])
-  This can be used to raise the threshold on a specific color and thereby reduce the convolved result generated on areas of the source clip containing that color.
+  可对特定颜色提高阈值，从而减少该颜色区域生成的卷积结果。
 
 - **Combine** (Popup menu, Default: Convolve Only)
-  Determines how the convolved image is combined with the original source.
-  - **Convolve Only**: Only show the convolved image. Use this option for a blur
-or defocus-like effect
-  - **Screen**: Screen the convolved image with the original source. Use this option for a
-glow or glare-like effect.
-  - **Add**: Add the convolved image to the original source.
-  - **Difference**: Show the difference between the convolved image and the source.
+  确定如何将卷积图与原图合成。
+  - **Convolve Only**: 仅显示卷积图。用于纯模糊/失焦风格。
+  - **Screen**: 将卷积图与原图相加并压暗（Screen）。用于辉光/眩光风格。
+  - **Add**: 将卷积图直接与原图相加。
+  - **Difference**: 显示卷积图与原图的差值。
 
 - **Mix With Source** (Default: 0, Range: 0 to 1)
-  Interpolates between the convolved result (0) and the original source (1). 0.1 can give a nice misty effect since it mixes only a little of the source in.
+  在卷积结果（0）与原图（1）之间插值。设为约 0.1 可得到轻雾感，仅混入少量原图。
 
-- **Edge Mode** (X & Y, Popup menu, Default: [ Transparent Transparent ])
-  Determines the behavior when accessing areas outside the source image.
-  - **Transparent**: Areas outside the source image are treated as transparent, which can produce
-transparency around the edges of the image.
-Select this for fastest rendering.
-  - **Repeat**: Repeats the last pixel outside the border of the image.
-  - **Reflect**: Reflects the image outside the border.
+- **Edge Mode** (X 6 Y, Popup menu, Default: [ Transparent Transparent ])
+  确定访问源图像边界之外的行为。
+  - **Transparent**: 边界之外视为透明，可能在图像边缘产生透明度；渲染最快。
+  - **Repeat**: 重复图像边界外的最后一个像素。
+  - **Reflect**: 在边界外镜像翻转图像。
 
 - **Size Rel Near** (Default: 1, Range: 0 or greater)
-  Scales the kernel size for parts of the image that are nearer than the focal plane.
+  缩放焦平面近侧区域的内核尺寸。
 
 - **Size Rel Far** (Default: 1, Range: 0 or greater)
-  Scales the kernel size for parts of the image that are farther away than the focal plane.
+  缩放焦平面远侧区域的内核尺寸。
 
 - **Kernel Threshold** (Default: 0.001, Range: 0 or greater)
-  Any kernel value below this will be treated as black. It's important for the edges of the kernel image to be completely black, or the result will have a grayish cast to it. If your kernel image may have a little noise in the black areas, turn up threshold a little to remove that background noise.
+  内核中低于此值的像素视为黑色。核图像边缘必须完全为黑，否则结果会有灰雾。若核图像的黑色区域有微弱噪声，可略微增大该阈值以去除背景噪声。
 
 - **Clamp Below Threshold** (Check-box, Default: on)
-  When turned on, values below the threshold are clamped to zero. This usually gives the best result. For certain special cases with partially-negative kernels, turning this off gives you additional flexibility in designing your kernel.
+  开启后，低于阈值的数值将被夹紧为 0，通常能得到更佳效果。对于部分为负值的特殊核图，关闭该选项可获得更多设计自由度。
 
-- **Kernel Crop1** (X & Y, Default: [-0.997 -0.747], Range: any)
-  The upper left corner of the kernel area. Parts of the kernel image outside the rectangle defined by Kernel Crop1 and Kernel Crop2 are assumed to be black. Making this area smaller to avoid processing the kernel's black edges can speed up the convolution somewhat. It may be helpful to turn on Show Kernel while adjusting this parameter. Note that if Autocenter is off, the center point is always included in the kernel no matter what this param is set to.
+- **Kernel Crop1** (X 6 Y, Default: [-0.997 -0.747], Range: any)
+  内核区域的左上角。Kernel Crop1 与 Kernel Crop2 围成的矩形之外被视为黑色。适当缩小该区域以避开核图的全黑边缘，可略微提升速度。调整时可开启 Show Kernel 辅助。注意：若关闭 Autocenter，无论如何设置，中心点总在内核中被包含。
 
-- **Kernel Crop2** (X & Y, Default: [0.997 0.747], Range: any)
-  The lower right corner of the kernel area.
+- **Kernel Crop2** (X 6 Y, Default: [0.997 0.747], Range: any)
+  内核区域的右下角。
 
 - **Autoscale Mode** (Popup menu, Default: Max Channel)
-  In convolution, either a larger or brighter kernel will make the result image brighter. The kernel must be auto-scaled or normalized so the result is, on average, as bright as the input. The autoscaling can be done in several ways, each of which is best in certain circumstances. With a monochrome kernel or with Color Kernel turned off, Max Channel, Luma, and Indep Channels all give the same result.
-  - **Max Channel**: Autoscales the kernel by summing the
-elements of each channel, and using whichever is brightest as the
-overall kernel scale factor. This normalizes a dim kernel to full
-brightness, and generally preserves the color of the kernel, but
-allows brightness variations in the dimmer channels to show in the
-result.
-  - **Luma**: Autoscales the kernel by summing the
-luminances of each kernel pixel. This method preserves changes in
-the kernel's hue, but normalizes the luma, so a brighter or darker
-kernel will have no effect. Use the Scale parameter to adjust the
-result brightness.
-  - **Indep Channels**: Independently normalizes each
-color channel of the kernel. A colored kernel will give a
-white/gray result with this method. Use this method if your kernel
-channels are independent of each other (i.e. different things going
-on in each of R, G, and B) but you want normalized results in each
-channel.
-  - **Count Nonzero**: Count how many kernel pixels are
-nonzero (brighter than black), but otherwise ignore how bright they
-are. This method is best if you want variations in kernel hue and
-luma to show up in the result. But blurring the kernel will give a
-dimmer result, since there will be more nonzero pixels.
-  - **Kernel Size**: Ignore the pixel
-entirely;
-only use the size of the kernel rectangle to auto-scale. Use this
-if you want all kernel variations to show up in the result, but
-don't use it if you intend to animate Kernel Crop1 and Crop2, as
-that would affect the result's brightness.
+  在卷积中，核越大或越亮，结果图就越亮。必须对核进行自动缩放/归一化，使结果平均亮度与输入相当。不同方式适用于不同场景。对单色核或关闭 Color Kernel 时，Max Channel、Luma、Indep Channels 的结果相同。
+  - **Max Channel**: 对各通道求和并选取最亮通道作为整体缩放因子。可将较暗的核归一化到满亮度，一般能保留核的颜色，但允许较暗通道的亮度变化体现在结果中。
+  - **Luma**: 对各像素的亮度求和进行归一化。保持色相变化，但归一化亮度，使更亮/更暗的核不影响整体亮度。用 Scale 参数调节结果亮度。
+  - **Indep Channels**: 分别对核的每个颜色通道做独立归一化。彩色核在此模式下会得到灰白结果。适用于 R/G/B 通道相互独立但希望各通道结果都被归一化的场景。
+  - **Count Nonzero**: 仅统计核中非黑像素的数量（忽略其亮度）。适合让核的色相与亮度变化都体现在结果中。但当你对核进行模糊时，非黑像素增多，会导致结果变暗。
+  - **Kernel Size**: 完全忽略像素值，只使用核矩形的面积进行归一化。若希望所有核形态变化都反映到结果中可用，但若动画 Kernel Crop1/2，将影响结果亮度，不建议配合动画使用。
 
 - **Zbuffer Use** (Popup menu, Default: Luma)
-  Determines how the ZBuffer input channels make a monochrome z image.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  决定如何由 ZBuffer 输入通道生成单通道深度图。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入完全不透明（alpha=1）时可稍微加快渲染。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按已预乘形式处理（颜色已按不透明度缩放）。渲染略快于 Normal，但结果也将是预乘形式，某些情况下精确性较差。
 
 - **Show Size** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Size parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Size 的屏幕控件。此参数仅在支持屏幕控件的 AE 与 Premiere 中出现。
 
 - **Show Kernel Crop** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Kernel Crop1 parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Kernel Crop1 的屏幕控件。此参数仅在支持屏幕控件的 AE 与 Premiere 中出现。

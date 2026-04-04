@@ -4,54 +4,51 @@ title: CutToDissolve
 
 ## S_CutToDissolve
 
-Turns a cut within a single clip into a dissolve.
-No heads or tails are required; just set the cut point (frame) and
-CutToDissolve creates a dissolve around that point.
-Note that this effect does not take two clips; just a single clip
-already containing a cut. The Cut Point param is key to making it
-work; whatever frames are on either side of that will be treated as
-the cut, and the dissolve will be created around them.
+将单个素材中的硬切转换为叠化过渡。
+不需要额外的头尾素材；只需设置切点（帧），
+CutToDissolve 就会在该切点周围创建叠化效果。
+请注意，此效果不需要两个素材；只需一个已包含硬切的素材。Cut Point 参数是使其正常工作的关键；切点两侧的帧将被视为硬切，叠化效果将围绕它们创建。
 
-In the Sapphire Time effects submenu.
+在 Sapphire Time effects 子菜单中。
 
 ![CutToDissolve](../_static/CutToDissolve.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Cut Point** (Integer, Default: 5, Range: 2 or greater)
-  The frame where the cut happens. Press the Find Cut pushbutton to automatically find the cut frame.
+  硬切发生的帧。按 Find Cut 按钮可自动查找切点帧。
 
 - **Find Cut** (Push-button)
-  Press this button to automatically search through the clip and attempt to find a cut, starting at the current Cut Frame. The frame number will be stored in Cut Point above. If no cuts are found within a few seconds, the search will stop. Click Find Cut again to continue searching.
+  按此按钮可自动搜索素材并尝试查找硬切，从当前 Cut Frame 开始搜索。帧号将存储在上方的 Cut Point 中。如果几秒内未找到切点，搜索将停止。再次点击 Find Cut 可继续搜索。
 
 - **Dissolve Length** (Integer, Default: 6, Range: 2 or greater)
-  The total length of the dissolve. Half will be on the left side of the cut, half on the right side.
+  叠化的总长度。一半在切点左侧，一半在右侧。
 
 - **Slow In Out** (Default: 2, Range: 0.1 to 10)
-  Set to 0 for a linear dissolve, increase to 2 for a more subtle slow-in-out transition.
+  设为 0 表示线性叠化，增大到 2 则产生更微妙的慢入慢出过渡效果。
 
 - **Gamma** (Default: 1, Range: 0.1 to 10)
-  Set to 1 for a video dissolve, increase a little for a more filmic look.
+  设为 1 表示视频叠化，稍微增大可获得更具胶片感的效果。
 
 - **Show** (Popup menu, Default: Result)
-  This can help you find the cut frame; set it to Cut Frames to see a split-screen view of the last outgoing frame and first incoming, based on Cut Point. You can also use it to only show one side or the other, with the interpolated dissolve frames.
-  - **Result**: Show the result clip, containing the dissolve.
-  - **Cut Frames**: Show a split-screen of the two cut frames, no matter where the play head currently is.
-  - **A**: Show the A (outgoing) side of the cut: as if the B side were black.
-  - **B**: Show the B (incoming) side of the cut: as if the A side were black.
+  此选项可帮助您找到切点帧；设为 Cut Frames 可查看基于 Cut Point 的最后一帧出画和第一帧入画的分屏视图。您也可以用它仅显示一侧或另一侧，以及插值的叠化帧。
+  - **Result**: 显示结果素材，包含叠化效果。
+  - **Cut Frames**: 显示两个切点帧的分屏视图，无论播放头当前在哪个位置。
+  - **A**: 显示切点的 A 侧（出画）：就好像 B 侧是黑色的。
+  - **B**: 显示切点的 B 侧（入画）：就好像 A 侧是黑色的。
 
 - **Split For Cut** (Default: 0, Range: -1 to 1)
-  Where to split the split-screen view of the Cut Point, when in Show:Cut Frames mode. Normally this has no effect.
+  在 Show:Cut Frames 模式下，分屏视图中切点的分割位置。通常此参数不起作用。
 

@@ -4,25 +4,21 @@ title: Transition
 
 ## S_Transition
 
-A Transition Builder which lets you combine multiple
-Sapphire effects to create new transitions, and can load presets
-from any transition. Click Load Preset or Edit Effect to get
-started.
+转场构建器，允许你组合多个 Sapphire 效果来创建新的转场，并可以从任何转场中加载预设。点击 Load Preset 或 Edit Effect 开始使用。
 
-In the Sapphire Builder effects submenu.
+在 Sapphire Builder 效果子菜单中。
 
 ![Transition](../_static/Transition.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此片段结束转场。
 
-- **Load Preset**: Push-button . Brings up the Preset Browser to browse all available presets for this effect.
+- **Load Preset**: Push-button 。打开预设浏览器，浏览此效果的所有可用预设。
 
-- **Save Preset**: Push-button . Brings up the Preset Save dialog to save a preset for this effect.
+- **Save Preset**: Push-button 。打开预设保存对话框，保存此效果的预设。
 
-- **Edit Effect**: Push-button . Brings up the Effect Builder to modify this effect.
-
+- **Edit Effect**: Push-button 。打开效果构建器，修改此效果。

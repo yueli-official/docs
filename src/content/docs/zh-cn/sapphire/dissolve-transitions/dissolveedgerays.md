@@ -4,166 +4,154 @@ title: DissolveEdgeRays
 
 ## S_DissolveEdgeRays
 
-Transitions between two input clips using animated edge rays.
-The clips dissolve into each other, and edge rays are added to the result.
-The edge rays ramps up and down over the duration of the effect.
-The edge rays animate by moving
-the origin of the edge rays across the screen along a line.
-The Dissolve Percent parameter should be animated
-to control the transition speed.
+使用动画边缘光线在两个输入素材之间转场。素材相互溶解，并在结果中添加边缘光线。边缘光线在效果持续时间内渐入和渐出。边缘光线通过沿一条线移动其原点来实现动画效果。应通过动画 Dissolve Percent 参数来控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveEdgeRays](../_static/DissolveEdgeRays.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Dissolve Speed** (Default: 3, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips. When set to 1, the dissolve takes place over the entire duration of the effect. When set higher, the dissolve is shorter, although the edge rays ramp-up and ramp-down still takes the entire duration. Setting this to 10 can make the transition snappier and more like a flash-frame cut.
+  从一个素材到另一个素材的溶解速度。设为 1 时，溶解在效果的整个持续时间内进行。设为更高值时，溶解更短，但边缘光线的渐入和渐出仍占据整个持续时间。设为 10 可使转场更快捷，更像闪帧切换。
 
 - **Rays Center** (X & Y, Default: [0 0], Range: any)
-  The location from which the rays beam outwards at the midpoint of the transition.
+  转场中点处光线向外发射的位置。
 
 - **Rays Center Speed** (Default: 0.2, Range: 0 to 2)
-  The speed at which the rays center moves across the screen.
+  光线中心在屏幕上移动的速度。
 
 - **Rays Center Angle** (Default: 0, Range: any)
-  The angle at which the rays center moves across the screen.
+  光线中心在屏幕上移动的角度。
 
 - **Rays Length** (Default: 0.75, Range: 2 or less)
-  The maximum length of the rays at the midpoint of the transition.
+  转场中点处光线的最大长度。
 
 - **Length Red** (Default: 1, Range: 0 or greater)
-  The relative length of the red channel of the rays. Adjust this, along with Length Green and Length Blue, to create color fringing effects.
+  光线红色通道的相对长度。调整此参数以及 Length Green 和 Length Blue 可创建色边效果。
 
 - **Length Green** (Default: 1, Range: 0 or greater)
-  The relative length of the green channel of the rays.
+  光线绿色通道的相对长度。
 
 - **Length Blue** (Default: 1, Range: 0 or greater)
-  The relative length of the blue channel of the rays.
+  光线蓝色通道的相对长度。
 
 - **Reverse Rays** (Default: 0, Range: 0 or greater)
-  Extend rays inward as well as outward. The length of the reversed rays is controlled by Rays Length as well as this parameter.
+  使光线向内和向外同时延伸。反向光线的长度由 Rays Length 和此参数共同控制。
 
 - **Rays Shrink** (Default: 0, Range: 0 to 1)
-  The fraction by which the length of the rays is reduced at the beginning and end of the transition.
+  在转场开始和结束时光线长度缩减的比例。
 
 - **Rays Brightness** (Default: 8, Range: 0 or greater)
-  The maximum brightness of the rays at the midpoint of the transition.
+  转场中点处光线的最大亮度。
 
 - **Rays Fade** (Default: 1, Range: 0 to 1)
-  The fraction by which the rays brightness is reduced at the beginning and end of the transition.
+  在转场开始和结束时光线亮度降低的比例。
 
 - **Blur Rays** (Default: 0, Range: 0 or greater)
-  Blur the rays only, before applied to the Source image.
+  仅模糊光线，在应用于源图像之前。
 
 - **Blur Rays Rel** (X & Y, Default: [1 1], Range: 0 or greater)
-  The relative horizontal and vertical blur widths applied to the rays. Set Blur Rays Rel X to 0 for a vertical-only blur, or set Blur Rays Rel Y to 0 for a horizontal-only blur.
+  应用于光线的相对水平和垂直模糊宽度。将 Blur Rays Rel X 设为 0 可获得仅垂直方向的模糊，将 Blur Rays Rel Y 设为 0 可获得仅水平方向的模糊。
 
 - **Rays Color** (Default rgb: [1 1 1])
-  Scales the color of the ray beams.
+  缩放光线束的颜色。
 
 - **Enable Dark Rays** (Check-box, Default: off)
-  Allow rays to darken the source as well as brighten it. If enabled, a dark Rays Color will cause rays to darken the source. A bright Rays Color will brighten the source as usual.
+  允许光线使源素材变暗和变亮。如果启用，暗色的 Rays Color 将使源素材变暗。亮色的 Rays Color 将照常使源素材变亮。
 
 - **Bias Outer Bright** (Default: 0, Range: 0 to 1)
-  Determines the variable amount of brightness along the rays. This is normally near 0 so the rays fade away at their outer ends, 0.5 causes equal brightness along the rays, and 1.0 causes maximum brightness at the ends.
+  决定沿光线的亮度变化量。通常接近 0，光线在外端逐渐消失；0.5 使光线沿途亮度均匀；1.0 使末端亮度最大。
 
 - **Rays Res** (Popup menu, Default: Full)
-  Selects the resolution factor for the rays. Higher resolutions give sharper rays, lower resolutions give smoother rays and faster processing. This 'Res' factor only affects the rays: the background is still combined with the rays at full resolution.
-  - **Full**: Full resolution is used.
-  - **Half**: The rays are calculated at half resolution.
-  - **Quarter**: The rays are calculated at quarter resolution.
+  选择光线的分辨率系数。较高的分辨率产生更锐利的光线，较低的分辨率产生更平滑的光线和更快的处理速度。此"Res"系数仅影响光线：背景仍以全分辨率与光线合成。
+  - **Full**: 使用全分辨率。
+  - **Half**: 光线以半分辨率计算。
+  - **Quarter**: 光线以四分之一分辨率计算。
 
 - **Show** (Popup menu, Default: Result)
-  Selects between output options.
-  - **Result**: outputs the rays over the Background.
-  - **Edges**: outputs only the edge image. This can useful during the
-adjustment of the edge or shimmer parameters.
+  在输出选项之间选择。
+  - **Result**: 在背景上输出光线。
+  - **Edges**: 仅输出边缘图像。这在调整边缘或闪烁参数时很有用。
 
 - **Edge Thickness** (Default: 0.022, Range: 0 or greater)
-  The thickness of the edges which generate the rays.
+  生成光线的边缘的厚度。
 
 - **Edge Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the edges which generate the rays.
+  缩放生成光线的边缘的亮度。
 
 - **Edge Subpixel** (Check-box, Default: on)
-  Enables subpixel Edge Thickness amounts. Turn this on you are animating Edge Thickness or if you want finer control of small values.
+  启用亚像素 Edge Thickness 值。如果你正在对 Edge Thickness 进行动画或需要更精细地控制小数值，请开启此选项。
 
 - **Shimmer Amp** (Default: 0.5, Range: 0 or greater)
-  Modulates the ray source image with this amount of noise texture to give the rays a shimmering look.
+  用此数量的噪声纹理调制光线源图像，使光线具有闪烁外观。
 
 - **Shimmer Freq** (Default: 40, Range: 0.01 or greater)
-  The frequency of the shimmer texture. Increase for a finer grained shimmer effect, decrease for larger, softer shimmer. This has no effect unless Shimmer Amp is positive.
+  闪烁纹理的频率。增大可获得更精细的闪烁效果，减小可获得更大、更柔和的闪烁。除非 Shimmer Amp 为正值，否则此参数无效。
 
 - **Shimmer Seed** (Default: 0.123, Range: 0 or greater)
-  Used to initialize the random number generator for the shimmer texture. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化闪烁纹理的随机数生成器。实际种子值本身不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。
 
 - **Shimmer Shift** (X & Y, Default: [0 0], Range: any)
-  Translation of the shimmer texture. This has no effect unless Shimmer Amp is positive.
+  闪烁纹理的平移。除非 Shimmer Amp 为正值，否则此参数无效。
 
 - **Shimmer Speed** (X & Y, Default: [0 0], Range: any)
-  Translation speed of the shimmer texture. If non-zero, the shimmering is automatically animated to shift at this rate.
+  闪烁纹理的平移速度。如果非零，闪烁将自动以此速率进行动画移动。
 
 - **Atmosphere Amp** (Default: 0, Range: 0 or greater)
-  Atmosphere gives the effect of rays shining through a dusty atmosphere and picking up light or getting shadowed. This parameter adjusts the amount, or amplitude, of the atmospheric effect. Zero gives smooth rays, higher values give more dusty look.
+  大气效果模拟光线穿过尘土飞扬的大气层并拾取光线或被遮蔽的效果。此参数调整大气效果的数量或振幅。零值产生平滑光线，较高值产生更具尘土感的外观。
 
 - **Atmosphere Freq** (Default: 1, Range: 0.1 to 20)
-  Controls the spatial frequency of the atmospheric noise. Turn this up higher to get finer details, turn down for broader overall variation.
+  控制大气噪声的空间频率。调高可获得更精细的细节，调低可获得更宽泛的整体变化。
 
 - **Atmosphere Detail** (Default: 0.6, Range: 0 to 1)
-  Controls the amount of fine detail in the atmosphere simulation. Decrease to get smoother atmosphere, increase for a more crunchy or grainy look.
+  控制大气模拟中精细细节的数量。降低可获得更平滑的大气效果，增加可获得更粗糙或颗粒感的外观。
 
 - **Atmosphere Speed** (Default: 1, Range: any)
-  The cloudy noise in the atmosphere evolves over time like real dust clouds; this parameter controls how fast the cloud pattern changes over time. Set to zero for a static pattern.
+  大气中的云状噪声会像真实的尘云一样随时间演变；此参数控制云图案随时间变化的速度。设为零可获得静态图案。
 
 - **Affect Alpha** (Default: 1, Range: 0 or greater)
-  If this value is positive the output Alpha channel will include some opacity from the rays. The maximum of the red, green, and blue ray brightness is scaled by this value and combined with the background Alpha at each pixel.
+  如果此值为正，输出的 Alpha 通道将包含来自光线的一些不透明度。红、绿、蓝光线亮度的最大值按此值缩放，并在每个像素处与背景 Alpha 合成。
 
 - **Rays From Alpha** (Default: 0, Range: 0 to 1)
-  Set to 1 to generate rays from the edges of the source's alpha channel instead of its RGB channels. This will typically reduce the rays generated from internal edges. Values between 0 and 1 interpolate between using the RGB and the Alpha.
+  设为 1 可从源素材的 Alpha 通道边缘而非 RGB 通道生成光线。这通常会减少从内部边缘生成的光线。0 到 1 之间的值在使用 RGB 和 Alpha 之间插值。
 
 - **Source Opacity** (Default: 1, Range: 0 to 1)
-  Scales the opacity of the Source input when combined with the rays. This does not affect the generation of the rays themselves.
+  缩放源输入与光线合成时的不透明度。这不影响光线本身的生成。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 - **Show Rays Center** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Rays Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  开启或关闭用于调整 Rays Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 - **Show Rays Center Angle** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Rays Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整 Rays Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

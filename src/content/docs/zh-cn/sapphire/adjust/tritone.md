@@ -4,112 +4,109 @@ title: TriTone
 
 ## S_TriTone
 
-Performs an interpolation between three specified
-colors using the brightness of the source clip.
+使用源素材的亮度在三个指定颜色之间进行插值。
 
-In the Sapphire Adjust effects submenu.
+在 Sapphire Adjust 效果子菜单中。
 
 ![TriTone](../_static/TriTone.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果和源输入之间进行插值。白色区域使用效果结果，黑色区域使用源素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，Mocha 遮罩的黑白将在应用效果之前反转。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素量膨胀或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下进行快速调整。
+  - **High**: 在 High 质量模式下获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  绕过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩同时提供给效果时，确定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Color2** (Default rgb: [1 1 1])
-  The color to use at the brighter source regions.
+  用于较亮源区域的颜色。
 
 - **Color1** (Default rgb: [0.5 0.5 0.5])
-  The color to use at the mid tone source regions.
+  用于中间调源区域的颜色。
 
 - **Color0** (Default rgb: [0 0 0])
-  The color to use at the darker source regions.
+  用于较暗源区域的颜色。
 
 - **Softness** (Default: 1, Range: 0.001 or greater)
-  The softness of the interpolation between the three colors. Use lower values for sharper contours between more solid regions of color.
+  三种颜色之间插值的柔和度。使用较低的值可在更实心的颜色区域之间获得更锐利的轮廓。
 
 - **Softness 12** (Default: 1, Range: 0.001 or greater)
-  Scales the softness of the interpolation between color1 and color2.
+  缩放 color1 和 color2 之间插值的柔和度。
 
 - **Softness 01** (Default: 1, Range: 0.001 or greater)
-  Scales the softness of the interpolation between color0 and color1.
+  缩放 color0 和 color1 之间插值的柔和度。
 
 - **Color2 At Bright** (Default: 1, Range: any)
-  The source brightness value to replace with color2.
+  要替换为 color2 的源亮度值。
 
 - **Color1 At Bright** (Default: 0.5, Range: any)
-  The source brightness value to replace with color1. This value should normally be in between the other two.
+  要替换为 color1 的源亮度值。此值通常应在其他两个值之间。
 
 - **Color0 At Bright** (Default: 0, Range: any)
-  The source brightness value to replace with color0.
+  要替换为 color0 的源亮度值。
 
 - **Mix With Source** (Default: 0, Range: 0 to 1)
-  Interpolates between the result (0) and the original source (1).
+  在结果（0）和原始源素材（1）之间进行插值。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用遮罩输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊遮罩输入。这可以在遮罩区域和非遮罩区域之间提供更平滑的过渡。除非提供了遮罩输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
-
+  如果启用，反转遮罩输入，使效果应用于遮罩为黑色而非白色的区域。除非提供了遮罩输入，否则无效。

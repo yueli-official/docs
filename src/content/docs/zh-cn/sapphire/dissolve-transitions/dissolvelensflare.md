@@ -4,75 +4,74 @@ title: DissolveLensFlare
 
 ## S_DissolveLensFlare
 
-Transitions between two input clips using an animated lens flare.
-The clips dissolve into each other, while a lens flare moves along a straight
-line. The lens flare grows and shrinks over the duration of the effect.
-The Dissolve Percent parameter should be animated
-to control the transition speed.
+使用动态镜头光晕在两个输入素材之间进行转场。
+素材相互溶解的同时，镜头光晕沿直线移动。
+光晕在效果持续期间逐渐增大和缩小。
+应对 Dissolve Percent 参数进行动画处理以控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveLensFlare](../_static/DissolveLensFlare.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Dissolve Speed** (Default: 3, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips. When set to 1, the dissolve takes place over the entire duration of the effect. When set higher, the dissolve is shorter, although the lens flare still changes size and brightness over the entire duration. Setting this to 10 can make the transition snappier and more like a flash-frame cut.
+  From 和 To 素材之间的溶解速度。设为 1 时，溶解在效果的整个持续时间内进行。设为更高值时，溶解时间更短，但镜头光晕仍在整个持续时间内改变大小和亮度。设为 10 可使转场更快捷，更像闪帧切换。
 
 - **Hotspot Center** (X & Y, Default: [0 0], Range: any)
-  The location through which the brightest spot of the flare passes at the center of the transition.
+  转场中心点处光晕最亮点经过的位置。
 
 - **Hotspot Speed** (Default: 1, Range: 0 to 2)
-  The speed at which the flare sweeps across the screen. Set this to zero to make the lens flare grow and shrink in place.
+  光晕在屏幕上扫过的速度。设为零可使镜头光晕在原地增大和缩小。
 
 - **Hotspot Angle** (Default: -25, Range: any)
-  The angle at which the flare sweeps across the screen.
+  光晕在屏幕上扫过的角度。
 
 - **Pivot** (X & Y, Default: [0 0], Range: any)
-  The elements of the flare will be in a line between the Hotspot and the Pivot locations. The Pivot location is in screen coordinates.
+  光晕的各元素将排列在 Hotspot 和 Pivot 位置之间的连线上。Pivot 位置使用屏幕坐标表示。
 
 - **Flare Brightness** (Default: 8, Range: 0 or greater)
-  The maximum brightness of the flare at the center of the transition.
+  转场中心点处光晕的最大亮度。
 
 - **Flare Fade** (Default: 1, Range: 0 to 1)
-  The fraction by which the brightness is reduced at the beginning and end of the transition.
+  在转场开始和结束时亮度降低的比例。
 
 - **Flare Width** (Default: 2.5, Range: 0 or greater)
-  The maximum width of the flare at the center of the transition.
+  转场中心点处光晕的最大宽度。
 
 - **Flare Shrink** (Default: 0.5, Range: 0 to 1)
-  The fraction by which the flare width is reduced at the beginning and end of the transition.
+  在转场开始和结束时光晕宽度缩小的比例。
 
 - **Rel Heights** (Default: 1, Range: 0 or greater)
-  Scales the vertical dimension of all the flare elements, making them elliptical instead of circular. This can also be adjusted using the Scale Widths Widget.
+  缩放所有光晕元素的垂直尺寸，使其变为椭圆形而非圆形。也可以使用 Scale Widths 控件调整此参数。
 
 - **Lens** (Default: 0, Range: 0 or greater)
-  The type of lens flare to apply. Custom lens flare types can also be made, or existing types modified, by editing the flare in the flare designer.
+  要应用的镜头光晕类型。也可以通过在光晕设计器中编辑光晕来创建自定义光晕类型或修改现有类型。
 
 
 ### Flare Details Parameters:
@@ -81,96 +80,87 @@ Rays Rotate:
 *Default:
 *0,
 *Range:
-*any.Rotates the ray elements of the lens flare, if any,
-in degrees.
+*any.以度为单位旋转镜头光晕的射线元素（如有）。
 
 Color:
 *Default rgb:
-*[1 1 1].Scales the color of all flare elements.
+*[1 1 1].缩放所有光晕元素的颜色。
 
 Gamma:
 *Default:
 *1,
 *Range:
-*0 or greater.Increasing gamma brightens the flare, and especially boosts
-the darker elements.
+*0 or greater.增加 gamma 可使光晕变亮，尤其能提升较暗元素的亮度。
 
 Saturation:
 *Default:
 *1,
 *Range:
-*any.Scales the color saturation of the flare elements.
-Increase for more intense colors. Set to 0 for a monochrome
-lens flare.
+*any.缩放光晕元素的色彩饱和度。
+增加可获得更鲜艳的颜色。设为 0 可获得单色镜头光晕。
 
 Hue Shift:
 *Default:
 *0,
 *Range:
-*-1 to 1.Shifts the hue of the flare, in revolutions
-from red to green to blue to red.
+*-1 to 1.以从红到绿到蓝再到红的旋转圈数来移动光晕的色相。
 
 Hotspot Color:
 *Default rgb:
-*[1 1 1].Scales the color of the hotspot elements only.
+*[1 1 1].仅缩放热点元素的颜色。
 
 Hotspot Brightness:
 *Default:
 *1,
 *Range:
-*0 or greater.Scales the brightness of the hotspot elements only.
+*0 or greater.仅缩放热点元素的亮度。
 
 Rays Brightness:
 *Default:
 *1,
 *Range:
-*0 or greater.Scales the brightness of the ray elements only.
+*0 or greater.仅缩放射线元素的亮度。
 
 Rays Num Scale:
 *Default:
 *1,
 *Range:
-*0 or greater.Increases or decreases the number of rays.
+*0 or greater.增加或减少射线的数量。
 
 Rays Length:
 *Default:
 *1,
 *Range:
-*0 or greater.Adjusts the length of the rays without changing their thickness, or
-changing the size of the other flare elements.
+*0 or greater.在不改变射线粗细或其他光晕元素大小的情况下，调整射线的长度。
 
 Rays Thickness:
 *Default:
 *1,
 *Range:
-*0 or greater.Adjusts the thickness of the individual rays within the flare.
+*0 or greater.调整光晕中各条射线的粗细。
 
 Other Brightness:
 *Default:
 *1,
 *Range:
-*0 or greater.Scales the brightness of all flare elements that
-are NOT at the hotspot location.
+*0 or greater.缩放所有不在热点位置的光晕元素的亮度。
 
 Other Width:
 *Default:
 *1,
 *Range:
-*0 or greater.Scales the width of all flare elements that
-are NOT at the hotspot location.
+*0 or greater.缩放所有不在热点位置的光晕元素的宽度。
 
 Other Color:
 *Default rgb:
-*[1 1 1].Scales the color of all flare elements that
-are NOT at the hotspot location.
+*[1 1 1].缩放所有不在热点位置的光晕元素的颜色。
 
 Blur Flare:
 *Default:
 *0,
 *Range:
 *0 or greater.
-If positive, the flare image is blurred by this amount
-before being combined with the background.
+如果为正值，光晕图像在与背景合成前将按此量进行模糊处理。
 
 ### Other Parameters:
 
@@ -178,88 +168,59 @@ Bg Brightness:
 *Default:
 *1,
 *Range:
-*0 or greater.Scales the brightness of the background before
-combining with the flare. If 0, the result will contain only the
-flare image over black.
+*0 or greater.在与光晕合成前缩放背景的亮度。如果为 0，结果将只包含黑色背景上的光晕图像。
 
 Combine:
 *Popup menu, Default: Screen
-*.Determines how the flare image is combined with the Background.
+*.决定光晕图像与背景的合成方式。
 *Screen:
-*performs a blend function which can help prevent
-overly bright results.*Add:
-*causes the flare image to be added to the background.
+*执行混合函数，可帮助防止结果过亮。*Add:
+*将光晕图像叠加到背景上。
 
 Tint Bg Whites:
 *Check-box, Default:
-*off.If this is enabled, the chroma of the flare
-is added only after the result is clamped to the maximum brightness.
-This allows the color of the flare image to still be visible even
-over bright white backgrounds. For the majority of backgrounds
-there will be no observable difference.
+*off.如果启用，仅在结果被限制到最大亮度后才添加光晕的色度。
+这样即使在明亮的白色背景上也能看到光晕图像的颜色。对于大多数背景，不会有明显差异。
 
 Affect Alpha:
 *Default:
 *1,
 *Range:
-*0 or greater.If this value is positive the output Alpha channel
-will include some opacity from the flare. The maximum of the red,
-green, and blue flare brightness is scaled by this value and combined
-with the Background Alpha at each pixel.
+*0 or greater.如果此值为正，输出的 Alpha 通道将包含来自光晕的部分不透明度。红、绿、蓝光晕亮度的最大值按此值缩放，并在每个像素处与背景 Alpha 合成。
 
 Performance:
 *Popup menu, Default: full flare
-*.Determine whether to render all elements or only select
-elements. Certain elements are selected in the Flare Designer to be
-important for the look of the Flare. Rendering with priority only
-should give the look and feel of the true LensFlare for previewing
-purposes but render quicker than the full flare.
+*.决定是渲染所有元素还是仅渲染选定元素。在光晕设计器中，某些元素被选定为对光晕外观至关重要的元素。仅渲染优先级元素应能在预览时呈现真实镜头光晕的外观和感觉，但渲染速度比完整光晕更快。
 *full flare:
-*Render all LensFlare elements.*priority only:
-*Only render a subset of the LensFlare
-elements for increased performance.
+*渲染所有镜头光晕元素。*priority only:
+*仅渲染部分镜头光晕元素以提高性能。
 
 Opacity:
 *Popup menu, Default: Normal
-*.Determines the method used for dealing with
-opacity/transparency.
+*.决定处理不透明度/透明度的方法。
 *All Opaque:
-*Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).*Normal:
-*Process opacity normally.*As Premult:
-*Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+*当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。*Normal:
+*正常处理不透明度。*As Premult:
+*按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 Show Flare Width:
 *Check-box, Default:
-*on.Turns on or off the screen user interface for adjusting the
-Hotspot Center parameter.This parameter only appears on AE and Premiere,
-where on-screen widgets are supported.
+*on.开启或关闭用于调整 Hotspot Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 Show Hotspot Center:
 *Check-box, Default:
-*on.Turns on or off the screen user interface for adjusting the
-Hotspot Center parameter.This parameter only appears on AE and Premiere,
-where on-screen widgets are supported.
+*on.开启或关闭用于调整 Hotspot Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 Show Hotspot Angle:
 *Check-box, Default:
-*on.Turns on or off the screen user interface for adjusting the
-Hotspot Center parameter.This parameter only appears on AE and Premiere,
-where on-screen widgets are supported.
+*on.开启或关闭用于调整 Hotspot Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 Show Rays Rotate:
 *Check-box, Default:
-*off.Turns on or off the screen user interface for adjusting the
-Hotspot Center parameter.This parameter only appears on AE and Premiere,
-where on-screen widgets are supported.
+*off.开启或关闭用于调整 Hotspot Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 Show Pivot:
 *Check-box, Default:
 *on.
-Turns on or off the screen user interface for adjusting the
-Pivot parameter.This parameter only appears on AE and Premiere,
-where on-screen widgets are supported.See general info for
-[Motion Blur](/en/sapphire/#motion-blur)
+开启或关闭用于调整 Pivot 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。参见
+[Motion Blur](/en/sapphire/#motion-blur) 的通用信息。

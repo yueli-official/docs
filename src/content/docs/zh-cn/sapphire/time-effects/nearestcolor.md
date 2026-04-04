@@ -4,50 +4,38 @@ title: NearestColor
 
 ## S_NearestColor
 
-Collects pixel colors from the input clip's frames that
-are closest to the given Match Color. This can create, for example, a
-background-only image from a clip with objects moving over a blue or
-green-screen background. It can also be used to accumulate the color of a
-moving object over a non-colored background. The collected colors are
-reinitialized whenever any non-consecutive frame is processed, either the
-first frame, reprocessing a given frame, or jumping to another frame. You
-must process multiple frames of a clip in a row to observe the effect, and
-clearing your image cache before rendering may sometimes be necessary.
+从输入素材的帧中收集最接近给定 Match Color 的像素颜色。例如，这可以从在蓝屏或绿屏背景上有对象移动的素材中创建仅背景的图像。它也可以用于在非着色背景上积累运动对象的颜色。每当处理任何非连续帧时，收集的颜色会重新初始化：包括第一帧、重新处理某一帧或跳转到另一帧。您必须连续处理素材的多个帧才能观察到效果，渲染前清除图像缓存有时可能是必要的。
 
-In the Sapphire Time effects submenu.
+在 Sapphire Time effects 子菜单中。
 
 ![NearestColor](../_static/NearestColor.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Steps** (Integer, Default: 15, Range: 2 or greater)
-  Adjusts the number of input frames from which color is collected.
+  调整从中收集颜色的输入帧数。
 
 - **Match Color** (Default rgb: [0 0 1])
-  Pixel colors are kept that are 'nearest' to this color.
+  保留"最接近"此颜色的像素颜色。
 
 - **Chroma Weight** (Default: 1, Range: 0 or greater)
-  The amount of influence hue has on the color matching. If this is 0, the pixels with the closest brightness to Match Color will be kept; if it is 2, the hue will have more influence and the brightness will have less.
+  色相对颜色匹配的影响程度。如果为 0，将保留与 Match Color 亮度最接近的像素；如果为 2，色相将有更大的影响而亮度的影响减小。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按照图像已为预乘形式（颜色已按不透明度缩放）进行处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将为预乘形式，有时不太准确。
 

@@ -4,122 +4,112 @@ title: DissolvePuddle
 
 ## S_DissolvePuddle
 
-Transitions between two input clips while warping
-by a circular pattern of waves. The first clip is warped away and
-faded out while the second clip is unwarped into place and faded in. The Dissolve
-Percent parameter should be animated to control the transition speed.
+在两个输入素材之间进行转场，同时使用圆形波纹图案进行扭曲变形。
+第一个素材被扭曲消失并淡出，而第二个素材从扭曲中还原并淡入。
+应对 Dissolve Percent 参数进行动画处理以控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolvePuddle](../_static/DissolvePuddle.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be warped during the transition unless this input is provided.
+- **Background**: 默认为无。以此素材结束转场。如果未提供此输入，将使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则背景在转场期间无法被扭曲。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve. The Slow In and Slow Out parameters, if positive, also adjust the transition ratio internally for a smoother start and/or end to the transition.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。如果 Slow In 和 Slow Out 参数为正值，它们也会在内部调整转场比例，使转场开始和/或结束更平滑。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  The location of the puddle center in screen coordinates relative to the center of the frame. This parameter can be set by enabling and moving the Center Widget. Note that moving the puddle center can also cause the puddle size to change so that the current value of Wipe Amt remains correct.
+  水坑中心相对于帧中心的屏幕坐标位置。可以通过启用并移动 Center 控件来设置此参数。请注意，移动水坑中心也可能导致水坑大小发生变化，以使 Wipe Amt 的当前值保持正确。
 
 - **Frequency** (Default: 5, Range: 0.01 or greater)
-  The frequency of the puddle pattern. Increase for more and smaller elements, or decrease for fewer and larger.
+  水坑图案的频率。增加可获得更多更小的元素，减少可获得更少更大的元素。
 
 - **Rel Height** (Default: 0.75, Range: 0.01 or greater)
-  The relative height of the concentric wave pattern.
+  同心波纹图案的相对高度。
 
 - **Amplitude** (Default: 0.2, Range: any)
-  Scales the amount of warping distortion.
+  缩放扭曲变形的程度。
 
 - **Rel Amp2** (Default: -1, Range: any)
-  The relative amplitude of the second input clip warping distortion. If this is positive instead of negative, the clip will be unwarped from the opposite direction.
+  第二个输入素材扭曲变形的相对幅度。如果此值为正而非负，素材将从相反方向解除扭曲。
 
 - **Rotate Puddle** (Default: 0, Range: any)
-  Rotates the puddle pattern by this many degrees after the Rel Height stretching has been applied. This has no effect when Rel Height is 1.
+  在应用 Rel Height 拉伸后，将水坑图案旋转此度数。当 Rel Height 为 1 时，此参数无效。
 
 - **Phase Start** (Default: 0, Range: any)
-  The phase shift of the waves.
+  波纹的相位偏移。
 
 - **Phase Speed** (Default: 1, Range: any)
-  The speed of the waves. If this is positive the waves automatically travel outwards from the center at this rate.
+  波纹的速度。如果为正值，波纹将以此速度自动从中心向外传播。
 
 - **Inner Radius** (Default: 0, Range: any)
-  The distance from the puddle center where the wave distortion is phased in. No waves are generated inside this radius.
+  从水坑中心到波浪扭曲开始逐渐加入的距离。在此半径内不产生波纹。
 
 - **Inner Softness** (Default: 0.1, Range: 0.0056 or greater)
-  The width of the region at the Inner Radius over which the wave distortion is phased in.
+  Inner Radius 处波浪扭曲逐渐加入的区域宽度。
 
 - **Outer Radius** (Default: 1.4, Range: 0 or greater)
-  The distance from the puddle center where the wave distortion is phased out. No waves are generated outside this radius.
+  从水坑中心到波浪扭曲开始逐渐消退的距离。在此半径外不产生波纹。
 
 - **Outer Softness** (Default: 0.42, Range: 0.0056 or greater)
-  The width of the region at the Outer Radius over which the wave distortion is phased out.
+  Outer Radius 处波浪扭曲逐渐消退的区域宽度。
 
 - **Slow In** (Default: 0.2, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加缓和。
 
 - **Slow Out** (Default: 0.2, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加缓和。
 
 - **Wrap** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the source images.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  决定访问源图像边界之外区域的方法。
+  - **No**: 边界外呈现黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。此方法通常边缘不太明显。
 
 - **Filter** (Check-box, Default: on)
-  If enabled, the image is adaptively filtered when it is resampled. This gives a better quality result when parts of the image are warped smaller.
+  如果启用，在重新采样时对图像进行自适应滤波。当图像的某些部分被扭曲得更小时，这可以提供更好的质量结果。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。如果您的图像在遮罩通道也有锐利边缘的地方有锐利的颜色变化，Normal 模式可能会给出更好的结果。
 
 - **Crop Input Parameters** (Default: 0, Range: 0 or greater)
-  These 4 parameters, Crop Top , Crop Bottom , Crop Left, and Crop Right , allow selecting a rectangular subsection of the input image to be processed. If the Wrap parameters are set to "No" the exposed borders will be transparent. If the Wrap is "Tile" or "Reflect" the source image is wrapped on the new cropped borders to fill the frame. This can make it easier to avoid artifacts due to distorting an image with bad edges.
+  这 4 个参数（Crop Top、Crop Bottom、Crop Left 和 Crop Right）允许选择要处理的输入图像的矩形子区域。如果 Wrap 参数设为"No"，暴露的边框将是透明的。如果 Wrap 为"Tile"或"Reflect"，源图像将在新裁剪的边框上进行环绕以填充帧。这可以更容易地避免因扭曲边缘不良的图像而产生的伪像。
 
 - **Show Outer Radius** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  开启或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 - **Show Inner Radius** (Check-box, Default: on)
-  Turns on or off the screen interface parameter for adjusting the Inner Radius. The value of the Inner Radius parameter must first be positive for this widget to be visible.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  开启或关闭用于调整 Inner Radius 的屏幕界面参数。Inner Radius 参数的值必须首先为正值才能看到此控件。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 - **Show Center** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  开启或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 - **Show Rotate Puddle** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  开启或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。
 
 - **Show Frequency** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

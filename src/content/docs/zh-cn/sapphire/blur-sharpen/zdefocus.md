@@ -4,166 +4,141 @@ title: ZDefocus
 
 ## S_ZDefocus
 
-Defocuses areas of the source clip by different amounts
-using depth values from a ZBuffer input. Separates the input into a
-number of depth layers and applies different amounts of defocus
-depending on each layer's depth.
-To use this effect, first set ZBuffer:Black Is Near or White Is
-Near according to your Z buffer, then adjust the Focus Depth and
-Depth Of Field parameters to get the look you want. To help set the
-Focus Depth, you can use Show: In Focus Zone.
+根据 ZBuffer 输入的深度值，对源素材的不同区域施加不同强度的失焦。将输入分成若干深度层，并根据各层深度应用不同的失焦量。使用此效果时，首先根据你的 Z 缓冲设置 ZBuffer: Black Is Near 或 White Is Near，然后调整 Focus Depth 与 Depth Of Field 以获得所需外观。为便于设置 Focus Depth，可使用 Show: In Focus Zone。
 
-In the Sapphire Blur+Sharpen effects submenu.
+位于 Sapphire Blur+Sharpen 效果子菜单中。
 
 ![ZDefocus](../_static/ZDefocus.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **ZBuffer**: Defaults to None. The input clip containing depth values for each Source pixel. These values should be in the range of black to white, and it is best if not anti-aliased. Normally black corresponds to the farthest objects and white to the nearest, though this can be adjusted using Z Buffer parameter.
+- **ZBuffer**: 默认为无。包含每个 Source 像素深度值的输入素材。取值应在黑到白之间，且最好不要抗锯齿。通常黑色表示最远处，白色表示最近处，可通过 Z Buffer 参数进行调整。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Focal Depth** (Default: 0, Range: any)
-  The depth of the focus plane; 0 is near and 1 is far. Areas with this Z value will be in focus. Objects near this depth may be in focus depending on the Depth of Field parameter. You can use Show: In Focus Zone to show the Focal Depth when adjusting. If the effect of this parameter seems backwards, you can invert the depth values using the Z Buffer parameter.
+  焦平面的深度；0 为近，1 为远。具有该 Z 值的区域将处于对焦状态。接近该深度的物体是否清晰取决于 Depth Of Field。可用 Show: In Focus Zone 显示以辅助调节。若该参数效果与预期相反，可用 Z Buffer 参数反转深度值。
 
 - **Depth Of Field** (Default: 0.1, Range: 0 to 1)
-  Specifies how wide a range of depths near the Focal Depth will be in focus. If the Focal Depth is 0.5 and Depth of Field is 0.2, all objects with Z values from 0.4 to 0.6 will be in focus. Set to zero to have only objects exactly at the Focal Depth in focus. You can use Show: In Focus Zone to show this when adjusting.
+  指定 Focal Depth 附近被视为清晰的深度范围宽度。例如 Focal Depth=0.5 且 Depth Of Field=0.2 时，Z 值在 0.4–0.6 的物体都将清晰。设为 0 则只有恰好在 Focal Depth 处的物体清晰。可用 Show: In Focus Zone 显示以辅助调节。
 
 - **Defocus Width** (Default: 0.35, Range: 0 or greater)
-  Scales the overall defocus width. This parameter can be adjusted using the Defocus Width Widget.
+  缩放总体失焦宽度。此参数可通过 Defocus Width Widget 调整。
 
 - **Rel Height** (Default: 1, Range: 0.01 or greater)
-  The relative height of the iris shape. If it is not 1, circles become ellipses, etc.
+  光圈形状的相对高度。若不为 1，则圆形会变为椭圆等。
 
 - **Z Buffer Type** (Popup menu, Default: White is Near)
-  How to interpret the values in the Z buffer.
-  - **Black is Near**: Black pixels in the Z buffer indicate that
-the object at that point is near (close to you), and white means far
-away.
-  - **White is Near**: White pixels in the Z buffer indicate that
-the object at that point is near (close to you), and black means far
-away.
+  解释 Z 缓冲中的取值方式。
+  - **Black is Near**: Z 缓冲中黑色表示近处，白色表示远处。
+  - **White is Near**: Z 缓冲中白色表示近处，黑色表示远处。
 
 - **Show** (Popup menu, Default: Result)
-  Selects the type of output
-  - **Result**: Shows the final result of the effect.
-  - **In Focus Zone**: Highlights the in-focus areas of the clip to make it easier to select the focal point and depth.
-  - **Shape**: Show the iris shape instead of the defocused image.
+  选择输出类型。
+  - **Result**: 显示效果最终结果。
+  - **In Focus Zone**: 高亮显示图像中的对焦区域，以便选择焦点与深度。
+  - **Shape**: 显示光圈形状而非失焦图像。
 
 - **Layers** (Integer, Default: 5, Range: 2 to 50)
-  The number of depth layers to separate the source into. More layers require more processing but give smoother results in Z. More layers are sometimes needed to avoid visible seams between the layers.
+  将源素材按深度分层的层数。层数越多处理越慢，但 Z 方向过渡更平滑。有时需要更多层以避免层间接缝可见。
 
 - **Layer Mode** (Popup menu, Default: Interp)
-  Determines how the differently blurred layers are combined.
-  - **Comp**: the closer layers are composited over the farther
-layers. This method often gives better results if you have objects
-at different depths overlapping each other with discontinuous values
-in your depth image. However, this option can be slower, and sometimes
-artifacts between layers are visible.
-  - **Interp**: the layers are interpolated using depth
-image values. This method gives smoother transitions between
-layers, and is usually better if there are no sharp changes in your
-depth image.
+  确定不同失焦层的合成方式。
+  - **Comp**: 近处层合成在远处层之上。若不同深度的物体相互遮挡且深度图存在不连续，此方式通常更好，但可能更慢，且偶尔会看到层间伪影。
+  - **Interp**: 依据深度图对各层进行插值。层间过渡更平滑，通常在深度图无剧烈变化时更佳。
 
 - **Shape** (Popup menu, Default: Circle)
-  Determines the shape of the simulated camera iris.
-  - **Circle**: round.
-  - **3 sides**: triangle.
-  - **4 sides**: square.
-  - **5 sides**: pentagon.
-  - **6 sides**: hexagon.
-  - **7 sides**: etc.
+  确定模拟相机光圈的形状。
+  - **Circle**: 圆形。
+  - **3 sides**: 三角形。
+  - **4 sides**: 正方形。
+  - **5 sides**: 五边形。
+  - **6 sides**: 六边形。
+  - **7 sides**: 等等。
 
 - **Roundness** (Default: 0, Range: any)
-  Modifies the shape of the simulated camera iris. A value of 1 produces a circle; 0 gives a flat-sided polygon with a number of sides given by the Shape parameter. Less than 0 causes the sides to squeeze inward giving a star shape, while a value greater than 1 causes the corners to squeeze inward, giving a flowery shape. Has no effect if the Shape is set to Circle.
+  修改模拟相机光圈的形状。值为 1 产生圆形；0 产生由 Shape 指定边数的平边多边形；小于 0 使边向内收缩产生星形；大于 1 使角向内收缩产生花状。若 Shape 为 Circle 则无效。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotates the iris shape.
+  旋转光圈形状。
 
 - **Bokeh** (Default: 0, Range: any)
-  Softens the outer edge of the iris shape, which gives a softer look to the defocused highlights. A negative value darkens the center of the iris shape, producing a ring-like defocus shape.
+  软化光圈外缘，使失焦高光更柔。负值会使形状中心变暗，产生环状失焦。
 
 - **Lens Noise** (Default: 0, Range: 0 or greater)
-  Increase to add noise to the iris shape, dirtying up the defocus a little. Can make the result more realistic. Turn up past 1 for a more stylistic result.
+  增加光圈形状噪声，使失焦略显“脏”。可提升真实感。大于 1 可获得更风格化的效果。
 
 - **Noise Freq** (Default: 40, Range: 0.01 or greater)
-  The frequency of the added noise. Ignored if Lens Noise is zero.
+  添加噪声的频率。若 Lens Noise 为 0 则忽略。
 
 - **Noise Freq Rel X** (Default: 1, Range: 0.01 or greater)
-  The relative horizontal frequency of the added iris noise. Increase to stretch it vertically or decrease to stretch it horizontally.
+  添加的光圈噪声的相对水平频率。增大以纵向拉伸；减小以横向拉伸。
 
 - **Noise Seed** (Default: 0.123, Range: 0 or greater)
-  The seed value for the added noise. To make the noise appear different on each frame, animate this to be different on each frame. The actual value doesn't matter; only that it's different.
+  噪声种子。要让每帧噪声不同，可逐帧动画此值。
 
 - **Use Gamma** (Default: 1, Range: 0.1 or greater)
-  Values above 1 cause highlights in the source clip to keep their brightness after the defocus is applied.
+  大于 1 时，源素材中的高光在失焦后保持其亮度。
 
 - **Boost Highlights** (Default: 0, Range: 0 or greater)
-  The amount to increase the luma of the highlights in the source clip. Increase this parameter to blow out the highlights without affecting the darks or mid-tones.
+  提升源素材高光的亮度。增大此值可在不影响暗部与中间调的情况下“拉亮”高光。
 
 - **Highlight Threshold** (Default: 0.9, Range: 0 or greater)
-  The minimum luma value for highlights. Pixels brighter than this will be brightened according to the Boost Highlights parameter.
+  高光的最小亮度阈值。高于该阈值的像素将按 Boost Highlights 提升亮度。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果亮度。
 
 - **Offset Darks** (Default: 0, Range: any)
-  Adds this gray value to the darker regions of the result. This can be negative to increase contrast.
+  向较暗区域添加该灰度值。可为负以增加对比度。
 
 - **Mix With Source** (Default: 0, Range: 0 to 1)
-  Interpolates between the defocused result and the original source. Set this to 1 for the original source.
+  在失焦结果与原始源之间插值。设为 1 可得到原图。
 
 - **Width Rel Near** (Default: 1, Range: 0 or greater)
-  Scales the defocus width for parts of the image that are nearer than the focal plane.
+  缩放焦平面近侧区域的失焦宽度。
 
 - **Width Rel Far** (Default: 1, Range: 0 or greater)
-  Scales the defocus width for parts of the image that are farther away than the focal plane.
+  缩放焦平面远侧区域的失焦宽度。
 
 - **Fog Near** (Default: 0, Range: 0 to 1)
-  The amount of fog to add to nearby (close) objects.
+  近处雾效强度。
 
 - **Fog Far** (Default: 0, Range: 0 to 1)
-  The amount of fog to add to far away objects.
+  远处雾效强度。
 
 - **Fog Color** (Default rgb: [0.5 0.5 0.5])
-  The fog color should normally match the sky or background color of the source clip. Use gray for mist, brown for smog, blue for underwater, etc.
+  雾的颜色通常应与源素材的天空或背景相匹配。灰色用于薄雾，棕色用于烟尘，蓝色用于水下等。
 
 - **Edge Mode** (Popup menu, Default: Reflect)
-  Determines the behavior when accessing areas outside the source image.
-  - **Transparent**: Areas outside the source image are treated as transparent, which can produce
-transparency around the edges of the image.
-Select this for fastest rendering.
-  - **Repeat**: Repeats the last pixel outside the border of the image.
-  - **Reflect**: Reflects the image outside the border.
+  确定访问源图像边界之外的行为。
+  - **Transparent**: 边界之外视为透明，可能在图像边缘产生透明度；渲染最快。
+  - **Repeat**: 重复图像边界外的最后一个像素。
+  - **Reflect**: 在边界外镜像翻转图像。
 
 - **Zbuffer Use** (Popup menu, Default: Luma)
-  Determines how the ZBuffer input channels make a monochrome z image.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  决定如何由 ZBuffer 输入通道生成单通道深度图。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Soft Borders** (Check-box, Default: off)
-  If enabled, transparent borders are added to the input image before processing. This allows the result to include soft edges beyond the original image size. When off, the effect only occurs within the frame and the result will retain an edge at the borders.
+  若启用，在处理前为输入图像添加透明边框，从而允许结果包含超出原始图像尺寸的柔和边缘。关闭时效果仅在画面内发生，结果边缘将保留边界。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入完全不透明（alpha=1）时可稍微加快渲染。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按已预乘形式处理（颜色已按不透明度缩放）。渲染略快于 Normal，但结果也将是预乘形式，某些情况下精确性较差。
 
 - **Show Defocus Width** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Defocus Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Defocus Width 的屏幕控件。此参数仅在支持屏幕控件的 AE 与 Premiere 中出现。

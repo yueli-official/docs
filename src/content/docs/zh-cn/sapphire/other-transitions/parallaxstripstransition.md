@@ -4,122 +4,108 @@ title: ParallaxStripsTransition
 
 ## S_ParallaxStripsTransition
 
-Applies a collection of 3d refracting glass
-strips to break up the image. The image is shifted within each strip, and
-the strips move over time. The strips gradually fade in or out, so the
-transition to the source is seamless.
-Note: because you can control the size of the strips, it's possible to set
-up a transition that won't completely cover the secondary (incoming or
-outgoing) clip, and so will have a 'pop' at the start or end.
-To ensure a smooth transition, go to the end of the transition where the
-strips are largest, select Show: Strips mode, and adjust the strip size to
-make sure they fully cover the image. That way none of the back clip will
-leak through on that frame. Alternatively, hit the 'Ensure Full Coverage'
-button, and the number of strips will automatically adjust to the minimum
-needed to fully cover the image.
+应用一组 3D 折射玻璃条来分解图像。图像在每个条带内偏移，条带随时间移动。条带逐渐淡入或淡出，因此与源图像的转场是无缝的。
+注意：由于您可以控制条带的大小，因此有可能设置的转场无法完全覆盖次要（传入或传出）片段，从而在开始或结束时产生"跳跃"。
+要确保平滑的转场，请转到条带最大的转场末尾，选择 Show: Strips 模式，并调整条带大小以确保它们完全覆盖图像。这样后方片段就不会在该帧上透漏出来。或者，点击"Ensure Full Coverage"按钮，条带数量将自动调整为完全覆盖图像所需的最小值。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![ParallaxStripsTransition](../_static/ParallaxStripsTransition.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此片段结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mode** (Popup menu, Default: Rectangular Strips)
-  Selects between several variations of ParallaxStripsTransition.
-  - **Rectangular Strips**: Strips shift across the transition and dissolve into the secondary clip.
-  - **Linear Strips**: Full-height strips grow to reveal the secondary clip.
+  在 ParallaxStripsTransition 的多个变体之间选择。
+  - **Rectangular Strips**: 条带在转场中滑动并溶解为次要片段。
+  - **Linear Strips**: 全高条带逐渐展开以显示次要片段。
 
 - **Dissolve Speed** (Default: 3, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips in Panning Strips.
+  Panning Strips 中 From 和 To 片段之间溶解的速度。
 
 - **Transition Dir** (Popup menu, Default: Transition Off to Bg)
-  Selects the direction of the transition.
-  - **Transition Off to Bg**: transitions from the current layer to the Background.
-  - **Transition On from Bg**: transitions from the Background to the current layer.
+  选择转场方向。
+  - **Transition Off to Bg**: 从当前图层转场到背景。
+  - **Transition On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Parallax Percent parameter.
+  启用后，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Parallax Percent 参数进行动画设置来手动执行转场。
 
 - **Trans Amount** (Default: 0.5, Range: 0 to 1)
-  The transition ratio between the From and To inputs. A value of 0 gives only the From input and a value of 1 gives only the To input. By default this parameter will automatically animate from 0 to 1 to perform a complete transition.
+  From 和 To 输入之间的转场比例。值为 0 时仅显示 From 输入，值为 1 时仅显示 To 输入。默认情况下，此参数将自动从 0 动画到 1 以执行完整的转场。
 
 - **Ensure Full Coverage** (Push-button)
-  Pressing this button adjusts the number of strips to the minimum needed to fully cover the last frame.
+  按下此按钮可将条带数量调整为完全覆盖最后一帧所需的最小值。
 
 - **N Strips** (Integer, Default: 50, Range: 1 to 1000)
-  Number of refracting strips to apply. The strips are positioned randomly all over the image.
+  要应用的折射条带数量。条带在整个图像上随机定位。
 
 - **Size** (Default: 0.35, Range: 0 or greater)
-  Size of the strips, in image-widths.
+  条带的大小，以图像宽度为单位。
 
 - **Rel Height** (Default: 0.3, Range: 0.001 or greater)
-  Height of the strips, relative to their width. Increase to make the strips taller.
+  条带的高度，相对于其宽度。增大以使条带更高。
 
 - **Size Vary** (X & Y, Default: [0.1 0.1], Range: 0 to 1)
-  Increase to make each strip randomly larger or smaller.
+  增大以使每个条带随机变大或变小。
 
 - **Angle** (Default: 0, Range: any)
-  Angle of the strips; 0 is horizontal. The strips move along their angle, and also shift the image along the same angle.
+  条带的角度；0 为水平。条带沿其角度移动，并沿相同角度偏移图像。
 
 - **Depth** (Default: 2, Range: 0 or greater)
-  Make the frontmost strips larger and move faster, so it appears they're in front, giving a 3d look.
+  使最前面的条带更大并移动得更快，使其看起来在前方，产生 3D 效果。
 
 - **Strip Speed** (Default: 0.4, Range: any)
-  Sets how fast the strips move along their major axis. Note that this doesn't affect how the image refracts, or shifts, within the strip, just how fast the strip itself moves.
+  设置条带沿其主轴移动的速度。请注意，这不会影响图像在条带内的折射或偏移方式，只影响条带本身的移动速度。
 
 - **Strip Speed Vary** (Default: 0, Range: 0 or greater)
-  Increase to give each strip a bit of randomness in its speed.
+  增大以使每个条带的速度有一些随机性。
 
 - **Shift Amount** (Default: 0.6, Range: any)
-  Sets how much the image shifts, or refracts, within each strip. Shifting is always along the major axis of the strip. As the effect progresses, the shift amount progressively goes to zero, seamlessly transitioning to the original clip. See the Fade and Slow Fade params for details.
+  设置图像在每个条带内偏移或折射的程度。偏移始终沿条带的主轴方向。随着效果的进行，偏移量逐渐降至零，无缝过渡到原始片段。有关详细信息，请参见 Fade 和 Slow Fade 参数。
 
 - **Shift Vary** (Default: 0, Range: 0 or greater)
-  Increase to make the amount of shift in each strip more random.
+  增大以使每个条带中的偏移量更加随机。
 
 - **All Strips Shift** (X & Y, Default: [0 0], Range: any)
-  Move all strips around on the screen.
+  在屏幕上移动所有条带。
 
 - **Z Dist** (Default: 1, Range: 0.001 or greater)
-  Zoom in or out on the source image, before applying the parallax strips.
+  在应用视差条带之前，对源图像进行缩放。
 
 - **Show** (Popup menu, Default: Result)
-  Show the effect result, or the strips themselves, which is useful during effect setup.
-  - **Result**: Show the result of the effect.
-  - **Strips Over Source**: Show each strip as a gray rectangle, with brightness set by depth.
-Uncovered areas show the source image.
-  - **Strips Over Black**: Show each strip as a gray rectangle, with brightness set by depth.
-Uncovered areas show as black.
+  显示效果结果或条带本身，这在效果设置期间很有用。
+  - **Result**: 显示效果的结果。
+  - **Strips Over Source**: 将每个条带显示为灰色矩形，亮度由深度设置。未覆盖的区域显示源图像。
+  - **Strips Over Black**: 将每个条带显示为灰色矩形，亮度由深度设置。未覆盖的区域显示为黑色。
 
 - **Slow Fade** (Default: 0.9, Range: 0 to 2)
-  Increase to make the fade in our out slower. Set to 0 for a linear fade.
+  增大以使淡入或淡出更慢。设置为 0 表示线性淡化。
 
 - **Slow Grow** (Default: 0.9, Range: 0 to 2)
-  Increase to make the strips start growing more slowly, for a nicer look. Set to 0 for a linear growth rate through the effect.
+  增大以使条带开始增长更慢，以获得更好的效果。设置为 0 表示在效果过程中线性增长。
 
 - **Wrap** (Popup menu, Default: Reflect)
-  Determines the method for accessing outside the borders of the source images.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问源图像边界之外区域的方法。
+  - **No**: 边界之外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。使用此方法时边缘通常不太明显。
 
 - **Seed** (Default: 0.123, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化随机数生成器。实际种子值本身不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。
 
 - **Flip Tiles** (Check-box, Default: off)
-  Flips tiles vertically if needed to achieve a consistent look.
-
+  如有需要，垂直翻转图块以获得一致的外观。

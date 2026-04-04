@@ -4,89 +4,82 @@ title: CardFlip
 
 ## S_CardFlip
 
-Transitions between two clips by sliding or spinning the outgoing clip
-to reveal the incoming clip behind it. The Amount parameter should be animated to control
-the transition speed. Adjusting Revolutions and Shift will give different kinds of transitions.
+通过滑动或旋转传出片段来显示其后面的传入片段，实现两个片段之间的转场。Amount 参数应进行动画设置以控制转场速度。调整 Revolutions 和 Shift 可以产生不同类型的转场效果。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![CardFlip](../_static/CardFlip.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be warped during the transition unless this input is provided.
+- **Background**: 默认为无。以此片段结束转场。如果未提供此输入，则使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则背景在转场过程中无法进行变形。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Card Percent parameter.
+  启用后，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Card Percent 参数进行动画设置来手动执行转场。
 
 - **Amount** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它确定 From 和 To 输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制擦除的时序。
 
 - **Slow In** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加平缓。
 
 - **Slow Out** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加平缓。
 
 - **Revolutions** (Integer, Default: 1, Range: 0 or greater)
-  The number of times the clip should flip over during the transition. Set this to 1 for a simple flip, 2 or more for a spinning transition, and 0 for a slide/shuffle.
+  转场期间片段翻转的次数。设置为 1 表示简单翻转，设置为 2 或更多表示旋转转场，设置为 0 表示滑动/洗牌。
 
 - **Spin Direction** (Popup menu, Default: Left)
-  The direction of spin.
-  - **Left**: horizontal spin to the left.
-  - **Right**: horizontal spin to the right.
-  - **Up**: vertical spin upward.
-  - **Down**: vertical spin downward.
+  旋转方向。
+  - **Left**: 向左水平旋转。
+  - **Right**: 向右水平旋转。
+  - **Up**: 向上垂直旋转。
+  - **Down**: 向下垂直旋转。
 
 - **Shift** (Default: 0, Range: 0 or greater)
-  Slides the clips horizontally or vertically away from each other during the first half of the transition, then toward each other in the second half. Both clips end in the same position in which they started. Set to a value or 1 or greater to prevent the clips from overlapping at the mid-point of the transition.
+  在转场的前半段，使片段水平或垂直方向相互远离滑动，然后在后半段相互靠近。两个片段最终停在其起始位置。设置为 1 或更大的值可以防止片段在转场中点重叠。
 
 - **Shift Direction** (Popup menu, Default: Left)
-  The direction of shifting.
-  - **Left**: The outgoing clip shifts left and the incoming clip shifts right.
-  - **Right**: The outgoing clip shifts right and the incoming clip shifts left.
-  - **Up**: The outgoing clip shifts up and the incoming clip shifts down.
-  - **Down**: The outgoing clip shifts down and the incoming clip shifts up.
+  偏移方向。
+  - **Left**: 传出片段向左偏移，传入片段向右偏移。
+  - **Right**: 传出片段向右偏移，传入片段向左偏移。
+  - **Up**: 传出片段向上偏移，传入片段向下偏移。
+  - **Down**: 传出片段向下偏移，传入片段向上偏移。
 
 - **Perspective Amount** (Default: 1, Range: 0.25 to 4)
-  Controls the amount of lens telescoping while the clips are flipping over. Increase for more 3D perspective.
+  控制片段翻转时的镜头伸缩程度。增大以获得更强的 3D 透视效果。
 
 - **Shadow Color** (Default rgb: [0 0 0])
-  The color of the drop shadow cast from the front clip onto the back clip.
+  前方片段投射到后方片段上的阴影颜色。
 
 - **Shadow Opacity** (Default: 2, Range: 0 or greater)
-  The opacity of the shadow, use values near 0 for subtle transparent shadows, or values near 1.0 for stronger shadows.
+  阴影的不透明度，使用接近 0 的值获得微妙的透明阴影，或使用接近 1.0 的值获得更强烈的阴影。
 
 - **Shadow Blur** (Default: 0.088, Range: 0 or greater)
-  Determines the softness of the shadow.
+  确定阴影的柔和度。
 
 - **Shadow Shift** (X & Y, Default: [0 0], Range: any)
-  The horizontal and vertical offset of the shadow.
+  阴影的水平和垂直偏移量。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时，使用此选项可以稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将以预乘形式呈现，有时不太准确。

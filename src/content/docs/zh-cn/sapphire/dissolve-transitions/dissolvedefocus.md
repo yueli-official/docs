@@ -4,117 +4,107 @@ title: DissolveDefocus
 
 ## S_DissolveDefocus
 
-Transitions between two input clips while defocusing each.
-The first clip is defocused and faded out while the second clip is
-brought into focus and faded in. The Dissolve
-Percent parameter should be animated to control the transition speed.
+在两个输入素材之间转场，同时对每个素材应用散焦。第一个素材被散焦并淡出，第二个素材恢复焦点并淡入。应通过动画 Dissolve Percent 参数来控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveDefocus](../_static/DissolveDefocus.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Defocus Width** (Default: 0.8, Range: 0 or greater)
-  The width of the defocus.
+  散焦的宽度。
 
 - **Defocus Rel From** (Default: 1, Range: 0 or greater)
-  Scales the amount of defocus applied to the first clip. Set to 0 to fade out with no defocus.
+  缩放应用于第一个素材的散焦量。设为 0 可在没有散焦的情况下淡出。
 
 - **Defocus Rel To** (Default: 1, Range: 0 or greater)
-  Scales the amount of defocus applied to the second clip. Set to 0 to fade in with no defocus.
+  缩放应用于第二个素材的散焦量。设为 0 可在没有散焦的情况下淡入。
 
 - **Rel Height** (Default: 1, Range: 0.01 or greater)
-  The relative height of the iris shape. If it is not 1, circles become ellipses, etc.
+  光圈形状的相对高度。如果不为 1，圆形会变成椭圆形，等等。
 
 - **Shape** (Popup menu, Default: Circle)
-  Determines the shape of the simulated camera iris.
-  - **Circle**: round.
-  - **3 sides**: triangle.
-  - **4 sides**: square.
-  - **5 sides**: pentagon.
-  - **6 sides**: hexagon.
-  - **7 sides**: etc.
+  决定模拟相机光圈的形状。
+  - **Circle**: 圆形。
+  - **3 sides**: 三角形。
+  - **4 sides**: 正方形。
+  - **5 sides**: 五边形。
+  - **6 sides**: 六边形。
+  - **7 sides**: 等等。
 
 - **Show Shape** (Check-box, Default: off)
-  Show the iris shape instead of the defocused image.
+  显示光圈形状而非散焦后的图像。
 
 - **Roundness** (Default: 0, Range: any)
-  Modifies the shape of the simulated camera iris. A value of 1 produces a circle; 0 gives a flat-sided polygon with a number of sides given by the Shape parameter. Less than 0 causes the sides to squeeze inward giving a star shape, while a value greater than 1 causes the corners to squeeze inward, giving a flowery shape. Has no effect if the Shape is set to Circle.
+  修改模拟相机光圈的形状。值为 1 产生圆形；0 产生由 Shape 参数决定边数的平边多边形。小于 0 时边向内挤压形成星形，大于 1 时角向内挤压形成花形。当 Shape 设为 Circle 时无效。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotates the iris shape.
+  旋转光圈形状。
 
 - **Bokeh** (Default: 0, Range: any)
-  Softens the outer edge of the iris shape, which gives a softer look to the defocused highlights. A negative value darkens the center of the iris shape, producing a ring-like defocus shape.
+  柔化光圈形状的外边缘，使散焦高光看起来更柔和。负值会使光圈形状中心变暗，产生环形散焦形状。
 
 - **Lens Noise** (Default: 0, Range: 0 or greater)
-  Increase to add noise to the iris shape, dirtying up the defocus a little. Can make the result more realistic. Turn up past 1 for a more stylistic result.
+  增大可向光圈形状添加噪声，使散焦效果略带脏感。可使结果更逼真。超过 1 可获得更具风格化的效果。
 
 - **Noise Freq** (Default: 40, Range: 0.01 or greater)
-  The spatial frequency of the noise.
+  噪声的空间频率。
 
 - **Noise Freq Rel X** (Default: 1, Range: 0.01 or greater)
-  The relative horizontal frequency of the added iris noise. Increase to stretch it vertically or decrease to stretch it horizontally.
+  添加的光圈噪声的相对水平频率。增大可使其垂直拉伸，减小可使其水平拉伸。
 
 - **Noise Seed** (Default: 0.123, Range: 0 or greater)
-  The seed value for the added noise. To make the noise appear different on each frame, animate this to be different on each frame. The actual value doesn't matter; only that it's different.
+  添加噪声的种子值。要使噪声在每帧看起来不同，请将此参数动画为每帧不同的值。实际值不重要；重要的是每帧不同。
 
 - **Use Gamma** (Default: 1, Range: 0.1 or greater)
-  Values above 1 cause highlights in the source clip to keep their brightness after the defocus is applied.
+  大于 1 的值会使源素材中的高光在应用散焦后保持其亮度。
 
 - **Boost Highlights** (Default: 0, Range: 0 or greater)
-  The amount to increase the luma of the highlights in the source clip. Increase this parameter to blow out the highlights without affecting the darks or mid-tones.
+  增加源素材中高光的亮度值。增大此参数可在不影响暗部或中间调的情况下使高光过曝。
 
 - **Hilight Threshold** (Default: 0.9, Range: 0 or greater)
-  The minimum luma value for highlights. Pixels brighter than this will be brightened according to the Boost Highlights parameter.
+  高光的最小亮度值。比此值更亮的像素将根据 Boost Highlights 参数被增亮。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Edge Mode** (Popup menu, Default: Reflect)
-  Determines the behavior when accessing areas outside the source image.
-  - **Transparent**: Areas outside the source image are treated as transparent, which can produce
-transparency around the edges of the image.
-Select this for fastest rendering.
-  - **Repeat**: Repeats the last pixel outside the border of the image.
-  - **Reflect**: Reflects the image outside the border.
+  决定访问源图像外部区域时的行为。
+  - **Transparent**: 源图像外部区域被视为透明，这可能在图像边缘产生透明效果。选择此选项可获得最快的渲染速度。
+  - **Repeat**: 在图像边界外重复最后一个像素。
+  - **Reflect**: 在边界外反射图像。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 - **Show Defocus Width** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Defocus Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整 Defocus Width 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

@@ -4,62 +4,56 @@ title: WipeDiffuse
 
 ## S_WipeDiffuse
 
-Wipes between two input clips with a pixel-diffusion process performed within
-the transition area. The Wipe Percent parameter should be animated to
-control the transition speed. The pixelated look of this effect depends on
-the image resolution, so it is recommended to test your final resolution
-before processing.
+在转场区域内执行像素扩散处理，实现两个输入素材之间的擦除转场。应对 Wipe Percent 参数设置动画以控制转场速度。此效果的像素化外观取决于图像分辨率，因此建议在处理前测试最终分辨率。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![WipeDiffuse](../_static/WipeDiffuse.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be diffused during the transition unless this input is provided.
+- **Background**: 默认为无。以此素材结束转场。如果未提供此输入，将使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则在转场过程中无法对背景进行扩散处理。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Wipe Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Wipe Percent 参数设置动画来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它决定了 From 和 To 输入之间的转场比例，通常应从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线以更精细地控制擦除时序。
 
 - **Edge Width** (Default: 1.4, Range: 0.0138 or greater)
-  The width of the transition area. This can be adjusted using the Wipe Widget.
+  转场区域的宽度。可以使用 Wipe Widget 调整此参数。
 
 - **Angle** (Default: 0, Range: any)
-  The angle of the wipe direction in degrees from the right. This can be adjusted using the Wipe Widget.
+  擦除方向的角度（从右侧起以度为单位）。可以使用 Wipe Widget 调整此参数。
 
 - **Diffuse Amount** (Default: 0.4, Range: 0 or greater)
-  The magnitude of the pixel diffusion.
+  像素扩散的幅度。
 
 - **Wrap** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the source images.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问源图像边界之外区域的方法。
+  - **No**: 边界之外显示为黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复图像的镜像副本。使用此方法边缘通常不太明显。
 
 - **Crop Input Parameters** (Default: 0, Range: 0 or greater)
-  These 4 parameters, Crop Top , Crop Bottom , Crop Left, and Crop Right , allow selecting a rectangular subsection of the input image to be processed. If the Wrap parameters are set to "No" the exposed borders will be transparent. If the Wrap is "Tile" or "Reflect" the source image is wrapped on the new cropped borders to fill the frame. This can make it easier to avoid artifacts due to distorting an image with bad edges.
+  这4个参数（Crop Top、Crop Bottom、Crop Left 和 Crop Right）允许选择要处理的输入图像的矩形子区域。如果 Wrap 参数设置为"No"，则暴露的边界将是透明的。如果 Wrap 设置为"Tile"或"Reflect"，则源图像将在新裁剪的边界上环绕以填充画面。这可以更容易地避免因扭曲具有不良边缘的图像而产生的伪影。
 
 - **Show Wipe** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Wipe Amt, Angle, and Edge Width parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Wipe Amt、Angle 和 Edge Width 参数的屏幕用户界面控件。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。

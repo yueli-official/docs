@@ -4,57 +4,43 @@ title: FlickerRemove
 
 ## S_FlickerRemove
 
-Removes temporal flickering from the Source clip.
-For example, old footage with uneven exposure times can be smoothed out with
-this effect. To use this effect, first position the corners of the rectangle
-over an area where the average brightness should remain constant. A middle
-or light gray area is best for this. Then select a Source frame that has the
-desired brightness within the rectangle, and hit the Set Hold Level button.
-When other frames are processed, their brightness will be scaled so the
-average brightness within the rectangle is equal to the Hold Level. You can
-keyframe different Hold Level values over time to account for desirable
-brightness changes.
+从源片段中移除时间上的闪烁。例如，曝光时间不均匀的旧素材可以通过此效果进行平滑处理。要使用此效果，首先将矩形的角定位到平均亮度应保持恒定的区域。中灰或浅灰区域最适合此操作。然后选择矩形内具有所需亮度的源帧，并点击 Set Hold Level 按钮。处理其他帧时，其亮度将被缩放，使矩形内的平均亮度等于保持级别。您可以随时间对不同的 Hold Level 值设置关键帧，以适应所需的亮度变化。
 
-In the Sapphire Time effects submenu.
+在 Sapphire Time 效果子菜单中。
 
 ![FlickerRemove](../_static/FlickerRemove.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to remove flicker from.
+- **Source**: 当前图层。要移除闪烁的片段。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Rect Corner1** (X & Y, Default: [-0.583 -0.441], Range: any)
-  The upper left corner of the rectangle which is used to measure the flicker, in screen coordinates.
+  用于测量闪烁的矩形的左上角，以屏幕坐标表示。
 
 - **Rect Corner2** (X & Y, Default: [0.583 0.441], Range: any)
-  The lower right corner of the rectangle which is used to measure the flicker, in screen coordinates.
+  用于测量闪烁的矩形的右下角，以屏幕坐标表示。
 
 - **Hold Level** (Default: 0.5, Range: 0.01 or greater)
-  The requested average output brightness for the area within the rectangle.
+  矩形内区域所请求的平均输出亮度。
 
 - **Set Hold Level** (Push-button)
-  Pressing this button has a side effect of setting the Hold Level parameter to the average Source brightness in the rectangle at the current frame. It causes the output to equal the Source at this frame. This button retains no value itself, and is turned back off immediately after being pushed.
+  按下此按钮会将 Hold Level 参数设置为当前帧矩形内源片段的平均亮度。这会使输出在此帧等于源。此按钮本身不保留任何值，按下后会立即恢复关闭状态。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 - **Show Rect** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Rect Corner corner parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整矩形角参数的屏幕用户界面控件。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

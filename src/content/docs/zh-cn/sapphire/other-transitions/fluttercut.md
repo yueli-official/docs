@@ -4,106 +4,98 @@ title: FlutterCut
 
 ## S_FlutterCut
 
-Transitions between two clips by rapidly cutting
-back and forth between them, optionally inserting solid colored or
-inverted frames as well. The cuts of each clip can get longer or shorter
-over the length of the transition.
+通过在两个片段之间快速来回切换来实现转场，还可以选择插入纯色或反色帧。每个片段的切换长度可以在转场过程中逐渐变长或变短。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![FlutterCut](../_static/FlutterCut.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此片段结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **From Start Frames** (Integer, Default: 2, Range: 1 or greater)
-  The number of frames of the From clip in the first cycle of the transition.
+  转场第一个周期中 From 片段的帧数。
 
 - **From End Frames** (Integer, Default: 2, Range: 1 or greater)
-  The number of frames of the From clip in the last cycle of the transition.
+  转场最后一个周期中 From 片段的帧数。
 
 - **From Acceleration** (Default: 1, Range: 1 or greater)
-  The speed at which cut lengths change. When set to 1, the lengths will change gradually between From Start Frames and From End Frames, reaching the final value on the last cycle. As the value increases, the cut length will change more quickly and reach its final value more quickly.
+  切换长度变化的速度。设置为 1 时，长度会在 From Start Frames 和 From End Frames 之间逐渐变化，在最后一个周期达到最终值。随着值增大，切换长度将更快地变化并更快地达到最终值。
 
 - **To Start Frames** (Integer, Default: 2, Range: 1 or greater)
-  The number of frames of the To clip in the first cycle of the transition.
+  转场第一个周期中 To 片段的帧数。
 
 - **To End Frames** (Integer, Default: 2, Range: 1 or greater)
-  The number of frames of the To clip in the last cycle of the transition.
+  转场最后一个周期中 To 片段的帧数。
 
 - **To Acceleration** (Default: 1, Range: 1 or greater)
-  The speed at which cut lengths change. When set to 1, the lengths will change gradually between To Start Frames and To End Frames, reaching the final value on the last cycle. As the value increases, the cut length will change more quickly and reach its final value more quickly.
+  切换长度变化的速度。设置为 1 时，长度会在 To Start Frames 和 To End Frames 之间逐渐变化，在最后一个周期达到最终值。随着值增大，切换长度将更快地变化并更快地达到最终值。
 
 
 ### Colored Frames Parameters:
 
 Color1:
 *Default rgb:
-*[0 0 0].A solid color added to the pattern.
+*[0 0 0].添加到模式中的纯色。
 
 Color1 Frames:
 *Integer, Default:
 *0,
 *Range:
-*0 or greater.The number of Color 1 frames in each cycle. This stays constant
-throughout the transition.
+*0 or greater.每个周期中 Color 1 帧的数量。在整个转场过程中保持不变。
 
 Color1 Position:
 *Popup menu, Default: After Both
-*.The position of the Color 1 frames within the pattern.
+*.Color 1 帧在模式中的位置。
 *Before From:
-*at the beginning of the cycle, before the From clip.*After From:
-*in the middle of the cycle, between the From and To clips.*After To:
-*at the end of the cycle, after the To clip.*After Both:
-*in the middle of the cycle, and again at the end (but not at the very end of the transition, after the last cycle).
+*在周期的开头，From 片段之前。*After From:
+*在周期的中间，From 和 To 片段之间。*After To:
+*在周期的末尾，To 片段之后。*After Both:
+*在周期的中间以及末尾（但不在转场最后一个周期之后的最末端）。
 
 Color2:
 *Default rgb:
-*[1 1 1].Another solid color added to the pattern.
+*[1 1 1].添加到模式中的另一种纯色。
 
 Color2 Frames:
 *Integer, Default:
 *0,
 *Range:
-*0 or greater.The number of Color 2 frames in each cycle. This stays constant
-throughout the transition.
+*0 or greater.每个周期中 Color 2 帧的数量。在整个转场过程中保持不变。
 
 Color2 Position:
 *Popup menu, Default: After Both
-*.The position of the Color 2 frames within the pattern.
+*.Color 2 帧在模式中的位置。
 *Before From:
-*at the beginning of the cycle, before the From clip.*After From:
-*in the middle of the cycle, between the From and To clips.*After To:
-*at the end of the cycle, after the To clip.*After Both:
-*in the middle of the cycle, and again at the end (but not at the very end of the transition, after the last cycle).
+*在周期的开头，From 片段之前。*After From:
+*在周期的中间，From 和 To 片段之间。*After To:
+*在周期的末尾，To 片段之后。*After Both:
+*在周期的中间以及末尾（但不在转场最后一个周期之后的最末端）。
 
 ### Invert Parameters:
 
 Invert:
 *Popup menu, Default: None
-*.Invert some frames.
+*.反转某些帧。
 *None:
-*nothing is inverted*From Clip:
-*only frames from the From clip are inverted.*To Clip:
-*only frames to the To clip are inverted.*Both Clips:
-*frames from the From and To clips are inverted,
-but solid color frames are not.*Custom Pattern:
-*overlays a custom pattern of inverted frames over the
-From/To/color pattern. The pattern of inverted frames is controlled by Invert Length,
-Normal Before, and Normal After.
+*不反转任何内容。*From Clip:
+*仅反转 From 片段的帧。*To Clip:
+*仅反转 To 片段的帧。*Both Clips:
+*反转 From 和 To 片段的帧，但不反转纯色帧。*Custom Pattern:
+*在 From/To/颜色模式上叠加自定义的反转帧模式。反转帧的模式由 Invert Length、Normal Before 和 Normal After 控制。
 
 ### Invert Pattern Parameters:
 
@@ -111,22 +103,17 @@ Invert Length:
 *Integer, Default:
 *1,
 *Range:
-*0 or greater.The number of consecutive frames to invert. The
-cycle of inverted frames is controlled by this parameter, Normal
-Before, and Normal After, and is independent of the From/To/Color cycle.
-Has no effect unless Invert is set to Custom Pattern.
+*0 or greater.要连续反转的帧数。反转帧的周期由此参数、Normal Before 和 Normal After 控制，并且独立于 From/To/Color 周期。除非 Invert 设置为 Custom Pattern，否则无效。
 
 Normal Before:
 *Integer, Default:
 *1,
 *Range:
-*0 or greater.Leave this number of normal, non-inverted frames before each group of
-inverted frames. Has no effect unless Invert is set to Custom Pattern.
+*0 or greater.在每组反转帧之前保留此数量的正常（非反转）帧。除非 Invert 设置为 Custom Pattern，否则无效。
 
 Normal After:
 *Integer, Default:
 *0,
 *Range:
 *0 or greater.
-Leave this number of normal, non-inverted frames after each group of
-inverted frames. Has no effect unless Invert is set to Custom Pattern.
+在每组反转帧之后保留此数量的正常（非反转）帧。除非 Invert 设置为 Custom Pattern，否则无效。

@@ -4,167 +4,157 @@ title: CloudsMultColor
 
 ## S_CloudsMultColor
 
-Generates a procedural noise texture like
-S_Clouds and tints the colors using an additional color noise
-texture. The Shift Speed parameters cause the texture to automatically
-translate over time.
+生成类似 S_Clouds 的程序化噪波纹理，并使用额外的颜色噪波纹理为其着色。Shift Speed 参数可使纹理随时间自动平移。
 
-In the Sapphire Render effects submenu.
+在 Sapphire Render 效果子菜单中。
 
 ![CloudsMultColor](../_static/CloudsMultColor.jpg)
 
 
 ### Inputs:
 
-- **Background**: The current layer. The clip to combine the clouds image with. This may be ignored if the Combine option is set to Clouds Only.
+- **Background**: 当前图层。用于与云朵图像合成的素材片段。如果 Combine 选项设置为 Clouds Only，则可能忽略此输入。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果与源输入之间进行插值。白色区域使用效果结果，黑色区域使用源素材片段。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，则在应用效果前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素数量膨胀或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，用于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩并将效果应用于整个源素材片段。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  绕过效果并显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩都提供给效果时，确定如何合并 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用
+Mocha 遮罩。
 
 - **Frequency** (Default: 2, Range: 0.01 or greater)
-  The spatial frequency of the clouds. Increase to zoom out, decrease to zoom in. Very high values of Frequency are clamped internally so the grain size is no smaller than a few pixels. If you want even finer grain use S_Grain or S_Clouds:Perspective instead.
+  云朵的空间频率。增大可缩小视图，减小可放大视图。非常高的 Frequency 值会在内部被限制，使颗粒大小不小于几个像素。如果需要更细的颗粒，请使用 S_Grain 或 S_Clouds:Perspective。
 
 - **Frequency Rel X** (Default: 0.4, Range: 0.01 or greater)
-  The relative horizontal frequency of the texture. Increase to stretch it vertically or decrease to stretch it horizontally.
+  纹理的相对水平频率。增大可垂直拉伸，减小可水平拉伸。
 
 - **Octaves** (Integer, Default: 8, Range: 1 to 10)
-  The number of summed layers of noise. Each octave is twice the frequency and half the amplitude of the previous. A single octave gives a smooth texture. Adding octaves makes the result approach a fractal (1/f) noise texture.
+  叠加的噪波层数。每个八度是前一个八度频率的两倍、振幅的一半。单个八度会产生平滑纹理。添加八度会使结果趋近于分形 (1/f) 噪波纹理。
 
 - **Seed** (Default: 0.234, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化随机数生成器。实际种子值本身并不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。
 
 - **Boiling Mode** (Check-box, Default: off)
-  When enabled, the clouds will boil, or evolve, over time. This mode takes slightly more computation but usually looks better.
+  启用后，云朵会随时间沸腾或演变。此模式需要稍多的计算量，但通常效果更好。
 
 - **Boil Details** (Default: 0.55, Range: 0 to 1)
-  Increases or decreases the amount of fine detail in the clouds. Decrease to get a smoother look, increase to get a more high-frequency, noisy look. Only used when Boiling Mode is enabled.
+  增加或减少云朵中的精细细节量。减小可获得更平滑的外观，增大可获得更高频、更多噪点的外观。仅在启用 Boiling Mode 时使用。
 
 - **Boil Speed** (Default: 1, Range: any)
-  Sets the speed of the cloud boiling. Zero gives no boiling at all. Only used when Boiling Mode is enabled.
+  设置云朵沸腾的速度。零表示完全不沸腾。仅在启用 Boiling Mode 时使用。
 
 - **Color Amount** (Default: 0.5, Range: 0 or greater)
-  The amplitude of the color tinting.
+  颜色着色的振幅。
 
 - **Color Freq** (Default: 1, Range: 0.01 or greater)
-  The frequency of the colors. Increase for finer color variation, decrease for softer color changes.
+  颜色的频率。增大可获得更精细的颜色变化，减小可获得更柔和的颜色变化。
 
 - **Color Freq Relx** (Default: 0.4, Range: 0.01 or greater)
-  The relative horizontal frequency of the colors. Increase to stretch vertically, decrease to stretch horizontally.
+  颜色的相对水平频率。增大可垂直拉伸，减小可水平拉伸。
 
 - **Color Octaves** (Integer, Default: 1, Range: 1 to 10)
-  The number of octaves of color noise to include. Each octave is twice the frequency and half the amplitude of the previous.
+  包含的颜色噪波八度数。每个八度是前一个八度频率的两倍、振幅的一半。
 
 - **Color Seed** (Default: 0.345, Range: 0 or greater)
-  The random number generator seed to use for the color noise. The actual seed value is not significant, but different values give different results.
+  用于颜色噪波的随机数生成器种子。实际种子值本身并不重要，但不同的值会产生不同的结果。
 
 - **Shift Start** (X & Y, Default: [0 0], Range: any)
-  Translation offset of the texture. Since the texture is procedurally generated it can be shifted with no repeating units or seams occurring.
+  纹理的平移偏移量。由于纹理是程序化生成的，可以平移而不会出现重复单元或接缝。
 
 - **Shift Speed** (X & Y, Default: [0.5 0], Range: any)
-  Translation speed of the texture. If non-zero, the result is automatically animated to shift at this rate. The result of animated Speed values may not be intuitive, so for variable speed motion it is usually best to set this to 0 and animate the Shift Start values instead.
+  纹理的平移速度。如果非零，结果会自动以此速率进行动画平移。动画化的 Speed 值结果可能不太直观，因此对于可变速度运动，通常最好将此值设为 0 并改为动画化 Shift Start 值。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Color** (Default rgb: [1 1 1])
-  Scales the color of the result.
+  缩放结果的颜色。
 
 - **Color Noise Color** (Default rgb: [1 1 1])
-  Scales the color of the noise used for tinting.
+  缩放用于着色的噪波颜色。
 
 - **Offset** (Default: 0, Range: any)
-  Adds this gray value to the result (or subtracts if negative). 0 has no effect, .5 is middle gray, and 1 is white.
+  将此灰度值添加到结果中（如果为负值则减去）。0 无效果，0.5 为中灰，1 为白色。
 
 - **Bg Brightness** (Default: 1, Range: 0 or greater)
-  The background brightness is scaled by this value before being combined with the clouds.
+  背景亮度在与云朵合成前按此值缩放。
 
 - **Combine** (Popup menu, Default: Clouds Only)
-  Determines how the texture is combined with the Background.
-  - **Clouds Only**: gives only the clouds texture with no Background.
-  - **Mult**: the texture is multiplied by the Background.
-  - **Add**: the texture is added to the Background.
-  - **Screen**: the texture is blended with the Background using a screen operation.
-  - **Difference**: the result is the difference between the texture and Background.
-  - **Overlay**: the texture is combined with the Background using an overlay function.
+  确定纹理如何与背景合成。
+  - **Clouds Only**: 仅输出云朵纹理，不包含背景。
+  - **Mult**: 纹理与背景相乘。
+  - **Add**: 纹理叠加到背景上。
+  - **Screen**: 纹理使用滤色操作与背景混合。
+  - **Difference**: 结果为纹理与背景的差值。
+  - **Overlay**: 纹理使用叠加功能与背景合成。
 
 - **Input Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时，使用此选项可稍快地渲染。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时可能不太准确。
 
 - **Output Opacity** (Popup menu, Default: Copy From Input)
-  Determines the opacity/transparency of the result. This effect does not process the opacity (alpha channel) of its input but it can either copy the opacity from the input, or output a fully opaque result.
-  - **All Opaque**: Makes the result fully opaque with no
-transparency.
-  - **Copy From Input**: Copies the opacity/transparency from
-the current layer given to this effect.
+  确定结果的不透明度/透明度。此效果不处理输入的不透明度（Alpha 通道），但可以从输入复制不透明度，或输出完全不透明的结果。
+  - **All Opaque**: 使结果完全不透明，没有透明度。
+  - **Copy From Input**: 从提供给此效果的当前图层复制不透明度/透明度。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊蒙版输入。这可以在蒙版区域和非蒙版区域之间提供更平滑的过渡。除非提供了蒙版输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
-
+  如果开启，则反转蒙版输入，使效果应用于蒙版为黑色而非白色的区域。除非提供了蒙版输入，否则无效。

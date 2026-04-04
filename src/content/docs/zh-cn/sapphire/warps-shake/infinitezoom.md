@@ -4,144 +4,126 @@ title: InfiniteZoom
 
 ## S_InfiniteZoom
 
-Zooms into endlessly repeating copies of an image,
-reminiscent of certain M.C. Escher drawings. Works best with clips
-with transparent edges, such as clocks or plates; or transparent
-centers, such as picture frames. Transparency can come from the
-source clip's alpha or the mask. Animate the Zoom param to get the
-full effect.
+无限缩放到图像的无尽重复副本中，
+让人联想到某些 M.C. Escher 的画作。最适合具有透明边缘的素材，
+例如时钟或盘子；或具有透明中心的素材，例如相框。透明度可以来自
+源素材的 Alpha 或遮罩。对 Zoom 参数设置动画以获得完整效果。
 
-In the Sapphire Distort effects submenu.
+在 Sapphire Distort 效果子菜单中。
 
 ![InfiniteZoom](../_static/InfiniteZoom.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Mask**: Defaults to None. Defines the transparent area of the source.
+- **Mask**: 默认为无。定义源素材的透明区域。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用之前按此量模糊 Mocha 遮罩。这可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，Mocha 遮罩的黑白将在应用效果之前反转。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用之前按此像素量膨胀或侵蚀 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，用于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，以获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩都提供给效果时，确定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Transparent Area** (Popup menu, Default: Outside)
-  If the source is transparent in the center, such as a picture frame, set this to Inside. Otherwise if it's transparent around the edges (such as a green-screen person or masked flower), or there is no transparency, set this to Outside.
-  - **Inside**: Use this for picture frames or anything
-with a transparent center region where you want the copies to appear
-inside the empty space. This makes the copies appear behind the original.
-  - **Outside**: Use this for flowers, plates or clocks
-where the background outside the object has been made transparent,
-so the smaller copies appear in front of the original. This is also
-the mode to use if you have no transparency at all.
+  如果源素材中心是透明的（例如相框），请将此设置为 Inside。如果边缘是透明的（例如绿幕人物或带遮罩的花朵），或没有透明度，请将此设置为 Outside。
+  - **Inside**: 用于相框或任何具有透明中心区域的素材，使副本出现在空白区域内。这使副本出现在原始图像后面。
+  - **Outside**: 用于花朵、盘子或时钟等对象外部背景已设为透明的素材，使较小的副本出现在原始图像前面。如果没有任何透明度，也使用此模式。
 
 - **Shrink Per Level** (Default: 0.5, Range: 0.001 to 0.9)
-  How much to shrink each smaller copy compared to the previous larger copy. 0.8 means each level will be 0.8 times as big as the previous, so small values here mean the copies are much smaller at each level. Large values give closer spacing between levels.
+  每个较小副本相对于前一个较大副本的缩小量。0.8 表示每一级将是前一级的 0.8 倍大小，因此较小的值意味着每一级的副本明显更小。较大的值使级别之间的间距更近。
 
 - **Zoom** (Default: 1, Range: 0.001 or greater)
-  Overall zoom of the image. You usually want to animate this param to get the infinite-zoom effect. Linear animation should give a nice smooth zoom.
+  图像的整体缩放。通常需要对此参数设置动画以获得无限缩放效果。线性动画应能产生平滑的缩放效果。
 
 - **Zoom Center** (X & Y, Default: [0 0], Range: any)
-  Center point of the infinite zoom. You can get interesting looks by animating this at the same time as Zoom. This parameter can be adjusted using the Zoom Center Widget.
+  无限缩放的中心点。在缩放的同时对此参数设置动画可以获得有趣的效果。此参数可以使用 Zoom Center 控件调整。
 
 - **Twist** (Default: 0, Range: -5 or greater)
-  Amount of twist between levels. Increase or decrease to get spiral zooms. In No Spiral mode, this is in units of 30 degrees per unit of twist. In the spiral modes, it's nonlinear, so best to adjust by eye.
+  级别之间的扭曲量。增大或减小以获得螺旋缩放效果。在 No Spiral 模式下，以每单位扭曲 30 度为单位。在螺旋模式下是非线性的，最好通过目视调整。
 
 - **Spiral Strands** (Popup menu, Default: 1 Counterclockwise)
-  When set to No Spiral, the effect makes direct copies of the image at each level (they still may be twisted, depending on Twist). With the other spiral options, it warps each copy of the image so each level joins seamlessly to the next level in an ever-decreasing spiral.
-  - **No Spiral**: The image isn't warped to provide a
-continuous spiral. This is good for picture frames.
-  - **1 Clockwise**: Warps the image to create one
-continuous spiral strand in a clockwise direction.
-  - **1 Counterclockwise**: Warps the image to create one
-continuous spiral strand in a counterclockwise direction.
-  - **2 Clockwise**: Warps the image to create two
-continuous spiral strands in a clockwise direction.
-  - **2 Counterclockwise**: Warps the image to create two
-continuous spiral strands in a counterclockwise direction.
+  设置为 No Spiral 时，效果在每个级别制作图像的直接副本（根据 Twist 值仍可能有扭曲）。使用其他螺旋选项时，会变形每个图像副本，使每个级别无缝连接到下一个级别，形成不断缩小的螺旋。
+  - **No Spiral**: 不对图像进行变形以提供连续螺旋。适用于相框。
+  - **1 Clockwise**: 变形图像以创建一个顺时针方向的连续螺旋线。
+  - **1 Counterclockwise**: 变形图像以创建一个逆时针方向的连续螺旋线。
+  - **2 Clockwise**: 变形图像以创建两个顺时针方向的连续螺旋线。
+  - **2 Counterclockwise**: 变形图像以创建两个逆时针方向的连续螺旋线。
 
 - **Rotate** (Default: 0, Range: any)
-  Overall rotation of the result image.
+  结果图像的整体旋转。
 
 - **Shift** (X & Y, Default: [0 0], Range: any)
-  Overall shift of the result image.
+  结果图像的整体偏移。
 
 - **Wrap** (Popup menu, Default: No)
-  Sets what happens with pixels outside the source image. Reflect can be useful with Transparent Area: Inside to fill in small black areas, and Tile can lead to interesting effects when used with Transparent Area: Outside, as long as the image has some transparency around the edges. If your clip has no transparency, leave this at the default (None).
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  设置源图像边界外像素的处理方式。Reflect 在 Transparent Area: Inside 时可用于填充小黑色区域，Tile 在 Transparent Area: Outside 时可产生有趣的效果，只要图像边缘有一些透明度。如果素材没有透明度，请保持默认值（None）。
+  - **No**: 在边界外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复图像的镜像副本。使用此方法时边缘通常不太明显。
 
 - **Matte Use** (Popup menu, Default: Luma)
-  Determines how the Matte input channels are used to make a monochrome matte.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Matte 输入通道来创建单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Invert Matte** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果启用，反转 Matte 输入，使效果应用于 Matte 为黑色而非白色的区域。除非提供了 Matte 输入，否则此选项无效。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可略微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项也比 Normal 模式渲染略快，但结果也将是预乘形式，有时不太准确。
 
 - **Show Zoom Center** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Zoom Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Zoom Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，支持屏幕控件。
 

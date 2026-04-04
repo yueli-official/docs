@@ -4,61 +4,58 @@ title: ShowBadColors
 
 ## S_ShowBadColors
 
-Identifies all pixels that fall outside a given
-color range, and flags them with the same color so they can be seen
-easily.
+识别所有超出给定颜色范围的像素，并用相同的颜色标记它们以便于查看。
 
-In the Sapphire Adjust effects submenu.
+在 Sapphire Adjust 效果子菜单中。
 
 ![ShowBadColors](../_static/ShowBadColors.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Min** (Default: 0, Range: 0 to 1)
-  Minimum color value. Pixels where any color channel is less than this value will be marked with Low Color.
+  最小颜色值。任何颜色通道小于此值的像素将被标记为 Low Color。
 
 - **Max** (Default: 1, Range: 0 to 1)
-  Maximum color value. Pixels where any color channel is greater than this value will be marked with High Color.
+  最大颜色值。任何颜色通道大于此值的像素将被标记为 High Color。
 
 - **Min Luma** (Default: 0, Range: 0 to 1)
-  Minimum luminance value. Pixels where the luminance is less than this value will be marked with Low Color.
+  最小亮度值。亮度小于此值的像素将被标记为 Low Color。
 
 - **Max Luma** (Default: 1, Range: 0 to 1)
-  Maximum luminance value. Pixels where the luminance is greater than this value will be marked with High Color.
+  最大亮度值。亮度大于此值的像素将被标记为 High Color。
 
 - **Min Chroma** (Default: 0, Range: 0 to 1)
-  Minimum chrominance value. Pixels where the chroma is less than this value will be marked with Low Color.
+  最小色度值。色度小于此值的像素将被标记为 Low Color。
 
 - **Max Chroma** (Default: 1, Range: 0 to 1)
-  Maximum chrominance value. Pixels where the chroma is greater than this value will be marked with High Color.
+  最大色度值。色度大于此值的像素将被标记为 High Color。
 
 - **Min Rgb** (Default rgb: [0 0 0])
-  Minimum values per color channel. Pixels where any color channel is below the corresponding channel of this parameter will be marked with Low Color.
+  每个颜色通道的最小值。任何颜色通道低于此参数对应通道的像素将被标记为 Low Color。
 
 - **Max Rgb** (Default rgb: [1 1 1])
-  Maximum values per color channel. Pixels where any color channel is above the corresponding channel of this parameter will be marked with High Color.
+  每个颜色通道的最大值。任何颜色通道高于此参数对应通道的像素将被标记为 High Color。
 
 - **High Color** (Default rgb: [1 0 0])
-  Color to mark high pixels with. Any pixel that is above one of the Max parameters will be set to this color.
+  用于标记高值像素的颜色。任何高于 Max 参数之一的像素将被设置为此颜色。
 
 - **Low Color** (Default rgb: [0 0 1])
-  Color to mark low pixels with. Any pixel that is below one of the Min parameters will be set to this color.
+  用于标记低值像素的颜色。任何低于 Min 参数之一的像素将被设置为此颜色。
 
 - **Output Matte** (Check-box, Default: off)
-  If enabled, output a matte which is set to white for bad pixels and black otherwise.
+  如果启用，输出一个遮罩，其中不良像素为白色，其他像素为黑色。
 
 - **Invert Matte** (Check-box, Default: off)
-  If enabled, the matte is inverted to show black for bad pixels and white otherwise. Has no effect unless Output Matte is also enabled.
-
+  如果启用，遮罩被反转，不良像素显示为黑色，其他像素显示为白色。除非同时启用了 Output Matte，否则无效。

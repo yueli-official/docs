@@ -4,105 +4,97 @@ title: EdgeBlur
 
 ## S_EdgeBlur
 
-Finds the edges within the Matte clip, and blurs the
-Source clip at those edges. Use the Show Edges option to view
-which areas will receive the blur while adjusting the edge parameters.
-Then adjust Blur Width to control the amount of blur.
+查找 Matte 素材中的边缘，并在这些边缘处模糊源素材。使用 Show Edges 选项可查看在调整边缘参数时哪些区域将接受模糊。然后调整 Blur Width 以控制模糊量。
 
-In the Sapphire Blur+Sharpen effects submenu.
+位于 Sapphire Blur+Sharpen 效果子菜单中。
 
 ![EdgeBlur](../_static/EdgeBlur.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Edge_Source**: Defaults to None. The clip used to determine the edge locations where the Source should be blurred. If this input is not connected, the main Source clip is used instead to determine the edges.
+- **Edge_Source**: 默认为无。用于确定源素材应被模糊的边缘位置的素材。如果未连接此输入，则使用主源素材来确定边缘。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此量模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素量膨胀或腐蚀 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，便于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，只显示 Mocha 遮罩本身。
 
 - **Blur Width** (Default: 0.112, Range: 0 or greater)
-  The width of the blur. This should normally not be much greater than the Edge Width. This parameter can be adjusted using the Blur Width Widget.
+  模糊的宽度。通常不应大于 Edge Width。此参数可通过 Blur Width Widget 调整。
 
 - **Edge Width** (Default: 0.112, Range: 0 or greater)
-  The width of the edge area to blur within.
+  要在其中进行模糊的边缘区域宽度。
 
 - **Edge Strength** (Default: 0.5, Range: 0 or greater)
-  The strength of the edges determines the amount of the blurred source that replaces the edges.
+  边缘的强度决定了替换边缘的模糊源素材的量。
 
 - **Edge Threshold** (Default: 0, Range: 0 or greater)
-  Determines which edges are blurred. Increase to remove minor edges or speckles.
+  确定哪些边缘被模糊。增大可去除次要边缘或斑点。
 
 - **Show** (Popup menu, Default: Result)
-  Selects between output options.
-  - **Result**: outputs the Source image with blurred edges.
-  - **Edges**: outputs only the edge image. This can useful during the
-adjustment of the edge parameters.
+  在输出选项之间选择。
+  - **Result**: 输出带有模糊边缘的源图像。
+  - **Edges**: 仅输出边缘图像。在调整边缘参数时很有用。
 
 - **Subpixel** (Check-box, Default: on)
-  Enables blurring by subpixel amounts. Use this for smoother animation of the Blur Width or Edge Width parameters.
+  启用亚像素量的模糊。使用此选项可使 Blur Width 或 Edge Width 参数的动画更平滑。
 
 - **Matte Use** (Popup menu, Default: Luma)
-  Determines how the Matte input channels are used to make a monochrome matte.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Matte 输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且无透明度 (alpha=1) 时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已为预乘形式处理（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时可能不太准确。
 
 - **Show Blur Width** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Blur Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Blur Width 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些软件支持屏幕控件。
 

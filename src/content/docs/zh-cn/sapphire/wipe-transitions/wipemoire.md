@@ -4,152 +4,137 @@ title: WipeMoire
 
 ## S_WipeMoire
 
-Performs a wipe transition between two input clips
-using a pattern of combined concentric rings.
-The Wipe Percent parameter should be animated to control the transition
-speed.
-The Phase Speed
-and Moire Speed parameters cause the rings to automatically animate
-over time.
-Increase the Grad Add parameter to make the timing of the
-pattern move across the screen during the wipe.
-Increase the Border Width parameter to draw a border at the
-wipe transition edges.
+在两个输入素材之间执行擦除过渡，使用由同心圆组合形成的摩尔纹样式。应对 Wipe Percent 进行动画以控制过渡速度。Phase Speed 与 Moire Speed 参数会使环纹在时间上自动动画。增大 Grad Add 可使图案的时间相位在擦除过程中横向移动。增大 Border Width 可在擦除边缘绘制边框。
 
-In the Sapphire Transitions effects submenu.
+位于 Sapphire Transitions 效果子菜单中。
 
 ![WipeMoire](../_static/WipeMoire.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始过渡。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束过渡。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择过渡方向。
+  - **Wipe Off to Bg**: 从当前图层过渡到 Background。
+  - **Wipe On from Bg**: 从 Background 过渡到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Wipe Percent parameter.
+  若启用，将在图层的首帧与末帧之间自动执行一次过渡。关闭时，需要通过动画 Wipe Percent 手动控制过渡。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  仅在关闭 Auto Trans 时生效。决定 From 与 To 两个输入之间的过渡比例。通常将其从 0 动画到 1 以完成一次完整的过渡。可通过曲线精细控制擦除节奏。
 
 - **Edge Softness** (Default: 0.02, Range: 0 or greater)
-  The width of the transition edges. Larger values will cause softer, less visible edges in the wipe pattern.
+  过渡边缘的宽度。值更大时，擦除图案边界更柔、更不明显。
 
 - **A Center** (X & Y, Default: [-0.208 -0.231], Range: any)
-  The center location of the A ring pattern.
+  A 环纹图案的中心位置。
 
 - **B Center** (X & Y, Default: [0.208 0.231], Range: any)
-  The center location of the B ring pattern.
+  B 环纹图案的中心位置。
 
 - **Frequency** (Default: 5, Range: 0.5 or greater)
-  The frequency of the moire pattern. Increase for more and smaller elements, or decrease for fewer and larger.
+  摩尔纹的频率。增大得到更多且更细小的环纹；减小得到更少且更大的环纹。
 
 - **Phase Start** (Default: 0, Range: any)
-  The phase of the ring patterns. Increase to shift outwards from the centers, or decrease to shift inwards toward the centers. The phase parameters are relative to the period of the rings (1/frequency) so changing any by exactly 1 should give the same result again.
+  环纹的起始相位。增大向中心外侧偏移，相反则向中心内侧偏移。相位参数与环纹周期（1/频率）相关，改变 1 个单位应得到相同外观。
 
 - **Phase Speed** (Default: 1, Range: any)
-  The automatic change in phase during the transition period.
+  过渡期间相位的自动变化速度。
 
 - **Moire Phase** (Default: 0, Range: any)
-  The relative start phase of the two ring patterns. Shifts the A ring pattern out and the B ring pattern in by the same amount, causing changes in the moire pattern itself.
+  两组环纹之间的相对起始相位。将 A 环纹外移、B 环纹内移等量，从而改变摩尔纹本身。
 
 - **Moire Speed** (Default: 0, Range: any)
-  Automatic change in the relative phase of the two ring patterns during the transition.
+  过渡期间两组环纹相对相位的自动变化速度。
 
 - **A Rel Freq** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies of the A ring pattern.
+  缩放 A 组环纹的频率。
 
 - **A Rel Width** (Default: 1, Range: 0.2 or greater)
-  The relative horizontal size of the A ring pattern. Increase for wider ring shapes, decrease for taller ones.
+  A 组环纹的相对水平尺寸。增大使环纹更“宽”，减小使其更“高”。
 
 - **A Rotate** (Default: 0, Range: any)
-  Rotation in degrees of the A ring pattern. Note that this will have no effect when A Rel Width is 1.
+  A 组环纹的旋转角度（度）。当 A Rel Width=1 时此项无效。
 
 - **B Rel Freq** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies of the B ring pattern.
+  缩放 B 组环纹的频率。
 
 - **B Rel Width** (Default: 1, Range: 0.2 or greater)
-  The relative horizontal size of the B ring pattern. Increase for wider ring shapes, decrease for taller ones.
+  B 组环纹的相对水平尺寸。增大使环纹更“宽”，减小使其更“高”。
 
 - **B Rotate** (Default: 0, Range: any)
-  Rotation in degrees of the B ring pattern. Note that this will have no effect when A Rel Width is 1.
+  B 组环纹的旋转角度（度）。当 A Rel Width=1 时此项无效。
 
 - **Grad Add** (Default: 0, Range: -10 to 10)
-  If positive, a gradient will be added to the timing of the transition pattern so it moves across the screen during the wipe. This parameter can be adjusted using the Wipe Widget if enabled, but the value must be positive to make this widget visible.
+  若为正，会在过渡纹理的时间上叠加一个梯度，使其在擦除过程中横向移动。启用 Wipe Widget 后可调整，需先设为正值以显示控件。
 
 - **Grad Angle** (Default: 0, Range: any)
-  The direction of the wipe gradient in degrees. This will have no effect unless Grad Add is positive. The Wipe Widget also allows adjusting this parameter.
+  擦除梯度的方向（度）。仅当 Grad Add 为正时生效。Wipe Widget 也可调整该参数。
 
 - **Border Width** (Default: 0, Range: 0 or greater)
-  If positive, a colored border is drawn at the wipe transition edges, using the border color, opacity, softness, and shift parameters below.
+  若为正，则在擦除边界处绘制一条有色边框；受下列边框颜色、不透明度、柔化与偏移等参数影响。
 
 - **Border Color** (Default rgb: [0.75 0 0])
-  The color of the border. This has no effect unless Border Width is positive.
+  边框颜色。仅当 Border Width 为正时生效。
 
 - **Border Opacity** (Default: 1, Range: 0 to 1)
-  The opacity of the border. Decrease to make the border transparent and allow the image under it to show through. This has no effect unless Border Width is positive.
+  边框不透明度。减小可使其透明，让下方图像显现。仅当 Border Width 为正时生效。
 
 - **Border Softness** (Default: 0, Range: 0 or greater)
-  The softness of the border edges. This has no effect unless Border Width is positive.
+  边框边缘柔和度。仅当 Border Width 为正时生效。
 
 - **Border Shift** (Default: 0, Range: any)
-  Shifts the border ahead of or behind the transition edge. This has no effect unless Border Width is positive.
+  将边框向过渡边缘前后偏移。仅当 Border Width 为正时生效。
 
 - **Border Glow** (Default: 0, Range: 0 or greater)
-  Adds a glow along the border of the wipe. The value determines the brightness of the glow.
+  在擦除边界叠加辉光。数值决定辉光亮度。
 
 - **Glow Width** (Default: 0.1, Range: 0 or greater)
-  The width of the glowing border.
+  辉光的宽度。
 
 - **Width Red** (Default: 1, Range: 0 or greater)
-  Scales the red glow width. If the red, green, and blue widths are all equal, the glow will match Glow Color. Otherwise it will have a fringe of varying color.
+  红色辉光宽度缩放。若 RGB 三色宽度相等，辉光会与 Glow Color 一致；否则将出现彩色边缘。
 
 - **Width Green** (Default: 1.2, Range: 0 or greater)
-  Scales the green glow width.
+  绿色辉光宽度缩放。
 
 - **Width Blue** (Default: 1.4, Range: 0 or greater)
-  Scales the blue glow width.
+  蓝色辉光宽度缩放。
 
 - **Glow Color** (Default rgb: [1 1 1])
-  The color of the glowing border.
+  辉光颜色。
 
 - **Noise Amp** (Default: 1, Range: 0 or greater)
-  The amount of noise to add to the glowing border.
+  叠加到辉光上的噪声强度。
 
 - **Noise Freq** (Default: 16, Range: 0.1 to 20)
-  The spatial frequency of the noise.
+  噪声的空间频率。
 
 - **Noise Speed** (Default: 2, Range: any)
-  The speed with which the noise changes or boils over time.
+  噪声随时间变化（翻滚/沸腾）的速度。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明（alpha=1）时渲染略快。
+  - **Normal**: 正常处理透明度。
+  - **As Premult**: 按已预乘形式处理（颜色已按不透明度缩放），渲染略快，但结果也将是预乘形式，精确性可能略差。
 
 - **Show Wipe** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Grad Add, Grad Angle, and Wipe Percent parameters. The value of the Grad Add parameter must first be positive for this widget to be visible.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Grad Add、Grad Angle 与 Wipe Percent 的屏幕控件。须先将 Grad Add 设为正值以显示该控件。此参数仅在支持屏幕控件的 AE 与 Premiere 中出现。
 
 - **Show Glow Width** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Glow Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Glow Width 的屏幕控件。此参数仅在支持屏幕控件的 AE 与 Premiere 中出现。

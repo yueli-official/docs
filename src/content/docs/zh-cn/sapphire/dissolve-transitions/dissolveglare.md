@@ -4,107 +4,104 @@ title: DissolveGlare
 
 ## S_DissolveGlare
 
-Transitions between two input clips using animated glares.
-The clips dissolve into each other, and glares are added to the result.
-The glare size and brightness ramps up and down over the duration of the effect.
+使用动画眩光在两个输入素材之间转场。素材相互溶解，并在结果中添加眩光。眩光的大小和亮度在效果持续时间内渐入和渐出。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveGlare](../_static/DissolveGlare.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Dissolve Speed** (Default: 3, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips. When set to 1, the dissolve takes place over the entire duration of the effect. When set higher, the dissolve is shorter, although the edge rays ramp-up and ramp-down still takes the entire duration. Setting this to 10 can make the transition snappier and more like a flash-frame cut.
+  从一个素材到另一个素材的溶解速度。设为 1 时，溶解在效果的整个持续时间内进行。设为更高值时，溶解更短，但边缘光线的渐入和渐出仍占据整个持续时间。设为 10 可使转场更快捷，更像闪帧切换。
 
 - **Size** (Default: 2.4, Range: 0 or greater)
-  Scales the size of the glares.
+  缩放眩光的大小。
 
 - **Rel Height** (Default: 1, Range: 0 or greater)
-  Scales the vertical dimension of the glares, making them elliptical instead of circular.
+  缩放眩光的垂直尺寸，使其变为椭圆形而非圆形。
 
 - **Style** (Default: 0, Range: 0 or greater)
-  The style of glare to apply. Custom glare types can also be made, or existing types modified, by editing the "s_glares.text" file.
+  要应用的眩光风格。也可以通过编辑 "s_glares.text" 文件来创建自定义眩光类型或修改现有类型。
 
 - **Convolve** (Check-box, Default: off)
-  Determines the method for applying the glares to the Background.
+  决定将眩光应用于背景的方法。
 
 - **Threshold** (Default: 0.5, Range: 0 or greater)
-  Dissolves are generated from locations in the source clip that are brighter than this value. A value of 0.9 causes dissolves at only the brightest spots. A value of 0 causes dissolves for every non-black area.
+  从源素材中亮度超过此值的位置生成溶解效果。值为 0.9 时仅在最亮的位置产生效果。值为 0 时在每个非黑色区域都产生效果。
 
 - **Threshold Add Color** (Default rgb: [0 0 0])
-  This can be used to raise the threshold on a specific color and thereby reduce the dissolves generated on areas of the source clip containing that color.
+  可用于提高特定颜色的阈值，从而减少源素材中包含该颜色的区域所产生的溶解效果。
 
 - **Threshold Blur** (Default: 0, Range: 0 or greater)
-  Increase to smooth out the areas creating dissolves. This can be used to eliminate dissolves generated from small speckles or to simply soften the dissolves. Increasing this may put more highlights below the threshold and darken the resulting dissolves, but you can decrease the Threshold parameter to compensate.
+  增大可平滑产生溶解效果的区域。可用于消除由小斑点产生的溶解效果或简单地柔化溶解效果。增大此值可能会使更多高光低于阈值并使结果变暗，但可以降低 Threshold 参数来补偿。
 
 - **Brightness** (Default: 3, Range: 0 or greater)
-  Scales the brightness of all the dissolves.
+  缩放所有溶解效果的亮度。
 
 - **Scale Colors** (Default rgb: [1 1 1])
-  Scales the color of the dissolves. The colors and brightnesses of the dissolves are also affected by the Source and Matte inputs.
+  缩放溶解效果的颜色。溶解效果的颜色和亮度也受源素材和遮罩输入的影响。
 
 - **Saturation** (Default: 1, Range: -2 to 8)
-  Scales the color saturation of the glare elements. Increase for more intense colors. Set to 0 for monochrome glares.
+  缩放眩光元素的颜色饱和度。增大可获得更强烈的颜色。设为 0 可获得单色眩光。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotates the ray elements of the glares, if any, in degrees.
+  旋转眩光的光线元素（如果有），以度为单位。
 
 - **Rays Num Scale** (Default: 1, Range: 0 or greater)
-  Increases or decreases the number of rays.
+  增加或减少光线的数量。
 
 - **Rays Length** (Default: 1, Range: 0 or greater)
-  Adjusts the length of the rays without changing their thickness.
+  调整光线的长度而不改变其粗细。
 
 - **Rays Thickness** (Default: 1, Range: 0 or greater)
-  Adjusts the thickness of the individual rays.
+  调整单条光线的粗细。
 
 - **Blur Glare** (Default: 0, Range: 0 or greater)
-  The glare is blurred by this amount before being combined with the background.
+  眩光在与背景合成之前按此数值进行模糊。
 
 - **Hue Shift** (Default: 0, Range: any)
-  Shifts the hue of the glare, in revolutions from red to green to blue to red.
+  偏移眩光的色相，以从红到绿到蓝到红的旋转为单位。
 
 - **Glare Res** (Popup menu, Default: Full)
-  Selects the resolution factor for the glares. Higher resolutions give sharper glares, lower resolutions give smoother glares and faster processing. This 'Res' factor only affects the glares: the background is still combined with the glares at full resolution.
-  - **Full**: Full resolution is used.
-  - **Half**: The glares are calculated at half resolution.
-  - **Quarter**: The glares are calculated at quarter resolution.
+  选择眩光的分辨率系数。较高的分辨率产生更锐利的眩光，较低的分辨率产生更平滑的眩光和更快的处理速度。此"Res"系数仅影响眩光：背景仍以全分辨率与眩光合成。
+  - **Full**: 使用全分辨率。
+  - **Half**: 眩光以半分辨率计算。
+  - **Quarter**: 眩光以四分之一分辨率计算。
 
 - **Affect Alpha** (Default: 1, Range: 0 or greater)
-  If this value is positive the output Alpha channel will include some opacity from the dissolves. The maximum of the red, green, and blue dissolve brightness is scaled by this value and combined with the background Alpha at each pixel.
+  如果此值为正，输出的 Alpha 通道将包含来自溶解效果的一些不透明度。红、绿、蓝溶解亮度的最大值按此值缩放，并在每个像素处与背景 Alpha 合成。
 
 - **Glare From Alpha** (Default: 0, Range: 0 to 1)
-  Set to 1 to generate dissolves from the alpha channel of the source input instead of the RGB channels. In this case the dissolves will not pick up color from the source and will typically be brighter. Values between 0 and 1 interpolate between using the RGB and the Alpha.
+  设为 1 可从源输入的 Alpha 通道而非 RGB 通道生成溶解效果。在这种情况下，溶解效果不会从源素材获取颜色，通常会更亮。0 到 1 之间的值在使用 RGB 和 Alpha 之间插值。
 
 - **Expand Borders** (Check-box, Default: off)
-  If enabled, transparent borders are added to the input image before processing. This allows the result to include soft edges beyond the original image size. When off, the effect only occurs within the frame and the result will retain an edge at the borders.
+  如果启用，在处理前向输入图像添加透明边框。这允许结果包含超出原始图像大小的柔和边缘。关闭时，效果仅在画面内发生，结果将在边界处保留硬边。
 
 - **Show Size** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Size and Rel Height parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整 Size 和 Rel Height 参数的屏幕用户界面控件。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

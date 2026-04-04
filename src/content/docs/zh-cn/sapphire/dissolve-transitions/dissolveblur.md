@@ -4,67 +4,59 @@ title: DissolveBlur
 
 ## S_DissolveBlur
 
-Transitions between two input clips while blurring each.
-The first clip is blurred and faded out while the second clip is
-unblurred and faded in. The Dissolve
-Percent parameter should be animated to control the transition speed.
+在两个输入素材之间转场，同时对每个素材应用模糊。第一个素材被模糊并淡出，第二个素材取消模糊并淡入。应通过动画 Dissolve Percent 参数来控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveBlur](../_static/DissolveBlur.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Blur Amount** (Default: 2, Range: 0 or greater)
-  Scales the width of the blur.
+  缩放模糊的宽度。
 
 - **Blur Rel** (X & Y, Default: [1 0], Range: 0 or greater)
-  The relative horizontal and vertical blur widths. Set Blur Rel X to 0 for a vertical-only blur, or set Blur Rel Y to 0 for a horizontal-only blur.
+  相对水平和垂直模糊宽度。将 Blur Rel X 设为 0 可获得仅垂直方向的模糊，将 Blur Rel Y 设为 0 可获得仅水平方向的模糊。
 
 - **Blur Rel From** (Default: 1, Range: 0 or greater)
-  Scales the amount of blur applied to the first clip. Set to 0 to fade out with no blur.
+  缩放应用于第一个素材的模糊量。设为 0 可在没有模糊的情况下淡出。
 
 - **Blur Rel To** (Default: 1, Range: 0 or greater)
-  Scales the amount of blur applied to the second clip. Set to 0 to fade in with no blur.
+  缩放应用于第二个素材的模糊量。设为 0 可在没有模糊的情况下淡入。
 
 - **Blur Filter** (Popup menu, Default: Gauss)
-  The type of convolution filter to blur with.
-  - **Box**: uses a rectangular shaped filter.
-  - **Triangle**: smoother, uses a pyramid shaped filter.
-  - **Gauss**: smoothest, uses a gaussian shaped filter.
+  用于模糊的卷积滤镜类型。
+  - **Box**: 使用矩形滤镜。
+  - **Triangle**: 更平滑，使用金字塔形滤镜。
+  - **Gauss**: 最平滑，使用高斯形滤镜。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。

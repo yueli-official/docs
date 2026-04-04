@@ -4,123 +4,115 @@ title: WipeStar
 
 ## S_WipeStar
 
-Performs a wipe transition between two input clips
-using a star shape. The Wipe Percent parameter should be
-animated to control the transition speed. Increase the Border Width parameter
-to draw a border at the wipe transition edges.
+使用星形形状在两个输入素材之间执行擦除转场。应对 Wipe Percent 参数设置动画以控制转场速度。增大 Border Width 参数可在擦除转场边缘绘制边框。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![WipeStar](../_static/WipeStar.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Wipe Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Wipe Percent 参数设置动画来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它决定了 From 和 To 输入之间的转场比例，通常应从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线以更精细地控制擦除时序。
 
 - **Wipe Direction** (Popup menu, Default: Star In)
-  The direction of the star wipe.
-  - **Star In**: the star contains the first image and shrinks inwards.
-  - **Star Out**: the star contains the second image and grows outwards.
+  星形擦除的方向。
+  - **Star In**: 星形包含第一个图像并向内缩小。
+  - **Star Out**: 星形包含第二个图像并向外扩大。
 
 - **Edge Softness** (Default: 0, Range: 0 or greater)
-  The width of the transition edges. Larger values will cause softer, less visible edges in the wipe pattern.
+  转场边缘的宽度。较大的值将导致擦除图案中更柔和、更不明显的边缘。
 
 - **Points** (Integer, Default: 5, Range: 3 or greater)
-  The number of points in the star.
+  星形的尖角数量。
 
 - **Pointiness** (Default: 1.1, Range: 0 or greater)
-  The pointiness of the star. Increase for sharp spikes, decrease for more regular polygonal shapes.
+  星形的尖锐度。增大可获得尖锐的尖角，减小可获得更规则的多边形形状。
 
 - **Angle** (Default: 0, Range: any)
-  The rotation angle of the star in degrees.
+  星形的旋转角度（以度为单位）。
 
 - **Rel Width** (Default: 1, Range: 0.1 or greater)
-  The relative horizontal size of the star. Increase for wider star, decrease for taller ones.
+  星形的相对水平尺寸。增大可获得更宽的星形，减小可获得更高的星形。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  The location of the star center in screen coordinates relative to the center of the frame. This parameter can be set by enabling and moving the Center Widget. Note that moving the star center can also cause the star size to change so that the current value of Wipe Amt remains correct.
+  星形中心在屏幕坐标中相对于画面中心的位置。可以通过启用和移动 Center Widget 来设置此参数。请注意，移动星形中心也会导致星形大小改变，以使 Wipe Amt 的当前值保持正确。
 
 - **Border Width** (Default: 0, Range: 0 or greater)
-  If positive, a colored border is drawn at the wipe transition edges, using the border color, opacity, softness, and shift parameters below.
+  如果为正值，将在擦除转场边缘使用以下边框颜色、不透明度、柔和度和偏移参数绘制彩色边框。
 
 - **Border Color** (Default rgb: [0.75 0 0])
-  The color of the border. This has no effect unless Border Width is positive.
+  边框的颜色。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Opacity** (Default: 1, Range: 0 to 1)
-  The opacity of the border. Decrease to make the border transparent and allow the image under it to show through. This has no effect unless Border Width is positive.
+  边框的不透明度。减小可使边框变为透明，允许其下方的图像透过显示。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Softness** (Default: 0, Range: 0 or greater)
-  The softness of the border edges. This has no effect unless Border Width is positive.
+  边框边缘的柔和度。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Shift** (Default: 0, Range: any)
-  Shifts the border ahead of or behind the transition edge. This has no effect unless Border Width is positive.
+  将边框向转场边缘的前方或后方偏移。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Glow** (Default: 0, Range: 0 or greater)
-  Adds a glow along the border of the wipe. The value determines the brightness of the glow.
+  沿擦除边框添加辉光。该值决定辉光的亮度。
 
 - **Glow Width** (Default: 0.1, Range: 0 or greater)
-  The width of the glowing border.
+  辉光边框的宽度。
 
 - **Width Red** (Default: 1, Range: 0 or greater)
-  Scales the red glow width. If the red, green, and blue widths are all equal, the glow will match Glow Color. Otherwise it will have a fringe of varying color.
+  缩放红色辉光宽度。如果红色、绿色和蓝色宽度都相等，辉光将匹配 Glow Color。否则将产生不同颜色的边缘。
 
 - **Width Green** (Default: 1.2, Range: 0 or greater)
-  Scales the green glow width.
+  缩放绿色辉光宽度。
 
 - **Width Blue** (Default: 1.4, Range: 0 or greater)
-  Scales the blue glow width.
+  缩放蓝色辉光宽度。
 
 - **Glow Color** (Default rgb: [1 1 1])
-  The color of the glowing border.
+  辉光边框的颜色。
 
 - **Noise Amp** (Default: 1, Range: 0 or greater)
-  The amount of noise to add to the glowing border.
+  添加到辉光边框的噪声量。
 
 - **Noise Freq** (Default: 16, Range: 0.1 to 20)
-  The spatial frequency of the noise.
+  噪声的空间频率。
 
 - **Noise Speed** (Default: 2, Range: any)
-  The speed with which the noise changes or boils over time.
+  噪声随时间变化或沸腾的速度。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（Alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按照图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项也比 Normal 模式渲染速度稍快，但结果也将是预乘形式，这有时不太正确。
 
 - **Show Angle** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Angle parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Angle 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。
 
 - **Show Center** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。
 
 - **Show Glow Width** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Glow Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Glow Width 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。

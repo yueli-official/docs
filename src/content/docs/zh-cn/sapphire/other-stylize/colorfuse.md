@@ -4,119 +4,117 @@ title: ColorFuse
 
 ## S_ColorFuse
 
-ColorFuse allows up to three LUTs to be combined to create unique and stylized looks. Host-colorspace
-and lut-colorspace parameters are provided to convert footage from the host colorspace into the colorspace used in
-the three stylized LUTs in ColorFuse. ColorFuse most commonly uses sRGB for the internal LUT colorspace.
+ColorFuse 允许将最多三个 LUT 组合在一起，以创建独特的风格化外观。提供了 Host-colorspace
+和 lut-colorspace 参数，用于将素材从宿主色彩空间转换为 ColorFuse 中三个风格化 LUT 所使用的色彩空间。ColorFuse 最常使用 sRGB 作为内部 LUT 色彩空间。
 
-In the Sapphire Stylize effects submenu.
+位于 Sapphire Stylize 效果子菜单中。
 ### Inputs:
 
-- **Source**: The current layer. The clip to process.
+- **Source**: 当前图层。要处理的素材。
 
-- **Mask**: Defaults to None. If provided, the effect is only applied on regions of the source clip specified by the bright areas of this input. Pixels outside this mask are not affected, and do not contribute to the resulting affected pixels within it. This input can be affected using the Invert Mask, or Mask Use parameters.
+- **Mask**: 默认为无。如果提供，效果仅应用于此输入的亮区所指定的源素材区域。此遮罩之外的像素不受影响，也不会对其内部的受影响像素产生贡献。此输入可通过 Invert Mask 或 Mask Use 参数进行调整。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果之前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素数扩展或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的快速模式下快速调整，还是在高质量模式下获得更好的效果。
+  - **Fast**: 在快速模式下扩展 Mocha 遮罩，用于快速调整。
+  - **High**: 在高质量模式下扩展 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩同时提供给效果时，决定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Host Colorspace** (Popup menu, Default: sRGB)
-  Colorspace that the footage should be converted from. A list of common LUTs for converting footage from the colorspace in the host application to to the colorspace that the LUT was designed to operate in. If the colorspace used in the host isn't available in this preset, S_OCIOTransform may be applied before S_ColorFuse to get a more comprehensive colorspace list.
-  - **linear**: Use linear for the host colorspace
-  - **sRGB**: Use sRGB for the host colorspace
-  - **rec709**: Use rec709 for the host colorspace
-  - **rec2020**: Use rec2020 for the host colorspace
-  - **rec1886**: Use rec1886 for the host colorspace
-  - **S-Log1**: Use S-Log1 for the host colorspace
-  - **S-Log2**: Use S-Log2 for the host colorspace
-  - **S-Log3**: Use S-Log3 for the host colorspace
+  素材应从中转换的色彩空间。提供了一组常用 LUT，用于将素材从宿主应用程序中的色彩空间转换为 LUT 设计使用的色彩空间。如果宿主中使用的色彩空间在此预设中不可用，可以在 S_ColorFuse 之前应用 S_OCIOTransform 以获得更全面的色彩空间列表。
+  - **linear**: 使用 linear 作为宿主色彩空间
+  - **sRGB**: 使用 sRGB 作为宿主色彩空间
+  - **rec709**: 使用 rec709 作为宿主色彩空间
+  - **rec2020**: 使用 rec2020 作为宿主色彩空间
+  - **rec1886**: 使用 rec1886 作为宿主色彩空间
+  - **S-Log1**: 使用 S-Log1 作为宿主色彩空间
+  - **S-Log2**: 使用 S-Log2 作为宿主色彩空间
+  - **S-Log3**: 使用 S-Log3 作为宿主色彩空间
 
 - **Lut Colorspace** (Popup menu, Default: sRGB)
-  Colorspace ColorFuse should operate in. A list of common LUTs for defining the colorspace the effect LUTs expect.
-  - **linear**: Use linear for the LUT colorspace
-  - **sRGB**: Use sRGB for the LUT colorspace
-  - **rec709**: Use rec709 for the LUT colorspace
-  - **rec2020**: Use rec2020 for the LUT colorspace
-  - **rec1886**: Use rec1886 for the LUT colorspace
-  - **S-Log1**: Use S-Log1 for the LUT colorspace
-  - **S-Log2**: Use S-Log2 for the LUT colorspace
-  - **S-Log3**: Use S-Log3 for the LUT colorspace
+  ColorFuse 应使用的色彩空间。提供了一组常用 LUT，用于定义效果 LUT 期望的色彩空间。
+  - **linear**: 使用 linear 作为 LUT 色彩空间
+  - **sRGB**: 使用 sRGB 作为 LUT 色彩空间
+  - **rec709**: 使用 rec709 作为 LUT 色彩空间
+  - **rec2020**: 使用 rec2020 作为 LUT 色彩空间
+  - **rec1886**: 使用 rec1886 作为 LUT 色彩空间
+  - **S-Log1**: 使用 S-Log1 作为 LUT 色彩空间
+  - **S-Log2**: 使用 S-Log2 作为 LUT 色彩空间
+  - **S-Log3**: 使用 S-Log3 作为 LUT 色彩空间
 
 - **Choose Lut1** (Push-button)
-  Displays a file dialog to select the first LUT.
+  显示文件对话框以选择第一个 LUT。
 
 - **Lut1 Strength** (Default: 0.5, Range: 0 to 1)
-  Intensity of the first LUT when applied to the footage.
+  第一个 LUT 应用于素材时的强度。
 
 - **Choose Lut2** (Push-button)
-  Displays a file dialog to select the second LUT.
+  显示文件对话框以选择第二个 LUT。
 
 - **Lut2 Strength** (Default: 1, Range: 0 to 1)
-  Intensity of second LUT when applied to the footage.
+  第二个 LUT 应用于素材时的强度。
 
 - **Choose Lut3** (Push-button)
-  Displays a file dialog to select the third LUT.
+  显示文件对话框以选择第三个 LUT。
 
 - **Lut3 Strength** (Default: 1, Range: 0 to 1)
-  Intensity of third LUT when applied to the footage.
+  第三个 LUT 应用于素材时的强度。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  决定如何使用 Mask 输入通道生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊蒙版输入。可以在蒙版区域和非蒙版区域之间提供更平滑的过渡。除非提供了蒙版输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果开启，反转蒙版输入，使效果应用于蒙版为黑色而非白色的区域。除非提供了蒙版输入，否则无效。
 

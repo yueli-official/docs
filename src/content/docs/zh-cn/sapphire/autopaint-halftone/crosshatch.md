@@ -4,204 +4,194 @@ title: Crosshatch
 
 ## S_Crosshatch
 
-Simulates a pen-sketch crosshatched look using overlapping strokes.
-The source is divided into four bands based on luma; each band from dark to light gets
-a different pattern of strokes.
+使用重叠笔触模拟钢笔素描交叉影线效果。源图像根据亮度分为四个色带；从暗到亮的每个色带获得不同的笔触图案。
 
-In the Sapphire Stylize effects submenu.
+位于 Sapphire Stylize 效果子菜单中。
 
 ![Crosshatch](../_static/Crosshatch.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的素材。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果和源输入之间进行插值。白色区域使用效果结果。黑色区域使用源素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mode** (Popup menu, Default: CrosshatchPencil)
-  Selects pencil or chalk modes.
-  - **CrosshatchPencil**: Simulates dark pencil or pen strokes on white paper.
-  - **CrosshatchChalk**: Simulates white chalk strokes on dark paper.
+  选择铅笔或粉笔模式。
+  - **CrosshatchPencil**: 模拟白纸上的深色铅笔或钢笔笔触。
+  - **CrosshatchChalk**: 模拟深色纸张上的白色粉笔笔触。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果之前会反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素量扩展或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下扩展 Mocha 遮罩，用于快速调整。
+  - **High**: 在 High 质量模式下扩展 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用到整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  绕过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩同时提供给效果时，决定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Stroke Frequency** (Default: 100, Range: 1 to 500)
-  Increase for smaller, finer strokes; decrease for broader strokes.
+  增大可获得更小、更细的笔触；减小可获得更宽的笔触。
 
 - **Stroke Length** (Default: 10, Range: 0.1 or greater)
-  Average length of the strokes, compared to their width.
+  笔触的平均长度，与宽度相比。
 
 - **Stroke Strength** (Default: 0.55, Range: 0 to 1)
-  Overall size and strength; decrease for fewer, smaller strokes. At zero, strokes will vanish. Increase for bolder, more overlapping strokes. At one, there will be strokes everywhere, so you won't see the stroke pattern.
+  整体大小和强度；减小可获得更少、更小的笔触。为零时，笔触将消失。增大可获得更粗、更重叠的笔触。为一时，到处都有笔触，因此看不到笔触图案。
 
 - **Stroke Softness** (Default: 0.1, Range: 0.001 to 1)
-  Softness of the edges of each stroke. Decrease for hard-edged pen strokes; increase for a softer chalk-like look.
+  每个笔触边缘的柔和度。减小可获得硬边钢笔笔触；增大可获得更柔和的粉笔效果。
 
 - **Stroke Angle** (Default: 45, Range: any)
-  Angle of the strokes, in degrees; zero makes strokes horizontal and vertical.
+  笔触的角度，以度为单位；零使笔触水平和垂直。
 
 - **Stroke Shift** (X & Y, Default: [0 0], Range: any)
-  Shift the overall stroke pattern; this can help match the stroke pattern to overall camera movement in the clip.
+  移动整体笔触图案；这可以帮助将笔触图案与素材中的整体摄像机运动匹配。
 
 - **Animate Speed** (Default: 1, Range: 0 to 5)
-  Strokes normally change subtly over time; this controls the speed of that animation. Set to zero for static strokes that don't move.
+  笔触通常会随时间微妙变化；此参数控制该动画的速度。设为零可获得不移动的静态笔触。
 
 - **Threshold Darks** (Default: 0.15, Range: 0 to 1)
-  The darkest areas get double overlapping strokes (or pure black in chalk mode); source areas with luma darker than this threshold are considered in the darkest band and get those double strokes. Increasing this (or any threshold) will darken the overall result since more of the image will fall into the darkest band.
+  最暗区域获得双重重叠笔触（或粉笔模式下的纯黑）；亮度低于此阈值的源区域被视为最暗色带，获得双重笔触。增大此值（或任何阈值）将使整体结果变暗，因为更多图像将落入最暗色带。
 
 - **Threshold Mids** (Default: 0.35, Range: 0 to 1)
-  Midtones are divided into darker-mids and brighter-mids; this threshold sets the luma value that separates those two bands. The darker mids get darker and denser strokes.
+  中间调分为较暗中间调和较亮中间调；此阈值设置分隔这两个色带的亮度值。较暗中间调获得更暗和更密集的笔触。
 
 - **Threshold Brights** (Default: 0.6, Range: 0 to 1)
-  The brightest areas get the lightest strokes (normally just white, unless you are in chalk mode); areas brighter than this threshold are considered brights.
+  最亮区域获得最淡的笔触（通常只是白色，除非在粉笔模式下）；亮度高于此阈值的区域被视为亮色。
 
 - **Thresholds Add** (Default: 0, Range: any)
-  This adds or subtracts from all the thresholds; increase to darken the overall result (because it raises the thresholds), decrease to lighten the overall result (because it lowers the thresholds).
+  对所有阈值进行加减；增大可使整体结果变暗（因为提高了阈值），减小可使整体结果变亮（因为降低了阈值）。
 
 - **Mix Threshold** (Default: 0.005, Range: 0 to 0.1)
-  Softens the borders between the dark/mid/light luma bands.
+  柔化暗/中/亮亮度色带之间的边界。
 
 - **Strokes Use Source** (Default: 0, Range: 0 to 1)
-  Increase to use more of the source color to color the strokes. Zero means use the stroke color; one means use the color of the underlying source clip. In between strokes, the background color shows through; if you have Back Style set to Source the strokes will disappear when this is set to one.
+  增大可使用更多源颜色为笔触着色。零表示使用笔触颜色；一表示使用底层源素材的颜色。在笔触之间，背景颜色会透出；如果您将 Back Style 设置为 Source，当此值设为一时笔触将消失。
 
 - **Stroke Color** (Default rgb: [0 0 0])
-  The color to use for the strokes. In pencil mode this defaults to black; in chalk mode, it defaults to white.
+  用于笔触的颜色。在铅笔模式下默认为黑色；在粉笔模式下默认为白色。
 
 - **Posterize Amount** (Default: 0, Range: 0 to 1)
-  Posterizes the source, giving a more cartoony look with areas of solid color. This only has an effect when using the source to colorize the strokes or when using the source as the background.
+  对源进行色调分离，产生更具卡通感的纯色区域效果。仅在使用源着色笔触或使用源作为背景时有效。
 
 - **Posterize Smooth** (Default: 0, Range: 0 to 1)
-  When posterizing, smooth the edges of the solid-color areas. This avoids aliasing and usually looks better.
+  色调分离时，平滑纯色区域的边缘。这可以避免锯齿，通常效果更好。
 
 - **Posterize Phase** (Default: 0, Range: any)
-  Adjusts the phase of the posterization. Use this to position the areas of flat color and avoid edges in the middle of areas you'd like to keep flat.
+  调整色调分离的相位。使用此参数定位平面颜色区域并避免在您希望保持平整的区域中出现边缘。
 
 - **Edge Strength** (Default: 0, Range: 0 or greater)
-  Adds cartoon-like edges to the look.
+  为效果添加卡通风格的边缘。
 
 - **Edge Width** (Default: 0.002, Range: 0 or greater)
-  Adjusts the width of the edge strokes; increasing this also softens the edges.
+  调整边缘笔触的宽度；增大此值也会柔化边缘。
 
 - **Edge Threshold** (Default: 0.5, Range: 0 or greater)
-  Increase this to remove minor, insignificant edge strokes, giving a bolder look.
+  增大此值可去除次要的、不重要的边缘笔触，产生更大胆的外观。
 
 - **Edge Color** (Default rgb: [0 0 0])
-  Sets the color for the edge strokes.
+  设置边缘笔触的颜色。
 
 - **Suppress Small Edges** (Default: 0.5, Range: 0 or greater)
-  Increase to suppress small, minor edges.
+  增大可抑制小的、次要的边缘。
 
 - **Edge Sharpen** (Default: 0, Range: 0 or greater)
-  Sharpens the edge strokes.
+  锐化边缘笔触。
 
 - **Back Style** (Popup menu, Default: Solid Color)
-  What to use as the background, underneath the pen strokes.
-  - **Source**: Use the source as the background.
-This gives a much more colorful look, as if the strokes are drawn over the original clip.
-You may want to adjust Stroke Color when using this.
-  - **Solid Color**: Use the specified Solid Color background.
+  在笔触下方用作背景的内容。
+  - **Source**: 使用源作为背景。这会产生更丰富多彩的外观，就像笔触画在原始素材上一样。使用此选项时您可能需要调整 Stroke Color。
+  - **Solid Color**: 使用指定的纯色背景。
 
 - **Solid Color** (Default rgb: [1 1 1])
-  The color to use for the the background, when in Solid Color mode.
+  在 Solid Color 模式下用于背景的颜色。
 
 - **Pre Blur Bg** (Default: 0, Range: 0 or greater)
-  Blur the source before using it as background, or to color the strokes. This can help reduce sparkling due to a noisy or grainy source.
+  在用作背景或为笔触着色之前模糊源。这可以帮助减少因噪声或颗粒源导致的闪烁。
 
 - **Use Source Alpha** (Default: 1, Range: 0 to 1)
-  Cut out the strokes using the alpha of the source. At one, strokes are suppressed where the source alpha is zero; that is, they are cut out by the alpha. At zero, the strokes are drawn everywhere, even where the source alpha is zero. Set to zero if you want the stroke texture everywhere in the frame. When the source is fully opaque, this has no effect.
+  使用源的 Alpha 裁剪笔触。为一时，在源 Alpha 为零的地方抑制笔触；即通过 Alpha 裁剪它们。为零时，笔触在任何地方都会绘制，即使源 Alpha 为零。如果您希望帧中所有地方都有笔触纹理，请设为零。当源完全不透明时，此参数无效。
 
 - **Saturation** (Default: 1, Range: 0 or greater)
-  Increase or decrease the overall saturation of the output.
+  增大或减小输出的整体饱和度。
 
 - **Scale Lights** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result by this amount.
+  按此数值缩放结果的亮度。
 
 - **Offset Darks** (Default: 0, Range: any)
-  Adds this gray value to the darker regions of the source. This can be negative to increase contrast.
+  将此灰度值添加到源的较暗区域。可以为负值以增加对比度。
 
 - **Tint Lights** (Default rgb: [1 1 1])
-  Scales the result by this color, thus tinting the lighter regions.
+  按此颜色缩放结果，从而为较亮区域着色。
 
 - **Tint Darks** (Default rgb: [0 0 0])
-  Adds this color to the darker regions of the result.
+  将此颜色添加到结果的较暗区域。
 
 - **Mix With Source** (Default: 0, Range: 0 to 1)
-  Interpolates between the result (when set to 0) and the original source (when set to 1). 0.7 can give a nice effect by blending some of the source in with the strokes.
+  在结果（设为 0 时）和原始源（设为 1 时）之间进行插值。0.7 可以通过将部分源混入笔触产生不错的效果。
 
 - **Seed** (Default: 0.123, Range: 0 or greater)
-  Initialize the random number generator for the strokes. Different values give different random stroke patterns.
+  初始化笔触的随机数生成器。不同的值会产生不同的随机笔触图案。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已为预乘形式处理（颜色已按不透明度缩放）。此选项的渲染速度也略快于 Normal 模式，但结果也将为预乘形式，这有时不太准确。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊遮罩输入。可提供遮罩区域和非遮罩区域之间更平滑的过渡。除非提供了遮罩输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
-
+  如果开启，反转遮罩输入，使效果应用于遮罩为黑色而非白色的区域。除非提供了遮罩输入，否则无效。

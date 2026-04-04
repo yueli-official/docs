@@ -4,71 +4,60 @@ title: SwishPan
 
 ## S_SwishPan
 
-Transitions between two input clips by sliding one clip
-off the frame and the other clip on, and adding motion blur to
-give the appearance of a quick pan. This works best when the duration of
-the transition is short.
+通过将一个片段滑出画面并将另一个片段滑入来实现两个输入片段之间的转场，同时添加运动模糊以呈现快速摇镜的效果。当转场持续时间较短时效果最佳。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![SwishPan](../_static/SwishPan.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此片段结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Swish Percent parameter.
+  启用后，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Swish Percent 参数进行动画设置来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它确定 From 和 To 输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制擦除的时序。
 
 - **Direction** (Popup menu, Default: Left)
-  Direction that the clips move during the transition.
-  - **Left**: Moves right-to-left
-  - **Right**: Moves left-to-right
-  - **Up**: Moves upward.
-  - **Down**: Moves downward.
+  转场过程中片段移动的方向。
+  - **Left**: 从右向左移动。
+  - **Right**: 从左向右移动。
+  - **Up**: 向上移动。
+  - **Down**: 向下移动。
 
 - **Blur Amount** (Default: 2, Range: 0 or greater)
-  Amount of motion blur to use. If the direction is left or right, the blur is horizontal. If the direction is up or down, the blur is vertical.
+  要使用的运动模糊量。如果方向为左或右，模糊为水平方向。如果方向为上或下，模糊为垂直方向。
 
 - **Overlap** (Default: 0, Range: any)
-  Amount to overlap the two clips. Where the clips overlap, they will be screened together. This is useful for eliminating bad edges.
+  两个片段重叠的量。在片段重叠的区域，它们将进行滤色混合。这对于消除不良边缘很有用。
 
 - **Slow In** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加平缓。
 
 - **Slow Out** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加平缓。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
-
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时，使用此选项可以稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将以预乘形式呈现，有时不太准确。如果您的图像在遮罩通道也有锐利边缘的位置有突然的颜色变化，使用 Normal 模式可能会获得更好的结果。

@@ -4,73 +4,67 @@ title: DissolveShake
 
 ## S_DissolveShake
 
-Transitons between two clips by applying a
-shaking motion to them, along with a quick dissolve. The shaking
-uses translation, zooming, and/or rotation. It is random but
-repeatable, so with the same parameters the same shaking motion is
-generated each time. Turn on Motion Blur and adjust the Mo Blur
-Length for different amounts of blur. Adjust the Amplitude and
-Frequency for different shaking speeds and amounts. The Rand
-parameters give detailed control of the random non-periodic shaking,
-and the Wave parameters adjust the regular periodic shaking. The X,
-Y, Z, and Tilt parameters control the horizontal, vertical, zoom,
-and rotation amounts of shaking respectively.
+通过对两个素材施加抖动运动以及快速溶解来实现转场。
+抖动使用平移、缩放和/或旋转。它是随机的但可重复的，因此使用相同的参数每次都会生成相同的抖动运动。
+开启 Motion Blur 并调整 Mo Blur Length 可获得不同程度的模糊。
+调整 Amplitude 和 Frequency 可获得不同的抖动速度和幅度。
+Rand 参数可精细控制随机非周期性抖动，Wave 参数可调整规律性周期抖动。
+X、Y、Z 和 Tilt 参数分别控制水平、垂直、缩放和旋转的抖动量。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveShake](../_static/DissolveShake.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。
 
 - **Dissolve Speed** (Default: 3, Range: 1 or greater)
-  The speed of the dissolve between the From and To clips. When set to 1, the dissolve takes place over the entire duration of the effect. When set higher, the dissolve is shorter, although the shaking still takes place over the entire duration.
+  From 和 To 素材之间的溶解速度。设为 1 时，溶解在效果的整个持续时间内进行。设为更高值时，溶解时间更短，但抖动仍在整个持续时间内发生。
 
 - **Amplitude** (Default: 3, Range: 0 or greater)
-  Scales the amplitude of the shaking motion.
+  缩放抖动运动的幅度。
 
 - **Frequency** (Default: 10, Range: 0 or greater)
-  Increase for faster shaking, decrease for slower shaking. (Be careful if you animate frequency values because the resulting shake frequency is also affected by the rate of change of the value.)
+  增加可获得更快的抖动，减少可获得更慢的抖动。（如果对频率值进行动画处理，请注意，所产生的抖动频率也会受该值变化率的影响。）
 
 - **Motion Blur** (Check-box, Default: on)
-  Options for motion blur of the shaking motion.
+  抖动运动的运动模糊选项。
 
 - **Mo Blur Length** (Default: 0.5, Range: 0 or greater)
-  Scales the amount of motion blur. Use around .5 when processing on fields or 1.0 for frames to give realistic motion blur. This parameter has no effect if Motion Blur is No .
+  缩放运动模糊的量。处理场时使用约 0.5，处理帧时使用 1.0，可获得真实的运动模糊。如果 Motion Blur 为 No，此参数无效。
 
 - **Seed** (Default: 0, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化随机数生成器。实际种子值并不重要，但不同的种子会给出不同的结果，相同的值应给出可重复的结果。
 
 - **Wrap** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the source images.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  决定访问源图像边界之外区域的方法。
+  - **No**: 边界外呈现黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。此方法通常边缘不太明显。
 
 
 ### X Shake Parameters:
@@ -79,33 +73,32 @@ X Rand Amp:
 *Default:
 *0.2,
 *Range:
-*0 or greater.Amplitude of horizontal random shaking.
+*0 or greater.水平随机抖动的幅度。
 
 X Rand Freq:
 *Default:
 *1,
 *Range:
-*0 or greater.Frequency of horizontal random shaking.
+*0 or greater.水平随机抖动的频率。
 
 X Wave Amp:
 *Default:
 *0,
 *Range:
-*0 or greater.Amplitude of horizontal regular wave shaking.
+*0 or greater.水平规律波形抖动的幅度。
 
 X Wave Freq:
 *Default:
 *0.5,
 *Range:
-*0 or greater.Frequency of horizontal regular wave shaking, in
-cycles per second.
+*0 or greater.水平规律波形抖动的频率，单位为每秒循环数。
 
 X Phase:
 *Default:
 *0,
 *Range:
 *any.
-Time shift of the horizontal shaking.
+水平抖动的时间偏移。
 
 ### Y Shake Parameters:
 
@@ -113,33 +106,32 @@ Y Rand Amp:
 *Default:
 *0.1,
 *Range:
-*0 or greater.Amplitude of the vertical random shaking.
+*0 or greater.垂直随机抖动的幅度。
 
 Y Rand Freq:
 *Default:
 *1,
 *Range:
-*0 or greater.Frequency of the vertical random shaking.
+*0 or greater.垂直随机抖动的频率。
 
 Y Wave Amp:
 *Default:
 *0,
 *Range:
-*0 or greater.Amplitude of the vertical regular wave shaking.
+*0 or greater.垂直规律波形抖动的幅度。
 
 Y Wave Freq:
 *Default:
 *0.5,
 *Range:
-*0 or greater.Frequency of the vertical regular wave shaking, in
-cycles per second.
+*0 or greater.垂直规律波形抖动的频率，单位为每秒循环数。
 
 Y Phase:
 *Default:
 *0,
 *Range:
 *any.
-Time shift of the vertical shaking.
+垂直抖动的时间偏移。
 
 ### Z Shake Parameters:
 
@@ -147,33 +139,32 @@ Z Rand Amp:
 *Default:
 *0,
 *Range:
-*0 or greater.Amplitude of the zoom random shaking.
+*0 or greater.缩放随机抖动的幅度。
 
 Z Rand Freq:
 *Default:
 *1,
 *Range:
-*0 or greater.Frequency of the zoom random shaking.
+*0 or greater.缩放随机抖动的频率。
 
 Z Wave Amp:
 *Default:
 *0,
 *Range:
-*0 or greater.Amplitude of the zoom regular wave shaking.
+*0 or greater.缩放规律波形抖动的幅度。
 
 Z Wave Freq:
 *Default:
 *0.5,
 *Range:
-*0 or greater.Frequency of the zoom regular wave shaking, in
-cycles per second.
+*0 or greater.缩放规律波形抖动的频率，单位为每秒循环数。
 
 Z Phase:
 *Default:
 *0,
 *Range:
 *any.
-Time shift of the zoom shaking.
+缩放抖动的时间偏移。
 
 ### Tilt Shake Parameters:
 
@@ -181,33 +172,32 @@ Tilt Rand Amp:
 *Default:
 *0,
 *Range:
-*0 or greater.Amplitude of the rotational random shaking, in degrees.
+*0 or greater.旋转随机抖动的幅度，单位为度。
 
 Tilt Rand Freq:
 *Default:
 *1,
 *Range:
-*0 or greater.Frequency of the rotational random shaking.
+*0 or greater.旋转随机抖动的频率。
 
 Tilt Wave Amp:
 *Default:
 *0,
 *Range:
-*0 or greater.Amplitude of the rotational regular wave shaking, in degrees.
+*0 or greater.旋转规律波形抖动的幅度，单位为度。
 
 Tilt Wave Freq:
 *Default:
 *0.5,
 *Range:
-*0 or greater.Frequency of the rotational regular wave shaking, in
-cycles per second.
+*0 or greater.旋转规律波形抖动的频率，单位为每秒循环数。
 
 Tilt Phase:
 *Default:
 *0,
 *Range:
 *any.
-Time shift of the rotational shaking.
+旋转抖动的时间偏移。
 
 ### Channels Parameters:
 
@@ -215,70 +205,57 @@ Red Amplitude:
 *Default:
 *1,
 *Range:
-*0 or greater.The relative amount of shaking in the red channel. Changing this value from
-the default will cause the red channel to move more or less than the other color channels,
-resulting in a color fringing or channel separation look.
+*0 or greater.红色通道抖动的相对量。将此值从默认值更改将导致红色通道比其他颜色通道移动更多或更少，从而产生色彩边缘或通道分离效果。
 
 Green Amplitude:
 *Default:
 *1,
 *Range:
-*0 or greater.The relative amount of shaking in the green channel.
+*0 or greater.绿色通道抖动的相对量。
 
 Blue Amplitude:
 *Default:
 *1,
 *Range:
-*0 or greater.The relative amount of shaking in the blue channel.
+*0 or greater.蓝色通道抖动的相对量。
 
 Red Phase:
 *Default:
 *0,
 *Range:
-*any.The relative phase of the red channel. Positive values will move the red
-channel ahead of the others in time, causing it to move first and the other channels to
-follow. Negative values have the opposite effect, causing the red channel to lag behind
-the others. Small values usually produce the best looks.
+*any.红色通道的相对相位。正值使红色通道在时间上超前于其他通道，导致它先移动而其他通道跟随。负值产生相反效果，导致红色通道落后于其他通道。小值通常产生最佳效果。
 
 Green Phase:
 *Default:
 *0,
 *Range:
-*any.The relative phase of the green channel.
+*any.绿色通道的相对相位。
 
 Blue Phase:
 *Default:
 *0,
 *Range:
-*any.The relative phase of the blue channel.
+*any.蓝色通道的相对相位。
 
 RGB Randomness:
 *Default:
 *0,
 *Range:
-*0 or greater.The amount of random motion in each color channel. Turn up this
-parameter to cause all three color channels to move randomly on different paths, independent
-of the overall shaking. This motion is scaled by X Rand Amp, Y Rand Amp, Z Rand Amp, and
-Tilt Rand Amp.
+*0 or greater.每个颜色通道中随机运动的量。调高此参数可使所有三个颜色通道在不同路径上随机移动，独立于整体抖动。此运动由 X Rand Amp、Y Rand Amp、Z Rand Amp 和 Tilt Rand Amp 缩放。
 
 RGB Frequency:
 *Default:
 *2,
 *Range:
 *0 or greater.
-The frequency of the random color channel shaking.
+随机颜色通道抖动的频率。
 
 ### Other Parameters:
 
 Opacity:
 *Popup menu, Default: Normal
-*.Determines the method used for dealing with
-opacity/transparency.
+*.决定处理不透明度/透明度的方法。
 *All Opaque:
-*Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).*Normal:
-*Process opacity normally.*As Premult:
-*Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+*当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。*Normal:
+*正常处理不透明度。*As Premult:
+*按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。

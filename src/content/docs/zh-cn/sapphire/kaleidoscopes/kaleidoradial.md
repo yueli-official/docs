@@ -4,143 +4,129 @@ title: KaleidoRadial
 
 ## S_KaleidoRadial
 
-Simulates a traditional 2 or 3-mirror kaleidoscope.
-You see a pie-slice shaped piece of the source through the angle
-between the mirrors, and mirror-reflected copies of it in the rest
-of the image. Use the Slices parameter to control the how
-many copies of the source pie slice you see around the central point.
+模拟传统的 2 面或 3 面镜万花筒。您可以看到镜面之间角度内的扇形源图像片段，以及图像其余部分中的镜像反射副本。使用 Slices 参数控制在中心点周围看到多少个源扇形片段的副本。
 
-In the Sapphire Stylize effects submenu.
+在 Sapphire Stylize 效果子菜单中。
 
 ![KaleidoRadial](../_static/KaleidoRadial.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The input clip to be warped.
+- **Source**: 当前图层。要扭曲的输入片段。
 
-- **Mask**: Defaults to None. If provided, the amplitude of warping is scaled by the values of this input clip. Gray values internally scale the warping amplitude rather than simply cross-fading between the effect and the original source to allow more continuous results at the mask edges and more detailed control over the warping amounts. This input can be affected using the Blur Mask, Invert Mask, or Mask Use parameters.
+- **Mask**: 默认为无。如果提供，扭曲的幅度将按此输入片段的值进行缩放。灰度值在内部缩放扭曲幅度，而不是简单地在效果和原始源之间交叉淡化，从而在遮罩边缘获得更连续的结果，并对扭曲量进行更精细的控制。此输入可通过 Blur Mask、Invert Mask 或 Mask Use 参数进行调整。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数量模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，在应用效果之前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素量膨胀或腐蚀 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的 Fast 模式下快速调整，还是在 High 质量模式下获得更好的效果。
+  - **Fast**: 在 Fast 模式下膨胀 Mocha 遮罩，用于快速调整。
+  - **High**: 在 High 质量模式下膨胀 Mocha 遮罩，获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源片段。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  绕过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当两个遮罩都提供给效果时，确定如何组合 Mocha 遮罩和输入遮罩。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Apply Mask** (Popup menu, Default: Post-effect)
-  Control where in the effect the mask is applied - this affects both the input mask and the mocha mask.
-  - **Post-effect**: Applies the masks after all the effect has been rendered.
-  - **Pre-effect**: Applies the mask to the source before processing the effect.
+  控制在效果中的哪个位置应用遮罩——这会影响输入遮罩和 Mocha 遮罩。
+  - **Post-effect**: 在所有效果渲染完成后应用遮罩。
+  - **Pre-effect**: 在处理效果之前将遮罩应用于源。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  Center location of the kaleidoscope mirrors, in screen coordinates relative to the center of the frame.
+  万花筒镜面的中心位置，以屏幕坐标表示，相对于画面中心。
 
 - **Z Dist** (Default: 1, Range: 0.001 or greater)
-  Scales the 'distance' of the entire result in or out from the Center. Increase to zoom out, decrease to zoom in.
+  缩放整个结果相对于中心的"距离"。增大以缩小，减小以放大。
 
 - **Slices** (Default: 6, Range: 0.01 or greater)
-  Sets how many slices the image will be broken up into. Each slice corresponds to the area between the mirrors in a traditional kaleidoscope. Turn this up to get a more abstract look, and down to get fewer, wider slices. Fractional numbers here will get you one fractional slice; for a fully symmetrical look, use integers (3, 4, 5, and so on).
+  设置图像将被分成多少个切片。每个切片对应传统万花筒中镜面之间的区域。增大此值可获得更抽象的外观，减小可获得更少、更宽的切片。小数值会产生一个不完整的切片；要获得完全对称的外观，请使用整数（3、4、5 等）。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotates the whole pattern about the Center by this many degrees.
+  围绕中心旋转整个图案，以度为单位。
 
 - **Rotate Kaleido** (Default: 0, Range: any)
-  Rotates the kaleidoscope itself, without rotating the image under (or inside) it.
+  旋转万花筒本身，而不旋转其下方（或内部）的图像。
 
 - **Rotate Inside** (Default: 0, Range: any)
-  Rotates the image under the kaleidoscope about the Center, much like rotating the object box at the end of a traditional kaleidoscope.
+  围绕中心旋转万花筒下方的图像，类似于旋转传统万花筒末端的物体盒。
 
 - **Rotate Inside Speed** (Default: 30, Range: any)
-  Auto-rotates the image under the kaleidoscope over time. This allows you to get a nice animated look even on a still background, much like a traditional kaleidoscope where you could rotate the object box at the end. In degrees per second.
+  随时间自动旋转万花筒下方的图像。这使您即使在静止背景上也能获得美观的动画效果，类似于传统万花筒中旋转末端的物体盒。以度/秒为单位。
 
 - **Shift Inside** (X & Y, Default: [0 0], Range: any)
-  Translates or shifts the source image inside the kaleidoscope before it is reflected.
+  在反射之前平移或移动万花筒内的源图像。
 
 - **Kaleido Amount** (Default: 1, Range: 0 or greater)
-  Adjusts the overall amount of distortion applied to the Source clip. Set this to zero to leave the source unchanged or to one for a normal kaleidoscope pattern.
+  调整应用于源片段的整体扭曲量。设为零保持源不变，设为一获得正常的万花筒图案。
 
 - **Wrap** (Popup menu, Default: Reflect)
-  Determines the method for accessing outside the borders of the source image. This is used only if the image inside the kaleidoscope is not contained within the shape of mirrors.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问源图像边界之外区域的方法。仅在万花筒内的图像未包含在镜面形状内时使用。
+  - **No**: 边界之外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复图像的镜像副本。使用此方法时边缘通常不太明显。
 
 - **Filter** (Check-box, Default: on)
-  If enabled, the image is adaptively filtered when it is resampled. This gives a better quality result when parts of the image are warped smaller.
+  如果启用，图像在重新采样时会进行自适应滤波。当图像的某些部分被缩小时，这可以获得更好的质量结果。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式处理（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式略快，但结果也将是预乘形式，有时可能不太准确。如果图像在蒙版通道边缘也有锐利变化的颜色区域，使用 Normal 模式可能会获得更好的结果。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用遮罩输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数量模糊蒙版输入。这可以在蒙版和非蒙版区域之间提供更平滑的过渡。除非提供了蒙版输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果启用，反转蒙版输入，使效果应用于蒙版为黑色而非白色的区域。除非提供了蒙版输入，否则无效。
 
 - **Crop Input Parameters** (Default: 0, Range: 0 or greater)
-  These 4 parameters, Crop Top , Crop Bottom , Crop Left, and Crop Right , allow selecting a rectangular subsection of the input image to be processed. If the Wrap parameters are set to "No" the exposed borders will be transparent. If the Wrap is "Tile" or "Reflect" the source image is wrapped on the new cropped borders to fill the frame. This can make it easier to avoid artifacts due to distorting an image with bad edges.
-
+  这 4 个参数（Crop Top、Crop Bottom、Crop Left 和 Crop Right）允许选择输入图像的矩形子区域进行处理。如果 Wrap 参数设置为"No"，暴露的边界将是透明的。如果 Wrap 为"Tile"或"Reflect"，源图像将在新的裁剪边界上进行包裹以填充画面。这可以更容易地避免因扭曲具有不良边缘的图像而产生的伪影。

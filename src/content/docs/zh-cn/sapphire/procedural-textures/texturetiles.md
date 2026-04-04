@@ -4,184 +4,174 @@ title: TextureTiles
 
 ## S_TextureTiles
 
-TextureTiles draws a repeating pattern of tiles.
-The shapes can be hexagons, triangles, diamonds, stars, or variations on those,
-depending on the Morph parameters.
+TextureTiles 绘制重复的瓷砖图案。根据 Morph 参数的不同，形状可以是六边形、三角形、菱形、星形或它们的变体。
 
-In the Sapphire Render effects submenu.
+在 Sapphire Render 效果子菜单中。
 
 ![TextureTiles](../_static/TextureTiles.jpg)
 
 
 ### Inputs:
 
-- **Background**: The current layer. The clip to combine the texture image with. This may be ignored if the Combine option is set to Texture Only.
+- **Background**: 当前图层。用于与纹理图像合成的素材。如果 Combine 选项设置为 Texture Only，则可能忽略此输入。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果与源输入之间进行插值。白色区域使用效果结果，黑色区域使用源素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，则在应用效果前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素值扩展或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的快速模式下快速调整，还是在高质量模式下获得更好的效果。
+  - **Fast**: 在快速模式下扩展 Mocha 遮罩，以便快速调整。
+  - **High**: 在高质量模式下扩展 Mocha 遮罩，以获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当同时提供 Mocha 遮罩和输入遮罩时，确定如何组合它们。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **Size** (Default: 0.5, Range: 0 or greater)
-  The size of each tile, within its cell. Zero will give all color0, one will give all color1. This doesn't change the overall size of the pattern; use Frequency for that.
+  每个瓷砖在其单元格内的大小。零将全部为 color0，一将全部为 color1。此参数不会改变图案的整体大小；请使用 Frequency。
 
 - **Frequency** (Default: 5, Range: 0.01 or greater)
-  Spatial frequency of the tile pattern; increase for many smaller tiles, decrease for fewer large tiles. This parameter can be adjusted using the Frequency Widget.
+  瓷砖图案的空间频率；增大可获得更多更小的瓷砖，减小可获得更少更大的瓷砖。可通过 Frequency Widget 调整此参数。
 
 - **Angle** (Default: 0, Range: any)
-  Rotates the whole pattern around the center point. Use Shift to adjust the center of rotation.
+  围绕中心点旋转整个图案。使用 Shift 调整旋转中心。
 
 - **Rel Width** (Default: 1, Range: 0.2 or greater)
-  Squashes or stretches the pattern.
+  压缩或拉伸图案。
 
 - **Rel Wid Pre Rot** (Default: 1, Range: 0.1 or greater)
-  Squashes or stretches the pattern before rotating by Angle. Use this if you want to squash or stretch and have the whole squashed/stretched pattern rotate around the center. If Angle is zero, this has the same effect as Rel Width.
+  在按 Angle 旋转前压缩或拉伸图案。如果您希望压缩/拉伸后的整个图案围绕中心旋转，请使用此参数。如果 Angle 为零，此参数与 Rel Width 效果相同。
 
 - **Shift** (X & Y, Default: [0 0], Range: any)
-  Shift the whole pattern on the screen. Also sets the center point for rotation, Morph Radial, and Size Radial.
+  在屏幕上移动整个图案。同时设置旋转、Morph Radial 和 Size Radial 的中心点。
 
 - **Morph Shapes** (Default: 0, Range: any)
-  Changes the shapes of the tiles smoothly, from hexagons to triangles, diamonds, and stars.
+  平滑地改变瓷砖的形状，从六边形到三角形、菱形和星形。
 
 - **Morph Speed** (Default: 0.5, Range: any)
-  Automatically animates the shape morphing over time. A value of one means a complete morph cycle once per second.
+  随时间自动动画形状变形。值为一表示每秒完成一个完整的变形周期。
 
 - **Morph Grad Add** (Default: 0, Range: any)
-  Change the shape morphing across the image, so the left side has one shape, and the right side another. See Morph Grad Angle to change the angle of this gradient.
+  在图像上改变形状变形，使左侧为一种形状，右侧为另一种。参见 Morph Grad Angle 更改此渐变的角度。
 
 - **Morph Grad Angle** (Default: 0, Range: any)
-  Angle of the morph gradient. If Morph Grad Add is zero, this has no effect.
+  变形渐变的角度。如果 Morph Grad Add 为零，此参数无效。
 
 - **Morph Radial** (Default: 0, Range: any)
-  Morph the shapes radially away from the center point; the shapes will be (for instance) hexagons in the center, smoothly becoming different toward the edges of the image. Morph Shapes and Morph Speed also interact with this parameter.
+  从中心点径向变形形状；形状在中心为（例如）六边形，向图像边缘平滑变为不同形状。Morph Shapes 和 Morph Speed 也与此参数交互。
 
 - **Size Grad Add** (Default: 0, Range: -10 to 10)
-  Change the size of the shapes (like the Size parameter) differently across the image.
+  在图像上不同位置改变形状的大小（类似 Size 参数）。
 
 - **Size Grad Angle** (Default: 0, Range: any)
-  Angle of the size gradient. If Size Grad Add is zero, this has no effect.
+  大小渐变的角度。如果 Size Grad Add 为零，此参数无效。
 
 - **Size Radial** (Default: 0, Range: any)
-  Change the size of the shapes (like the Size parameter) according to the distance from the center point. Increase to make the sizes smaller around the edges.
+  根据与中心点的距离改变形状的大小（类似 Size 参数）。增大可使边缘处的大小变小。
 
 - **Edge Softness** (Default: 0.17, Range: 0 or greater)
-  Softens the edges of each tile. If Softness Red/Green/Blue are not one, there will be some color fringing around the edges of the tiles when this is on.
+  柔化每个瓷砖的边缘。如果 Softness Red/Green/Blue 不为一，启用此参数时瓷砖边缘周围将出现一些色散。
 
 - **Softness Red** (Default: 0, Range: 0 or greater)
-  Relative softness of the red channel; see Edge Softness. To remove the color fringing around the edges of the tiles, set all the Softness Red/Green/Blue to one.
+  红色通道的相对柔和度；参见 Edge Softness。要移除瓷砖边缘周围的色散，请将所有 Softness Red/Green/Blue 设为一。
 
 - **Softness Green** (Default: 1, Range: 0 or greater)
-  Relative softness of the green channel; see Edge Softness. To remove the color fringing around the edges of the tiles, set all the Softness Red/Green/Blue to one.
+  绿色通道的相对柔和度；参见 Edge Softness。要移除瓷砖边缘周围的色散，请将所有 Softness Red/Green/Blue 设为一。
 
 - **Softness Blue** (Default: 2, Range: 0 or greater)
-  Relative softness of the blue channel; see Edge Softness. To remove the color fringing around the edges of the tiles, set all the Softness Red/Green/Blue to one.
+  蓝色通道的相对柔和度；参见 Edge Softness。要移除瓷砖边缘周围的色散，请将所有 Softness Red/Green/Blue 设为一。
 
 - **Invert** (Check-box, Default: off)
-  Invert the whole pattern, swapping the dark and bright areas.
+  反转整个图案，交换暗区和亮区。
 
 - **Brightness1** (Default: 1, Range: 0 or greater)
-  Scales the brightness of Color1. Increase for more contrast.
+  缩放 Color1 的亮度。增大以获得更多对比度。
 
 - **Color1** (Default rgb: [1 1 1])
-  The color of the 'brighter' parts of the texture. The colors of the result are determined by an interpolation between Color0 and Color1.
+  纹理"较亮"部分的颜色。结果的颜色由 Color0 和 Color1 之间的插值决定。
 
 - **Color0** (Default rgb: [0 0 0])
-  The color of the 'darker' parts of the texture.
+  纹理"较暗"部分的颜色。
 
 - **Offset0** (Default: 0, Range: any)
-  Adds this value to color0. Decrease to a negative value for more contrast.
+  将此值添加到 color0。减小为负值以获得更多对比度。
 
 - **Bg Brightness** (Default: 1, Range: 0 or greater)
-  The background brightness is scaled by this value before being combined with the texture.
+  背景亮度在与纹理合成前按此值缩放。
 
 - **Combine** (Popup menu, Default: Texture Only)
-  Determines how the texture is combined with the Background.
-  - **Texture Only**: gives only the texture image with no Background.
-  - **Mult**: the texture is multiplied by the Background.
-  - **Add**: the texture is added to the Background.
-  - **Screen**: the texture is blended with the Background using a screen operation.
-  - **Difference**: the result is the difference between the texture and Background.
-  - **Overlay**: the texture is combined with the Background using an overlay function.
+  确定纹理如何与背景组合。
+  - **Texture Only**: 仅输出纹理图像，不包含背景。
+  - **Mult**: 纹理与背景相乘。
+  - **Add**: 纹理与背景相加。
+  - **Screen**: 纹理使用滤色操作与背景混合。
+  - **Difference**: 结果为纹理与背景的差值。
+  - **Overlay**: 纹理使用叠加功能与背景组合。
 
 - **Input Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太正确。
 
 - **Output Opacity** (Popup menu, Default: Copy From Input)
-  Determines the opacity/transparency of the result. This effect does not process the opacity (alpha channel) of its input but it can either copy the opacity from the input, or output a fully opaque result.
-  - **All Opaque**: Makes the result fully opaque with no
-transparency.
-  - **Copy From Input**: Copies the opacity/transparency from
-the current layer given to this effect.
+  确定结果的不透明度/透明度。此效果不处理输入的不透明度（Alpha 通道），但可以从输入复制不透明度，或输出完全不透明的结果。
+  - **All Opaque**: 使结果完全不透明，没有透明度。
+  - **Copy From Input**: 从给定此效果的当前图层复制不透明度/透明度。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊遮罩输入。这可以提供遮罩区域和非遮罩区域之间更平滑的过渡。除非提供了遮罩输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
+  如果启用，则反转遮罩输入，使效果应用于遮罩为黑色而非白色的区域。除非提供了遮罩输入，否则无效。
 
 - **Show Frequency** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Frequency parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Frequency 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些软件支持屏幕小部件。

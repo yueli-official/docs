@@ -4,82 +4,74 @@ title: WipeBubble
 
 ## S_WipeBubble
 
-Wipes between two input clips with a bubble-warp
-process performed within the transition area. The Wipe Percent parameter should be animated to
-control the transition speed.
+在转场区域内执行气泡扭曲处理，实现两个输入素材之间的擦除转场。应对 Wipe Percent 参数设置动画以控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![WipeBubble](../_static/WipeBubble.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be bubbled during the transition unless this input is provided.
+- **Background**: 默认为无。以此素材结束转场。如果未提供此输入，将使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则在转场过程中无法对背景进行气泡处理。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Wipe Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Wipe Percent 参数设置动画来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它决定了 From 和 To 输入之间的转场比例，通常应从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线以更精细地控制擦除时序。
 
 - **Edge Width** (Default: 1.4, Range: 0.0138 or greater)
-  The width of the transition area. This can be adjusted using the Wipe Widget.
+  转场区域的宽度。可以使用 Wipe Widget 调整此参数。
 
 - **Angle** (Default: 0, Range: any)
-  The angle of the wipe direction in degrees from the right. This can be adjusted using the Wipe Widget.
+  擦除方向的角度（从右侧起以度为单位）。可以使用 Wipe Widget 调整此参数。
 
 - **Bubble Amount** (Default: 0.5, Range: 0 or greater)
-  The magnitude of the bubble distortion.
+  气泡扭曲的幅度。
 
 - **Frequency** (Default: 8, Range: 0.1 or greater)
-  The frequency of the bubble pattern. Increase to zoom out, decrease to zoom in.
+  气泡图案的频率。增大可缩小，减小可放大。
 
 - **Frequency Rel X** (Default: 1, Range: 0.01 or greater)
-  The relative horizontal frequency of the bubble pattern. Increase for taller bubbles, decrease for wider bubbles.
+  气泡图案的相对水平频率。增大可获得更高的气泡，减小可获得更宽的气泡。
 
 - **Octaves** (Integer, Default: 8, Range: 1 to 10)
-  The number of summed layers of noise. Each octave is twice the frequency and half the amplitude of the previous. A single octave gives a smooth texture. Adding octaves makes the result approach a fractal (1/f) noise texture.
+  噪声叠加层的数量。每个八度是前一个的两倍频率和一半振幅。单个八度产生平滑的纹理。添加八度使结果趋近于分形（1/f）噪声纹理。
 
 - **Seed** (Default: 0.23, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
+  用于初始化随机数生成器。实际种子值并不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。
 
 - **Wrap** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the source images.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问源图像边界之外区域的方法。
+  - **No**: 边界之外显示为黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复图像的镜像副本。使用此方法边缘通常不太明显。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（Alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按照图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项也比 Normal 模式渲染速度稍快，但结果也将是预乘形式，这有时不太正确。
 
 - **Crop Input Parameters** (Default: 0, Range: 0 or greater)
-  These 4 parameters, Crop Top , Crop Bottom , Crop Left, and Crop Right , allow selecting a rectangular subsection of the input image to be processed. If the Wrap parameters are set to "No" the exposed borders will be transparent. If the Wrap is "Tile" or "Reflect" the source image is wrapped on the new cropped borders to fill the frame. This can make it easier to avoid artifacts due to distorting an image with bad edges.
+  这4个参数（Crop Top、Crop Bottom、Crop Left 和 Crop Right）允许选择要处理的输入图像的矩形子区域。如果 Wrap 参数设置为"No"，则暴露的边界将是透明的。如果 Wrap 设置为"Tile"或"Reflect"，则源图像将在新裁剪的边界上环绕以填充画面。这可以更容易地避免因扭曲具有不良边缘的图像而产生的伪影。
 
 - **Show Wipe** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Wipe Amt, Angle, and Edge Width parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Wipe Amt、Angle 和 Edge Width 参数的屏幕用户界面控件。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。

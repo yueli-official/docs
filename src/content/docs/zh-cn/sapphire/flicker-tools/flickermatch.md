@@ -4,59 +4,45 @@ title: FlickerMatch
 
 ## S_FlickerMatch
 
-Adds flicker to the Source clip using the flicker
-from a second Match clip. For example, a clip can be brightened in
-synchrony with a flashing light in another clip. To use this effect,
-first position the corners of the rectangle over an area of the Match
-clip which has brightness changes you want to copy. A middle or light
-gray area is best for this. Then select a frame where you want the
-Source brightness unchanged, and hit the Set Match Level button. When
-other frames are processed, the Source brightness will be scaled by
-the average Match brightness within the rectangle, relative to the
-Match Level.
+使用第二个匹配片段的闪烁为源片段添加闪烁。例如，可以使一个片段的亮度与另一个片段中闪烁的灯光同步变化。要使用此效果，首先将矩形的角定位到匹配片段中具有您想要复制的亮度变化的区域。中灰或浅灰区域最适合此操作。然后选择一帧您希望源亮度保持不变的帧，并点击 Set Match Level 按钮。处理其他帧时，源亮度将按矩形内匹配片段的平均亮度相对于匹配级别进行缩放。
 
-In the Sapphire Time effects submenu.
+在 Sapphire Time 效果子菜单中。
 
 ![FlickerMatch](../_static/FlickerMatch.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to add flicker to.
+- **Source**: 当前图层。要添加闪烁的片段。
 
-- **Match**: Defaults to None. The clip to copy flicker from.
+- **Match**: 默认为无。要从中复制闪烁的片段。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Rect Corner1** (X & Y, Default: [-0.583 -0.441], Range: any)
-  The upper left corner of the rectangle which is used to measure the flicker, in screen coordinates.
+  用于测量闪烁的矩形的左上角，以屏幕坐标表示。
 
 - **Rect Corner2** (X & Y, Default: [0.583 0.441], Range: any)
-  The lower right corner of the rectangle which is used to measure the flicker, in screen coordinates.
+  用于测量闪烁的矩形的右下角，以屏幕坐标表示。
 
 - **Match Level** (Default: 0.5, Range: 0.01 or greater)
-  The average Match brightness in the rectangle for which the Source input is unchanged.
+  矩形内匹配片段的平均亮度，在此亮度下源输入保持不变。
 
 - **Set Match Level** (Push-button)
-  Pressing this button has a side effect of setting the Match Level parameter to the average Match clip brightness in the rectangle at the current frame. It causes the output to equal the Source at this frame. This button retains no value itself, and is turned back off immediately after being pushed.
+  按下此按钮会将 Match Level 参数设置为当前帧矩形内匹配片段的平均亮度。这会使输出在此帧等于源。此按钮本身不保留任何值，按下后会立即恢复关闭状态。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。
 
 - **Show Rect** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Rect Corner corner parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  开启或关闭用于调整矩形角参数的屏幕用户界面控件。此参数仅在 AE 和 Premiere 中出现，因为这些软件支持屏幕控件。

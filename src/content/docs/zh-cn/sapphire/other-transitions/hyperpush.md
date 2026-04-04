@@ -4,154 +4,152 @@ title: HyperPush
 
 ## S_HyperPush
 
-Pushes the foreground nearer in z space before dissolving to the background,
-and featuring some bonus color and shake effects for added style.
+在溶解到背景之前，将前景在 Z 轴空间中推近，并附带一些额外的颜色和抖动效果以增添风格。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![HyperPush](../_static/HyperPush.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be warped during the transition unless this input is provided.
+- **Background**: 默认为无。以此片段结束转场。如果未提供此输入，则使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则背景在转场过程中无法进行变形。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  启用后，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Dissolve Percent 参数进行动画设置来手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve. The Slow In and Slow Out parameters, if positive, also adjust the transition ratio internally for a smoother start and/or end to the transition.
+  必须禁用 Auto Trans 才能使用此参数。它确定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时序。Slow In 和 Slow Out 参数（如果为正值）也会在内部调整转场比例，以实现更平滑的转场开始和/或结束。
 
 - **Slow In** (Default: 1, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加平缓。
 
 - **Slow Out** (Default: 1, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加平缓。
 
 - **Dissolve Speed** (Default: 5, Range: 1 or greater)
-  The speed of the dissolve between the foreground and background.
+  前景和背景之间溶解的速度。
 
 - **Z Dist From** (Default: 0.001, Range: 0.001 or greater)
-  Scales the 'distance' of the foreground. Values greater than 1.0 move it farther away and make it smaller. Values less than 1.0 move the image closer and enlarge it. Zooming in slightly can sometimes be used to hide edge artifacts.
+  缩放前景的"距离"。大于 1.0 的值将其移得更远并使其变小。小于 1.0 的值将图像移得更近并放大。轻微放大有时可以用来隐藏边缘瑕疵。
 
 - **Center XY From** (X & Y, Default: [0 0], Range: any)
-  The center of the fish-eye warping function, in screen coordinates relative to the center of the foreground.
+  鱼眼变形函数的中心，以屏幕坐标表示，相对于前景的中心。
 
 - **Rotate From** (Default: 0, Range: any)
-  Rotates the foreground about the center location by this many degrees. The angle ramps up to this value as the transition proceeds.
+  围绕中心位置旋转前景指定的度数。随着转场进行，角度逐渐增加到此值。
 
 - **Wrap From** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the foreground image.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less visible with this method.
+  确定访问前景图像边界之外区域的方法。
+  - **No**: 边界之外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。使用此方法时边缘通常不太明显。
 
 - **Z Dist To** (Default: 5, Range: 0.001 or greater)
-  Scales the 'distance' of the background. Values greater than 1.0 move it farther away and make it smaller. Values less than 1.0 move the image closer and enlarge it. Zooming in slightly can sometimes be used to hide edge artifacts.
+  缩放背景的"距离"。大于 1.0 的值将其移得更远并使其变小。小于 1.0 的值将图像移得更近并放大。轻微放大有时可以用来隐藏边缘瑕疵。
 
 - **Center XY To** (X & Y, Default: [0 0], Range: any)
-  The center of the fish-eye warping function, in screen coordinates relative to the center of the background.
+  鱼眼变形函数的中心，以屏幕坐标表示，相对于背景的中心。
 
 - **Rotate To** (Default: 0, Range: any)
-  Rotates the background about the center location by this many degrees. The angle ramps up to this value as the transition proceeds.
+  围绕中心位置旋转背景指定的度数。随着转场进行，角度逐渐增加到此值。
 
 - **Wrap To** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the background image.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less visible with this method.
+  确定访问背景图像边界之外区域的方法。
+  - **No**: 边界之外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。使用此方法时边缘通常不太明显。
 
 - **Motion Blur** (Check-box, Default: on)
-  Enables motion blur.
+  启用运动模糊。
 
 - **Blur From Z Dist** (Default: 0.7, Range: 0.001 or greater)
-  The 'distance' of the From transformation. Increase to zoom out, decrease to zoom in.
+  From 变换的"距离"。增大以缩小，减小以放大。
 
 - **Blur From Rotate** (Default: 0, Range: any)
-  The rotation angle of the From transformation, in degrees, about the center.
+  From 变换围绕中心的旋转角度，以度为单位。
 
 - **Blur To Z Dist** (Default: 0.9, Range: 0.001 or greater)
-  The 'distance' of the To transformation. Increase to zoom out, or decrease to zoom in.
+  To 变换的"距离"。增大以缩小，减小以放大。
 
 - **Blur To Rotate** (Default: 0, Range: any)
-  The rotation angle of the To transformation, in degrees, about the center. Note that if the From and To Rotate angles are very different, the interpolation between them will become less accurate.
+  To 变换围绕中心的旋转角度，以度为单位。请注意，如果 From 和 To 的旋转角度差异很大，它们之间的插值将变得不太准确。
 
 - **Camera Shake** (Check-box, Default: off)
-  Enables camera shake.
+  启用摄像机抖动。
 
 - **Amplitude** (Default: 2, Range: 0 or greater)
-  Scales the amplitude of the shaking motion.
+  缩放抖动运动的振幅。
 
 - **Frequency** (Default: 2, Range: 0 or greater)
-  Increase for faster shaking, decrease for slower shaking.
+  增大以获得更快的抖动，减小以获得更慢的抖动。
 
 - **Glow Brights** (Check-box, Default: on)
-  Enables glow brights.
+  启用亮部辉光。
 
 - **Glow Brightness** (Default: 3, Range: 0 or greater)
-  Overall maximum brightness of the glow.
+  辉光的整体最大亮度。
 
 - **Glow Threshold** (Default: 0.2, Range: 0 or greater)
-  Parts of the source clip that are brighter than this value get glowed. A value of 0.9 makes only the brightest spots glow. A value of 0 makes every non-black area glow.
+  源片段中亮于此值的部分会产生辉光。值为 0.9 时只有最亮的点发光。值为 0 时每个非黑色区域都发光。
 
 - **Glow Width** (Default: 0, Range: 0 or greater)
-  The width of the glow.
+  辉光的宽度。
 
 - **Width X** (Default: 1, Range: 0 or greater)
-  Scales the horizontal glow width. Set to 0 for vertical only.
+  缩放水平辉光宽度。设置为 0 仅保留垂直方向。
 
 - **Width Y** (Default: 1, Range: 0 or greater)
-  Scales the vertical glow width. Set to 0 for horizontal only.
+  缩放垂直辉光宽度。设置为 0 仅保留水平方向。
 
 - **Glow Darks** (Check-box, Default: off)
-  Enables glow darks.
+  启用暗部辉光。
 
 - **Darkness** (Default: 0.5, Range: 0 or greater)
-  The magnitude of the dark glows.
+  暗部辉光的强度。
 
 - **Dark Threshold** (Default: 0.5, Range: 0 or greater)
-  Parts of the source clip that are brighter than this value get glowed. A value of 0.9 makes only the brightest spots glow. A value of 0 makes every non-black area glow.
+  源片段中亮于此值的部分会产生辉光。值为 0.9 时只有最亮的点发光。值为 0 时每个非黑色区域都发光。
 
 - **Dark Width** (Default: 0, Range: 0 or greater)
-  Scales the dark glow distance. Note that a zero glow width still affects the dark areas; set the darkness parameter to zero if you want to pass the Source through unchanged.
+  缩放暗部辉光的距离。请注意，即使辉光宽度为零仍会影响暗区；如果您想原样传递源图像，请将 darkness 参数设置为零。
 
 - **Dark Width X** (Default: 1, Range: 0 or greater)
-  Scales the horizontal dark width. Set to 0 for vertical only.
+  缩放水平暗部宽度。设置为 0 仅保留垂直方向。
 
 - **Dark Width Y** (Default: 1, Range: 0 or greater)
-  Scales the vertical dark width. Set to 0 for horizontal only.
+  缩放垂直暗部宽度。设置为 0 仅保留水平方向。
 
 - **Warp Chroma** (Check-box, Default: on)
-  Enables warp chroma.
+  启用色度变形。
 
 - **Warp Amount** (Default: 0.6, Range: 0 or greater)
-  Adjusts the overall amount of chroma warping of the result. The amount of warping ramps up to this value as the transition proceeds. Setting this to zero disables warping and leaves the image chroma unchanged.
+  调整结果的整体色度变形量。随着转场进行，变形量逐渐增加到此值。将其设置为零可禁用变形并保持图像色度不变。
 
 - **Steps** (Integer, Default: 10, Range: 3 to 100)
-  The number of color samples along the chroma warp spectrum to include. More steps give a smoother result, but require more time to process.
+  沿色度变形光谱包含的颜色采样数量。更多步数产生更平滑的结果，但需要更多处理时间。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Distortion Amount** (Default: -1, Range: any)
-  The amplitude of the fish-eye warping.
+  鱼眼变形的振幅。
 
 - **Distort RGB Amount** (Default: 0.2, Range: any)
-  Scales the magnitude of the lens distortion for all channels. Make negative to invert the direction of the distortions.
-
+  缩放所有通道的镜头畸变程度。设为负值可反转畸变方向。

@@ -4,48 +4,40 @@ title: ZComp
 
 ## S_ZComp
 
-Layers a source input over or under a second source input based on the
-difference of two depth images. The DepthA input should be a 'z' depth
-image corresponding to the objects in the first input, and DepthB should be
-a 'z' depth image corresponding to the objects in the second input.
+根据两个深度图像的差异，将一个源输入叠加到第二个源输入的上方或下方。DepthA 输入应为与第一个输入中的对象对应的"z"深度图像，DepthB 应为与第二个输入中的对象对应的"z"深度图像。
 
-In the Sapphire Composite effects submenu.
+在 Sapphire Composite 效果子菜单中。
 
 ![ZComp](../_static/ZComp.jpg)
 
 
 ### Inputs:
 
-- **SourceA**: The current layer. The first input image.
+- **SourceA**: 当前图层。第一个输入图像。
 
-- **SourceB**: Defaults to None. The second input image.
+- **SourceB**: 默认为无。第二个输入图像。
 
-- **DepthA**: Defaults to None. The depth image corresponding to the objects in SourceA
+- **DepthA**: 默认为无。与 SourceA 中对象对应的深度图像。
 
-- **DepthB**: Defaults to None. The depth image corresponding to the objects in SourceB
+- **DepthB**: 默认为无。与 SourceB 中对象对应的深度图像。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Anti Alias** (Default: 0, Range: 0 or greater)
-  The amount of depth difference over which to interpolate the source inputs instead of taking just the closer one. Specified as a fraction of the entire depth range: 0 does no antialiasing, 1 interpolates over the entire depth range.
+  在源输入之间进行插值而非仅取较近者的深度差异量。以整个深度范围的分数指定：0 表示不进行抗锯齿，1 表示在整个深度范围内进行插值。
 
 - **Invert Z** (Check-box, Default: off)
-  Normally larger depth values (white) are treated as farther away and smaller values (black) are treated as near. When this is enabled, these depth values are reversed.
+  通常较大的深度值（白色）被视为较远，较小的值（黑色）被视为较近。启用此选项时，这些深度值将反转。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍快地渲染。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按照图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比普通模式稍快，但结果也将是预乘形式，有时不太准确。

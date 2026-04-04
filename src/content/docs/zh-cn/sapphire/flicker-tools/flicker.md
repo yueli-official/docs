@@ -4,67 +4,64 @@ title: Flicker
 
 ## S_Flicker
 
-Scales the colors of the source clip by different
-amounts over time for a flickering effect. The pattern of flickering
-can be random, a periodic wave, or a combination of the two.
+按不同的量随时间缩放源片段的颜色，以产生闪烁效果。闪烁的模式可以是随机的、周期性波形的，或两者的组合。
 
-In the Sapphire Time effects submenu.
+在 Sapphire Time 效果子菜单中。
 
 ![Flicker](../_static/Flicker.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The clip to be processed.
+- **Source**: 当前图层。要处理的片段。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Amplitude** (Default: 0.2, Range: 0 or greater)
-  Scales the amplitude of all flickering.
+  缩放所有闪烁的振幅。
 
 - **Rand Luma Amp** (Default: 1, Range: 0 or greater)
-  The amplitude of smooth but random flickering affecting the brightness.
+  影响亮度的平滑随机闪烁的振幅。
 
 - **Rand Color Amp** (Default: 0, Range: 0 or greater)
-  The amplitude of random flickering affecting the color channels independently.
+  独立影响各颜色通道的随机闪烁的振幅。
 
 - **Rand Freq** (Default: 30, Range: 0 or greater)
-  The frequency of the random flickering. Increase for more variation between frames. Decrease for slower flickering.
+  随机闪烁的频率。增大可使帧间变化更多，减小可使闪烁更慢。
 
 - **Wave Amp** (Default: 0, Range: 0 or greater)
-  The amplitude of periodic wave flickering.
+  周期性波形闪烁的振幅。
 
 - **Wave Freq** (Default: 5, Range: 0 or greater)
-  The frequency of the wave flickering. Increase for faster flickering, decrease for slower. This has no effect if Wave Amp is 0.
+  波形闪烁的频率。增大可加快闪烁，减小可减慢。如果 Wave Amp 为 0，则此参数无效。
 
 - **Wave R Phase** (Default: 0, Range: any)
-  Shifts the wave pattern in time, for the red channel.
+  在时间上偏移红色通道的波形模式。
 
 - **Wave G Phase** (Default: 0, Range: any)
-  Shifts the wave pattern in time, for the green channel.
+  在时间上偏移绿色通道的波形模式。
 
 - **Wave B Phase** (Default: 0, Range: any)
-  Shifts the wave pattern in time, for the blue channel.
+  在时间上偏移蓝色通道的波形模式。
 
 - **Red Amp** (Default: 1, Range: 0 or greater)
-  Scales the amount of flicker applied to the red channel.
+  缩放应用于红色通道的闪烁量。
 
 - **Green Amp** (Default: 1, Range: 0 or greater)
-  Scales the amount of flicker applied to the green channel.
+  缩放应用于绿色通道的闪烁量。
 
 - **Blue Amp** (Default: 1, Range: 0 or greater)
-  Scales the amount of flicker applied to the blue channel.
+  缩放应用于蓝色通道的闪烁量。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result.
+  缩放结果的亮度。
 
 - **Seed** (Default: 0.123, Range: 0 or greater)
-  Used to initialize the random number generator. The actual seed value is not significant, but different seeds give different results and the same value should give a repeatable result.
-
+  用于初始化随机数生成器。实际的种子值并不重要，但不同的种子会产生不同的结果，相同的值应产生可重复的结果。

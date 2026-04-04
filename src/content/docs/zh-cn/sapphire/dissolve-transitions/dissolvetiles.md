@@ -4,98 +4,84 @@ title: DissolveTiles
 
 ## S_DissolveTiles
 
-Transitions between two input clips while
-breaking each up into tiles and scrambling them. The first clip
-breaks apart and spreads out while the second clip coalesces
-behind the first. The Dissolve Percent parameter should be
-animated to control the transition speed.
+在两个输入素材之间进行转场，同时将每个素材分解为瓦片并打乱排列。
+第一个素材分崩离析并向外扩散，而第二个素材在第一个的背后逐渐凝聚。
+应对 Dissolve Percent 参数进行动画处理以控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveTiles](../_static/DissolveTiles.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be warped during the transition unless this input is provided.
+- **Background**: 默认为无。以此素材结束转场。如果未提供此输入，将使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则背景在转场期间无法被扭曲。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve. The Slow In and Slow Out parameters, if positive, also adjust the transition ratio internally for a smoother start and/or end to the transition.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。如果 Slow In 和 Slow Out 参数为正值，它们也会在内部调整转场比例，使转场开始和/或结束更平滑。
 
 - **Scramble Speed** (Default: 2, Range: any)
-  The amount each input should be scrambled at the edges of the transiton. The incoming clip is scrambled by this amount at the beginning of the transition, and the outgoing clip is scramble by this amount at the end. Setting this to zero will result in no tiling on either clip.
+  在转场边缘处每个输入应被打乱的量。传入素材在转场开始时按此量打乱，传出素材在转场结束时按此量打乱。将此值设为零将使两个素材都不产生瓦片效果。
 
 - **Scramble Rel** (X & Y, Default: [1 1], Range: 0 or greater)
-  The relative amounts of horiztonal and vertical scrambling.
+  水平和垂直打乱的相对量。
 
 - **Scramble Rel From** (Default: 1, Range: any)
-  The relative amount of scrambling in the outgoing clip. Set this to zero if the outgoing clip shouldn't be scrambled at all.
+  传出素材中打乱的相对量。如果传出素材不应被打乱，请将此值设为零。
 
 - **Scramble Rel To** (Default: -1, Range: any)
-  The relative amount of scrambling in the incoming clip. Set this to zero if the incoming clip shouldn't be scrambled at all.
+  传入素材中打乱的相对量。如果传入素材不应被打乱，请将此值设为零。
 
 - **Slow In** (Default: 0.2, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加缓和。
 
 - **Slow Out** (Default: 0.2, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加缓和。
 
 - **Tiles** (Default: 10, Range: 1 or greater)
-  How many tiles across the image. Increase for many tiny tiles; decrease for a few large ones.
+  图像横向的瓦片数量。增加可获得更多更小的瓦片，减少可获得更少更大的瓦片。
 
 - **Tile Rel Width** (Default: 1, Range: 0.01 or greater)
-  Scales the height of each tile.
+  缩放每个瓦片的高度。
 
 - **Tile Rel Height** (Default: 1, Range: 0.01 or greater)
-  Scales the width of each tile.
+  缩放每个瓦片的宽度。
 
 - **Dissolve Delay** (Default: 0.6, Range: 0 to 1)
-  The delay before cross-dissolving between the From and To clips. If this is set to 1, the outgoing clip does not fade at all. If set to 0, the outgoing and incoming clips will dissolve smoothly throughout the transition.
+  在 From 和 To 素材之间交叉溶解之前的延迟。如果设为 1，传出素材完全不淡出。如果设为 0，传出和传入素材在整个转场过程中平滑溶解。
 
 - **Combine** (Popup menu, Default: From Over To)
-  By default the outgoing From clip scrambles away, revealing the To clip scrambling in underneath it. Set this to To Over From to have the To clip scramble in on top of the From clip. Adjusting Scramble Rel From and Scramble Rel To along with this can give nice results.
-  - **From Over To**: Composites the From (outgoing) clip over the To (incoming) clip,
-which reveals the To clip as the From clip scrambles away. Works well with default settings
-or with Scramble Rel To set to zero.
-  - **To Over From**: Composites the To (incoming) clip over the From (outgoing) clip,
-which scrambles the To clip in over the From clip. Works well with default settings or
-with Scramble Rel From set to zero.
+  默认情况下传出的 From 素材打乱消失，露出下方正在打乱进入的 To 素材。将此设为 To Over From 可使 To 素材打乱进入并覆盖在 From 素材上方。同时调整 Scramble Rel From 和 Scramble Rel To 可获得不错的效果。
+  - **From Over To**: 将 From（传出）素材合成在 To（传入）素材上方，随着 From 素材打乱消失而露出 To 素材。在默认设置或将 Scramble Rel To 设为零时效果良好。
+  - **To Over From**: 将 To（传入）素材合成在 From（传出）素材上方，将 To 素材打乱叠入 From 素材。在默认设置或将 Scramble Rel From 设为零时效果良好。
 
 - **Rotate Warp Dir** (Default: 0, Range: any)
-  Rotates the warping direction by this many degrees. Animate to rotate the tiles around for an interesting effect.
+  将扭曲方向旋转此度数。可以通过动画旋转瓦片来获得有趣的效果。
 
 - **Seed** (Default: 0.5, Range: 0 or greater)
-  Used to initialize the random number generator for tiling the clips. The actual seed value is not significant, but different values will give different results.
+  用于初始化素材瓦片化的随机数生成器。实际种子值并不重要，但不同的值会给出不同的结果。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
-
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。如果您的图像在遮罩通道也有锐利边缘的地方有锐利的颜色变化，Normal 模式可能会给出更好的结果。

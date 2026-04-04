@@ -4,79 +4,68 @@ title: WarpCornerPin
 
 ## S_WarpCornerPin
 
-Performs a 3D perspective warp of the source image
-to align the corners with the four indicated points. This can be
-useful for positioning the source over an object in another clip,
-such as a billboard or computer screen.
+对源图像执行 3D 透视变形，将角点与四个指定点对齐。这对于将源素材定位在另一个素材中的对象上非常有用，例如广告牌或电脑屏幕。
 
-In the Sapphire Distort effects submenu.
+在 Sapphire Distort 效果子菜单中。
 
 ![WarpCornerPin](../_static/WarpCornerPin.jpg)
 
 
 ### Inputs:
 
-- **Source**: The current layer. The input clip to be warped.
+- **Source**: 当前图层。要进行变形的输入素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Corner1** (X & Y, Default: [-0.806 0.133], Range: any)
-  Location of the lower-left corner of the source. This parameter can be adjusted using the Corner1 Widget.
+  源素材左下角的位置。此参数可以使用 Corner1 控件调整。
 
 - **Corner2** (X & Y, Default: [0.389 0.577], Range: any)
-  Location of the lower-right corner of the source. This parameter can be adjusted using the Corner2 Widget.
+  源素材右下角的位置。此参数可以使用 Corner2 控件调整。
 
 - **Corner3** (X & Y, Default: [-0.556 -0.441], Range: any)
-  Location of the upper-right corner of the source. This parameter can be adjusted using the Corner3 Widget.
+  源素材右上角的位置。此参数可以使用 Corner3 控件调整。
 
 - **Corner4** (X & Y, Default: [0.611 -0.485], Range: any)
-  Location of the upper-left corner of the source. This parameter can be adjusted using the Corner4 Widget.
+  源素材左上角的位置。此参数可以使用 Corner4 控件调整。
 
 - **Filter** (Check-box, Default: on)
-  If enabled, the image is adaptively filtered when it is resampled. This gives a better quality result when parts of the image are warped smaller.
+  如果启用，图像在重新采样时会进行自适应滤波。当图像的某些部分被变形缩小时，这会产生更好的质量结果。
 
 - **Bulge** (X & Y, Default: [0 0], Range: -1 to 1)
-  Distorts the perspective of the warped image, so that it appears to bulge in one direction. A value of 1 gives no distortion. A value of less than one causes the image to stretch toward the upper/right corner, while a value of greater than one causes it to stretch to the lower/left corner.
+  扭曲变形图像的透视效果，使其看起来向一个方向膨胀。值为 1 不产生变形。小于 1 的值使图像向右上角拉伸，大于 1 的值使其向左下角拉伸。
 
 - **Wrap** (X & Y, Popup menu, Default: [ No No ])
-  Determines the method for accessing outside the borders of the source image.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问源图像边界外区域的方法。
+  - **No**: 在边界外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复图像的镜像副本。使用此方法时边缘通常不太明显。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可略微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项也比 Normal 模式渲染略快，但结果也将是预乘形式，有时不太准确。如果图像中遮罩通道也有锐利边缘的区域存在明显的颜色变化，使用 Normal 模式可能会获得更好的结果。
 
 - **Crop Input Parameters** (Default: 0, Range: 0 or greater)
-  These 4 parameters, Crop Top , Crop Bottom , Crop Left, and Crop Right , allow selecting a rectangular subsection of the input image to be processed. If the Wrap parameters are set to "No" the exposed borders will be transparent. If the Wrap is "Tile" or "Reflect" the source image is wrapped on the new cropped borders to fill the frame. This can make it easier to avoid artifacts due to distorting an image with bad edges.
+  这 4 个参数，Crop Top、Crop Bottom、Crop Left 和 Crop Right，允许选择输入图像的矩形子区域进行处理。如果 Wrap 参数设置为 "No"，则暴露的边框将是透明的。如果 Wrap 为 "Tile" 或 "Reflect"，源图像将在新的裁剪边框上包裹以填充画面。这可以更容易地避免因变形具有不良边缘的图像而产生的伪影。
 
 - **Show Corner1** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Corner1 parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Corner1 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，支持屏幕控件。
 
 - **Show Corner2** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Corner2 parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Corner2 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，支持屏幕控件。
 
 - **Show Corner3** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Corner3 parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Corner3 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，支持屏幕控件。
 
 - **Show Corner4** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Corner4 parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Corner4 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，支持屏幕控件。
 

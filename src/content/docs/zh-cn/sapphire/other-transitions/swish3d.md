@@ -4,171 +4,151 @@ title: Swish3D
 
 ## S_Swish3D
 
-Dissolves between two input clips while performing 3D
-moves on each. During the transition the From clip is transformed
-by the Zdist, Rotate, Swivel, Tilt, Shift, Scale, and Shear
-parameters, and the To clip is transformed by the opposite of these
-values. The overall amount of motion for each image can
-be scaled by the Rel Amp From and Rel Amp To parameters.
+在对两个输入片段执行 3D 运动的同时进行溶解转场。在转场过程中，From 片段由 Zdist、Rotate、Swivel、Tilt、Shift、Scale 和 Shear 参数进行变换，To 片段则由这些值的相反数进行变换。每个图像的整体运动量可以通过 Rel Amp From 和 Rel Amp To 参数进行缩放。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![Swish3D](../_static/Swish3D.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此片段开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此片段结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mode** (Popup menu, Default: Blur Warp)
-  Selects the type of motion blur to apply when moving the From and To clips.
-  - **Blur Warp**: Normal motion blur, similar to BlurMotion effect.
-  - **Chroma Warp**: Move the color channels by different amounts,
-creating a color fringing effect similar to WarpChroma.
+  选择移动 From 和 To 片段时应用的运动模糊类型。
+  - **Blur Warp**: 常规运动模糊，类似于 BlurMotion 效果。
+  - **Chroma Warp**: 以不同量移动颜色通道，产生类似于 WarpChroma 的色彩边缘效果。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Swish3 Percent parameter.
+  启用后，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Swish3 Percent 参数进行动画设置来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它确定 From 和 To 输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制擦除的时序。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  The location of the d center in screen coordinates relative to the center of the frame. This parameter can be set by enabling and moving the Center Widget. Note that moving the d center can also cause the d size to change so that the current value of Wipe Amt remains correct.
+  画面中心的位置，以屏幕坐标表示，相对于帧的中心。可以通过启用和移动 Center Widget 来设置此参数。请注意，移动中心也可能导致大小发生变化，以使 Wipe Amt 的当前值保持正确。
 
 - **Motion Blur** (Default: 1, Range: 0 or greater)
-  Scales the amount of motion blur to use.
+  缩放要使用的运动模糊量。
 
 - **Z Dist** (Default: 0.5, Range: 0.001 or greater)
-  The 'distance' to transform the From clip. Values greater than 1.0 move it farther away and make it smaller. Values less then 1.0 move the image closer and enlarge it. By default, the To clip is also transformed by the opposite of this value.
+  变换 From 片段的"距离"。大于 1.0 的值将其移得更远并使其变小。小于 1.0 的值将图像移得更近并放大。默认情况下，To 片段也会按此值的相反数进行变换。
 
 - **Rotate** (Default: 0, Range: any)
-  Rotates by the specified angle in degrees.
+  按指定角度旋转，以度为单位。
 
 - **Swivel** (Default: 0, Range: any)
-  Rotates left or right in 3D about a vertical axis.
+  围绕垂直轴在 3D 中向左或向右旋转。
 
 - **Tilt** (Default: 0, Range: any)
-  Rotates up or down in 3D about a horizontal axis. You can use Swivel and Tilt together to rotate about arbitrary diagonal axes.
+  围绕水平轴在 3D 中向上或向下旋转。您可以同时使用 Swivel 和 Tilt 围绕任意对角线轴旋转。
 
 - **Perspective Amount** (Default: 1, Range: 0.25 to 4)
-  Controls the amount of lens telescoping while applying Swivel and Tilt. Increase for more 3D perspective.
+  控制应用 Swivel 和 Tilt 时的镜头伸缩程度。增大以获得更强的 3D 透视效果。
 
 - **Shift** (X & Y, Default: [0 0], Range: any)
-  Translation of the d pattern.
+  图案的平移。
 
 - **Scale** (Default: 1, Range: 0 to 2)
-  Scales the size of the clips.
+  缩放片段的大小。
 
 - **Scale Rel** (X & Y, Default: [1 1], Range: 0 to 2)
-  Scales the relative horizontal or vertical size of the clips.
+  缩放片段的相对水平或垂直大小。
 
 - **Shear** (X & Y, Default: [0 0], Range: any)
-  Shears horizontally or vertically.
+  水平或垂直剪切。
 
 - **Rel Amp From** (Default: 1, Range: any)
-  Scales the amount of transformation applied to the From clip. Set to zero to disable moving the From clip. Make negative to reverse the motion.
+  缩放应用于 From 片段的变换量。设置为零可禁用 From 片段的移动。设为负值可反转运动。
 
 - **Rel Amp To** (Default: -1, Range: any)
-  Scales the amount of transformation applied to the To clip. By default, the To clip is transformed in the opposite direction of the From clip. Set to zero to disable moving the To clip. Make positive to move the To clip in the same direction as the From clip.
+  缩放应用于 To 片段的变换量。默认情况下，To 片段的变换方向与 From 片段相反。设置为零可禁用 To 片段的移动。设为正值可使 To 片段与 From 片段同向移动。
 
 - **Fade** (Popup menu, Default: From and To)
-  Determines which clips are faded in or out during the transition.
-  - **From and To**: Cross fades both clips during the transition.
-  - **Only From**: Fades out the From clip and composites that
-over the To clip. This causes the To clip to remain fully opaque in
-areas where the From clip does not overlap with it.
-  - **Only To**: Fades in the To clip and composites that over the
-From clip. This causes the From clip to remain fully opaque in
-areas where the To clip does not overlap with it.
+  确定在转场过程中哪些片段进行淡入淡出。
+  - **From and To**: 在转场过程中对两个片段进行交叉溶解。
+  - **Only From**: 淡出 From 片段并将其合成到 To 片段之上。这使得 To 片段在 From 片段未重叠的区域保持完全不透明。
+  - **Only To**: 淡入 To 片段并将其合成到 From 片段之上。这使得 From 片段在 To 片段未重叠的区域保持完全不透明。
 
 - **Fade Mid Time** (Default: 0.5, Range: 0 to 1)
-  The midpoint in time of the image dissolve. Decrease for an earlier dissolve or increase for a later dissolve. If this is 1.0 the From clip will remain fully opaque for the entire transition. You can use this in combination with the Combine parameter to create various reveals without fading either clip. For example set Dissolve Mid Time to 1.0, Combine to Fade From, and then Shift and/or Rotate to cause the From clip to move off the screen.
+  图像溶解的时间中点。减小以提前溶解，增大以延后溶解。如果设为 1.0，From 片段将在整个转场期间保持完全不透明。您可以将此与 Combine 参数结合使用，以创建各种不进行淡化的显示效果。例如，将 Dissolve Mid Time 设为 1.0，Combine 设为 Fade From，然后使用 Shift 和/或 Rotate 使 From 片段移出屏幕。
 
 - **Slow In** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加平缓。
 
 - **Slow Out** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加平缓。
 
 - **Wrap From** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the From image.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问 From 图像边界之外区域的方法。
+  - **No**: 边界之外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。使用此方法时边缘通常不太明显。
 
 - **Wrap To** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the To image.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  确定访问 To 图像边界之外区域的方法。
+  - **No**: 边界之外显示黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。使用此方法时边缘通常不太明显。
 
 - **Filter** (Check-box, Default: on)
-  If enabled, the image is adaptively filtered when it is resampled. This gives better quality results when the image is warped smaller.
+  启用后，图像在重新采样时进行自适应过滤。当图像缩小变形时，这会产生更好的质量结果。
 
 - **Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result. This can be animated to brighten the result during the transition, but should typically start and end at 1.0 to avoid any pop at the start or end of the transition.
+  缩放结果的亮度。可以对此进行动画设置以在转场期间增亮结果，但通常应以 1.0 开始和结束，以避免在转场开始或结束时出现跳跃。
 
 - **Mid Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the result at the middle of the transition by this amount. Automatically ramps to this brightness and then back again during the transition.
+  在转场中点按此量缩放结果的亮度。在转场过程中自动增加到此亮度然后恢复。
 
 - **Steps** (Integer, Default: 8, Range: 3 to 100)
-  The number of spectrum samples to include along the path between the From (red) and To (blue) transformations. More steps give a smoother result, but require more time to process.
+  在 From（红色）和 To（蓝色）变换之间的路径上包含的光谱采样数量。更多步数产生更平滑的结果，但需要更多处理时间。
 
 - **Color1** (Default rgb: [1 0 0])
-  The color at the From transformation.
+  From 变换处的颜色。
 
 - **Color2** (Default rgb: [0 1 0])
-  The color midway between the From and To transformations.
+  From 和 To 变换中间的颜色。
 
 - **Color3** (Default rgb: [0 0 1])
-  The color at the To transformation.
+  To 变换处的颜色。
 
 - **White Balance** (Check-box, Default: off)
-  When enabled, the three colors are adjusted internally so they sum to white. In this case, the colors of unwarped regions are not affected and the average color of the result remains the same.
+  启用后，三种颜色在内部进行调整使其总和为白色。在这种情况下，未变形区域的颜色不受影响，结果的平均颜色保持不变。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时，使用此选项可以稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将以预乘形式呈现，有时不太准确。如果您的图像在遮罩通道也有锐利边缘的位置有突然的颜色变化，使用 Normal 模式可能会获得更好的结果。
 
 - **Show To Shift** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些平台支持屏幕控件。
 
 - **Show To Transform** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the To Z Dist and To Rotate parameters.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 To Z Dist 和 To Rotate 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些平台支持屏幕控件。
 
 - **Show From Shift** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些平台支持屏幕控件。
 
 - **Show From Transform** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些平台支持屏幕控件。
 
 - **Show Center** (Check-box, Default: on)
-  Turns on or off the screen user interface for adjusting the Center parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Center 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中出现，这些平台支持屏幕控件。

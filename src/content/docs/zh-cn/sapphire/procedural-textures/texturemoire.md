@@ -4,199 +4,189 @@ title: TextureMoire
 
 ## S_TextureMoire
 
-Creates an abstract Moire texture by adding together two patterns of
-concentric rings. The Phase Speed and Moire Speed parameters cause the
-rings to automatically animate over time.
+通过将两组同心圆环图案叠加在一起来创建抽象的摩尔纹纹理。Phase Speed 和 Moire Speed 参数使圆环随时间自动动画。
 
-In the Sapphire Render effects submenu.
+在 Sapphire Render 效果子菜单中。
 
 ![TextureMoire](../_static/TextureMoire.jpg)
 
 
 ### Inputs:
 
-- **Background**: The current layer. The clip to combine the texture image with. This may be ignored if the Combine option is set to Texture Only.
+- **Background**: 当前图层。用于与纹理图像合成的素材。如果 Combine 选项设置为 Texture Only，则可能忽略此输入。
 
-- **Mask**: Defaults to None. Interpolate between the result and the Source input. White areas use the result of the effect. Black areas use the Source clip.
+- **Mask**: 默认为无。在结果与源输入之间进行插值。白色区域使用效果结果，黑色区域使用源素材。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Mocha Project** (Default: 0, Range: 0 or greater)
-  Brings up the Mocha window for tracking footage and generating masks.
+  打开 Mocha 窗口，用于跟踪素材和生成遮罩。
 
 - **Blur Mocha** (Default: 0, Range: 0 or greater)
-  Blurs the Mocha Mask by this amount before using. This can be used to soften the edges or quantization artifacts of the mask, and smooth out the time displacements.
+  在使用前按此数值模糊 Mocha 遮罩。可用于柔化遮罩的边缘或量化伪影，并平滑时间位移。
 
 - **Mocha Opacity** (Default: 1, Range: 0 to 1)
-  Controls the strength of the Mocha mask. Lower values reduce the intensity of the effect.
+  控制 Mocha 遮罩的强度。较低的值会降低效果的强度。
 
 - **Invert Mocha** (Check-box, Default: off)
-  If enabled, the black and white of the Mocha Mask are inverted before applying the effect.
+  如果启用，则在应用效果前反转 Mocha 遮罩的黑白。
 
 - **Resize Mocha** (Default: 1, Range: 0 to 2)
-  Scales the Mocha Mask. 1.0 is the original size.
+  缩放 Mocha 遮罩。1.0 为原始大小。
 
 - **Resize Rel X** (Default: 1, Range: 0 to 2)
-  The relative horizontal size of the Mocha Mask.
+  Mocha 遮罩的相对水平大小。
 
 - **Resize Rel Y** (Default: 1, Range: 0 to 2)
-  The relative vertical size of the Mocha Mask.
+  Mocha 遮罩的相对垂直大小。
 
 - **Shift Mocha** (X & Y, Default: [0 0], Range: any)
-  Offsets the position of the Mocha Mask.
+  偏移 Mocha 遮罩的位置。
 
 - **Dilate Mocha** (Default: 0, Range: -100 to 100)
-  Dilates or erodes the Mocha Mask by this pixel amount before using.
+  在使用前按此像素值扩展或收缩 Mocha 遮罩。
 
 - **Dilation Quality** (Popup menu, Default: Fast)
-  Selects whether Dilate Mocha adusts quickly in default Fast mode or looks better in High quality mode.
-  - **Fast**: Dilate Mocha in Fast mode for quick adjustments.
-  - **High**: Dilate Mocha in High quality mode for a better looking mask shape.
+  选择 Dilate Mocha 是在默认的快速模式下快速调整，还是在高质量模式下获得更好的效果。
+  - **Fast**: 在快速模式下扩展 Mocha 遮罩，以便快速调整。
+  - **High**: 在高质量模式下扩展 Mocha 遮罩，以获得更好的遮罩形状。
 
 - **Bypass Mocha** (Check-box, Default: off)
-  Ignore the Mocha Mask and apply the effect to the entire source clip.
+  忽略 Mocha 遮罩，将效果应用于整个源素材。
 
 - **Show Mocha Only** (Check-box, Default: off)
-  Bypass the effect and show the Mocha Mask itself.
+  跳过效果，仅显示 Mocha 遮罩本身。
 
 - **Combine Masks** (Popup menu, Default: Union)
-  Determines how to combine the Mocha Mask and Input Mask when both are supplied to the effect.
-  - **Union**: Uses the area covered by both masks together.
-  - **Intersect**: Uses the area that overlaps between the two masks.
-  - **Mocha Only**: Ignore the Input Mask and only use the
-Mocha Mask.
+  当同时提供 Mocha 遮罩和输入遮罩时，确定如何组合它们。
+  - **Union**: 使用两个遮罩共同覆盖的区域。
+  - **Intersect**: 使用两个遮罩之间重叠的区域。
+  - **Mocha Only**: 忽略输入遮罩，仅使用 Mocha 遮罩。
 
 - **A Center** (X & Y, Default: [-0.0833 -0.0926], Range: any)
-  The center location of the A ring pattern.
+  A 圆环图案的中心位置。
 
 - **B Center** (X & Y, Default: [0.0833 0.0926], Range: any)
-  The center location of the B ring pattern.
+  B 圆环图案的中心位置。
 
 - **Frequency** (Default: 20, Range: 0.5 or greater)
-  The frequency of the rings. Increase for more and smaller rings, or decrease for fewer larger rings.
+  圆环的频率。增大可获得更多更小的圆环，减小可获得更少更大的圆环。
 
 - **Rel Freq Red** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies for the red color channel only.
+  仅缩放红色通道的圆环频率。
 
 - **Rel Freq Green** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies for the green color channel only.
+  仅缩放绿色通道的圆环频率。
 
 - **Rel Freq Blue** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies for the blue color channel only.
+  仅缩放蓝色通道的圆环频率。
 
 - **Double Space Rings** (Check-box, Default: off)
-  If checked, every other ring is negative giving a double spaced look. If unchecked, the absolute value of the wave form is used which gives twice as many visible rings.
+  如果勾选，每隔一个圆环为负值，产生双倍间距的外观。如果未勾选，则使用波形的绝对值，产生两倍数量的可见圆环。
 
 - **Phase Start** (Default: 0, Range: any)
-  The phase of the ring patterns. Increase to shift outwards from the centers, or decrease to shift inwards toward the centers. The phase parameters are relative to the period of the rings (1/frequency) so changing any by exactly 1 should give the same result again.
+  圆环图案的相位。增大可从中心向外移动，减小可向中心内移动。相位参数相对于圆环的周期（1/frequency），因此将任何值精确更改 1 应产生相同的结果。
 
 - **Phase Speed** (Default: 1, Range: any)
-  The automatic change in phase, per second.
+  每秒的相位自动变化。
 
 - **Phase Red** (Default: 0.2, Range: any)
-  Shifts the ring phases for the red color channel only.
+  仅移动红色通道的圆环相位。
 
 - **Phase Green** (Default: 0.1, Range: any)
-  Shifts the ring phases for the green color channel only.
+  仅移动绿色通道的圆环相位。
 
 - **Phase Blue** (Default: 0, Range: any)
-  Shifts the ring phases for the blue color channel only.
+  仅移动蓝色通道的圆环相位。
 
 - **Moire Phase** (Default: 0, Range: any)
-  The relative start phase of the two ring patterns. Shifts the A ring pattern out and the B ring pattern in by the same amount, causing changes in the moire pattern itself.
+  两组圆环图案的相对起始相位。将 A 圆环图案向外移动，同时将 B 圆环图案向内移动相同的量，从而改变摩尔纹图案本身。
 
 - **Moire Speed** (Default: 1, Range: any)
-  Automatic change per second in the relative phase of the two ring patterns.
+  两组圆环图案相对相位的每秒自动变化。
 
 - **A Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the A ring pattern. Set this to zero to disable and view only the B rings.
+  缩放 A 圆环图案的亮度。设为零可禁用并仅查看 B 圆环。
 
 - **A Color** (Default rgb: [0.5 0.5 0.5])
-  Scales the color of the A ring pattern.
+  缩放 A 圆环图案的颜色。
 
 - **A Rel Freq** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies of the A ring pattern.
+  缩放 A 圆环图案的圆环频率。
 
 - **A Rel Width** (Default: 1, Range: 0.2 or greater)
-  The relative horizontal size of the A ring pattern. Increase for wider ring shapes, decrease for taller ones.
+  A 圆环图案的相对水平大小。增大可获得更宽的圆环形状，减小可获得更高的形状。
 
 - **A Rotate** (Default: 0, Range: any)
-  Rotation in degrees of the A ring pattern. Note that this will have no effect when A Rel Width is 1.
+  A 圆环图案的旋转角度（度）。请注意，当 A Rel Width 为 1 时，此参数无效。
 
 - **B Brightness** (Default: 1, Range: 0 or greater)
-  Scales the brightness of the B ring pattern. Set this to zero to disable and view only the A rings.
+  缩放 B 圆环图案的亮度。设为零可禁用并仅查看 A 圆环。
 
 - **B Color** (Default rgb: [0.5 0.5 0.5])
-  Scales the color of the B ring pattern.
+  缩放 B 圆环图案的颜色。
 
 - **B Rel Freq** (Default: 1, Range: 0.1 or greater)
-  Scales the ring frequencies of the B ring pattern.
+  缩放 B 圆环图案的圆环频率。
 
 - **B Rel Width** (Default: 1, Range: 0.2 or greater)
-  The relative horizontal size of the B ring pattern. Increase for wider ring shapes, decrease for taller ones.
+  B 圆环图案的相对水平大小。增大可获得更宽的圆环形状，减小可获得更高的形状。
 
 - **B Rotate** (Default: 0, Range: any)
-  Rotation in degrees of the B ring pattern. Note that this will have no effect when A Rel Width is 1.
+  B 圆环图案的旋转角度（度）。请注意，当 A Rel Width 为 1 时，此参数无效。
 
 - **Brightness1** (Default: 1, Range: 0 or greater)
-  Scales the brightness of Color1. Increase for more contrast.
+  缩放 Color1 的亮度。增大以获得更多对比度。
 
 - **Color1** (Default rgb: [1 1 1])
-  The color of the 'brighter' parts of the texture. The colors of the result are determined by an interpolation between Color0 and Color1.
+  纹理"较亮"部分的颜色。结果的颜色由 Color0 和 Color1 之间的插值决定。
 
 - **Color0** (Default rgb: [0 0 0])
-  The color of the 'darker' parts of the texture.
+  纹理"较暗"部分的颜色。
 
 - **Offset0** (Default: 0, Range: any)
-  Adds this value to color0. Decrease to a negative value for more contrast.
+  将此值添加到 color0。减小为负值以获得更多对比度。
 
 - **Saturation** (Default: 1, Range: 0 to 10)
-  Scales the color saturation. Increase for more intense colors. Set to 0 for monochrome.
+  缩放颜色饱和度。增大可获得更鲜艳的颜色。设为 0 可获得单色效果。
 
 - **Bg Brightness** (Default: 1, Range: 0 or greater)
-  The background brightness is scaled by this value before being combined with the texture.
+  背景亮度在与纹理合成前按此值缩放。
 
 - **Combine** (Popup menu, Default: Texture Only)
-  Determines how the texture is combined with the Background.
-  - **Texture Only**: gives only the texture image with no Background.
-  - **Mult**: the texture is multiplied by the Background.
-  - **Add**: the texture is added to the Background.
-  - **Screen**: the texture is blended with the Background using a screen operation.
-  - **Difference**: the result is the difference between the texture and Background.
-  - **Overlay**: the texture is combined with the Background using an overlay function.
+  确定纹理如何与背景组合。
+  - **Texture Only**: 仅输出纹理图像，不包含背景。
+  - **Mult**: 纹理与背景相乘。
+  - **Add**: 纹理与背景相加。
+  - **Screen**: 纹理使用滤色操作与背景混合。
+  - **Difference**: 结果为纹理与背景的差值。
+  - **Overlay**: 纹理使用叠加功能与背景组合。
 
 - **Input Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按预乘形式处理图像（颜色已按不透明度缩放）。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太正确。
 
 - **Output Opacity** (Popup menu, Default: Copy From Input)
-  Determines the opacity/transparency of the result. This effect does not process the opacity (alpha channel) of its input but it can either copy the opacity from the input, or output a fully opaque result.
-  - **All Opaque**: Makes the result fully opaque with no
-transparency.
-  - **Copy From Input**: Copies the opacity/transparency from
-the current layer given to this effect.
+  确定结果的不透明度/透明度。此效果不处理输入的不透明度（Alpha 通道），但可以从输入复制不透明度，或输出完全不透明的结果。
+  - **All Opaque**: 使结果完全不透明，没有透明度。
+  - **Copy From Input**: 从给定此效果的当前图层复制不透明度/透明度。
 
 - **Mask Use** (Popup menu, Default: Luma)
-  Determines how the Mask input channels are used to make a monochrome mask.
-  - **Luma**: the luminance of the RGB channels is used.
-  - **Alpha**: only the Alpha channel is used.
+  确定如何使用 Mask 输入通道来生成单色遮罩。
+  - **Luma**: 使用 RGB 通道的亮度。
+  - **Alpha**: 仅使用 Alpha 通道。
 
 - **Blur Mask** (Default: 0.05, Range: 0 or greater)
-  Blurs the Matte input by this amount before using. This can provide a smoother transition between the matted and unmatted areas. It has no effect unless the Matte input is provided.
+  在使用前按此数值模糊遮罩输入。这可以提供遮罩区域和非遮罩区域之间更平滑的过渡。除非提供了遮罩输入，否则无效。
 
 - **Invert Mask** (Check-box, Default: off)
-  If on, inverts the Matte input so the effect is applied to areas where the Matte is black instead of white. This has no effect unless the Matte input is provided.
-
+  如果启用，则反转遮罩输入，使效果应用于遮罩为黑色而非白色的区域。除非提供了遮罩输入，否则无效。

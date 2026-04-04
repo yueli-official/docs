@@ -4,128 +4,118 @@ title: WipeChecker
 
 ## S_WipeChecker
 
-Performs a wipe transition between two input clips
-using a grid of growing or shrinking checkers. The Wipe Percent
-parameter should be animated to control the transition speed.
-Increase the Grad Add parameter to make the timing of the checker pattern move
-across the screen during the wipe. Increase the Border Width
-parameter to draw a border at the wipe transition edges.
+使用不断增大或缩小的棋盘格网格在两个输入素材之间执行擦除转场。应对 Wipe Percent 参数设置动画以控制转场速度。增大 Grad Add 参数可使棋盘格图案的时序在擦除过程中移动到屏幕上。增大 Border Width 参数可在擦除转场边缘绘制边框。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![WipeChecker](../_static/WipeChecker.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip.
+- **Background**: 默认为无。以此素材结束转场。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Wipe Off to Bg)
-  Selects the direction of the transition.
-  - **Wipe Off to Bg**: transitions from the current layer to the Background.
-  - **Wipe On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Wipe Off to Bg**: 从当前图层转场到背景。
+  - **Wipe On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Wipe Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过对 Wipe Percent 参数设置动画来手动执行转场。
 
 - **Wipe Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the From and To inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the wipe.
+  必须禁用 Auto Trans 才能使用此参数。它决定了 From 和 To 输入之间的转场比例，通常应从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线以更精细地控制擦除时序。
 
 - **Checkers** (Popup menu, Default: Grow)
-  The direction of the checkers transition.
-  - **Shrink**: the squares start large and shrink inwards.
-  - **Grow**: the squares start small and grow outwards.
+  棋盘格转场的方向。
+  - **Shrink**: 方块从大开始向内缩小。
+  - **Grow**: 方块从小开始向外扩大。
 
 - **Edge Softness** (Default: 0, Range: 0 or greater)
-  The width of the transition edges. Larger values will cause softer, less visible edges in the wipe pattern.
+  转场边缘的宽度。较大的值将导致擦除图案中更柔和、更不明显的边缘。
 
 - **Angle** (Default: 45, Range: any)
-  The rotation of the overall checker pattern used for the wipe, in degrees.
+  用于擦除的整体棋盘格图案的旋转角度（以度为单位）。
 
 - **Frequency** (Default: 6, Range: 0.1 or greater)
-  The frequency of the checker pattern. Increase for more and smaller elements, or decrease for fewer and larger.
+  棋盘格图案的频率。增大可获得更多更小的元素，减小可获得更少更大的元素。
 
 - **Rel Width** (Default: 1, Range: 0.1 or greater)
-  The relative horizontal size of the checkers. Increase for wider checkers, decrease for taller ones.
+  棋盘格的相对水平尺寸。增大可获得更宽的棋盘格，减小可获得更高的棋盘格。
 
 - **Rel Wid Pre Rot** (Default: 1, Range: 0.1 or greater)
-  The relative size of the checkers in the direction of the current rotation angle. If the Angle parameter is zero this will have the same effect as Rel Width.
+  棋盘格在当前旋转角度方向上的相对尺寸。如果 Angle 参数为零，则效果与 Rel Width 相同。
 
 - **Shift** (X & Y, Default: [0 0], Range: any)
-  Translation of the checker pattern.
+  棋盘格图案的平移。
 
 - **Grad Add** (Default: 0, Range: -10 to 10)
-  If positive, a gradient will be added to the timing of the transition pattern so it moves across the screen during the wipe. This parameter can be adjusted using the Wipe Widget if enabled, but the value must be positive to make this widget visible.
+  如果为正值，将在转场图案的时序中添加渐变，使其在擦除过程中移动到屏幕上。如果启用了 Wipe Widget，可以使用它调整此参数，但值必须为正才能使此控件可见。
 
 - **Grad Angle** (Default: 0, Range: any)
-  The direction of the wipe gradient in degrees. This will have no effect unless Grad Add is positive. The Wipe Widget also allows adjusting this parameter.
+  擦除渐变的方向（以度为单位）。除非 Grad Add 为正值，否则此参数无效。Wipe Widget 也允许调整此参数。
 
 - **Border Width** (Default: 0, Range: 0 or greater)
-  If positive, a colored border is drawn at the wipe transition edges, using the border color, opacity, softness, and shift parameters below.
+  如果为正值，将在擦除转场边缘使用以下边框颜色、不透明度、柔和度和偏移参数绘制彩色边框。
 
 - **Border Color** (Default rgb: [0.75 0 0])
-  The color of the border. This has no effect unless Border Width is positive.
+  边框的颜色。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Opacity** (Default: 1, Range: 0 to 1)
-  The opacity of the border. Decrease to make the border transparent and allow the image under it to show through. This has no effect unless Border Width is positive.
+  边框的不透明度。减小可使边框变为透明，允许其下方的图像透过显示。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Softness** (Default: 0, Range: 0 or greater)
-  The softness of the border edges. This has no effect unless Border Width is positive.
+  边框边缘的柔和度。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Shift** (Default: 0, Range: any)
-  Shifts the border ahead of or behind the transition edge. This has no effect unless Border Width is positive.
+  将边框向转场边缘的前方或后方偏移。除非 Border Width 为正值，否则此参数无效。
 
 - **Border Glow** (Default: 0, Range: 0 or greater)
-  Adds a glow along the border of the wipe. The value determines the brightness of the glow.
+  沿擦除边框添加辉光。该值决定辉光的亮度。
 
 - **Glow Width** (Default: 0.1, Range: 0 or greater)
-  The width of the glowing border.
+  辉光边框的宽度。
 
 - **Width Red** (Default: 1, Range: 0 or greater)
-  Scales the red glow width. If the red, green, and blue widths are all equal, the glow will match Glow Color. Otherwise it will have a fringe of varying color.
+  缩放红色辉光宽度。如果红色、绿色和蓝色宽度都相等，辉光将匹配 Glow Color。否则将产生不同颜色的边缘。
 
 - **Width Green** (Default: 1.2, Range: 0 or greater)
-  Scales the green glow width.
+  缩放绿色辉光宽度。
 
 - **Width Blue** (Default: 1.4, Range: 0 or greater)
-  Scales the blue glow width.
+  缩放蓝色辉光宽度。
 
 - **Glow Color** (Default rgb: [1 1 1])
-  The color of the glowing border.
+  辉光边框的颜色。
 
 - **Noise Amp** (Default: 1, Range: 0 or greater)
-  The amount of noise to add to the glowing border.
+  添加到辉光边框的噪声量。
 
 - **Noise Freq** (Default: 16, Range: 0.1 to 20)
-  The spatial frequency of the noise.
+  噪声的空间频率。
 
 - **Noise Speed** (Default: 2, Range: any)
-  The speed with which the noise changes or boils over time.
+  噪声随时间变化或沸腾的速度。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
+  确定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度（Alpha=1）时，使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按照图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项也比 Normal 模式渲染速度稍快，但结果也将是预乘形式，这有时不太正确。
 
 - **Show Wipe** (Check-box, Default: on)
-  Turns on or off the screen user interface widget for adjusting the Grad Add, Grad Angle, and Wipe Percent parameters. The value of the Grad Add parameter must first be positive for this widget to be visible.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
+  打开或关闭用于调整 Grad Add、Grad Angle 和 Wipe Percent 参数的屏幕用户界面控件。Grad Add 参数的值必须首先为正值才能使此控件可见。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。
 
 - **Show Glow Width** (Check-box, Default: off)
-  Turns on or off the screen user interface for adjusting the Glow Width parameter.This parameter only appears on AE and Premiere, where on-screen widgets are supported.
-
+  打开或关闭用于调整 Glow Width 参数的屏幕用户界面。此参数仅在 AE 和 Premiere 中显示，因为这些软件支持屏幕控件。

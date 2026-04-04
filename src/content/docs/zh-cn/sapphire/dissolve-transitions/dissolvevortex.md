@@ -4,86 +4,76 @@ title: DissolveVortex
 
 ## S_DissolveVortex
 
-Transitions between two input clips using a vortex
-warping function. The first clip is warped away and faded out while
-the second clip is unwarped into place and faded in. The Dissolve
-Percent parameter should be animated to control the transition speed.
+使用漩涡扭曲函数在两个输入素材之间进行转场。
+第一个素材被扭曲消失并淡出，而第二个素材从扭曲中还原并淡入。
+应对 Dissolve Percent 参数进行动画处理以控制转场速度。
 
-In the Sapphire Transitions effects submenu.
+在 Sapphire Transitions 效果子菜单中。
 
 ![DissolveVortex](../_static/DissolveVortex.jpg)
 
 
 ### Inputs:
 
-- **Foreground**: The current layer. Starts the transition with this clip.
+- **Foreground**: 当前图层。以此素材开始转场。
 
-- **Background**: Defaults to None. Ends the transition with this clip. If this input is not provided, a fully transparent background is used, showing whatever is behind it. Note that the background can not be warped during the transition unless this input is provided.
+- **Background**: 默认为无。以此素材结束转场。如果未提供此输入，将使用完全透明的背景，显示其后面的内容。请注意，除非提供此输入，否则背景在转场期间无法被扭曲。
 
 
 ### Parameters:
 
 - **Load Preset** (Push-button)
-  Brings up the Preset Browser to browse all available presets for this effect.
+  打开预设浏览器，浏览此效果的所有可用预设。
 
 - **Save Preset** (Push-button)
-  Brings up the Preset Save dialog to save a preset for this effect.
+  打开预设保存对话框，保存此效果的预设。
 
 - **Transition Dir** (Popup menu, Default: Dissolve Off to Bg)
-  Selects the direction of the transition.
-  - **Dissolve Off to Bg**: transitions from the current layer to the Background.
-  - **Dissolve On from Bg**: transitions from the Background to the current layer.
+  选择转场的方向。
+  - **Dissolve Off to Bg**: 从当前图层转场到背景。
+  - **Dissolve On from Bg**: 从背景转场到当前图层。
 
 - **Auto Trans** (Popup YES-NO, Default: No)
-  If enabled, a transition is performed automatically between the first and last frames of the layer. If this is off, the transition is performed manually by animating the Dissolve Percent parameter.
+  如果启用，将在图层的第一帧和最后一帧之间自动执行转场。如果关闭，则通过动画 Dissolve Percent 参数手动执行转场。
 
 - **Dissolve Percent** (Default: 0, Range: 0 to 1)
-  Auto Trans must be disabled for this parameter to be used. It determines the transition ratio between the Foreground and Background inputs, and would normally be animated from 0 to 100 to perform a complete transition. The curve controlling this parameter can be adjusted for more detailed control over the timing of the dissolve. The Slow In and Slow Out parameters, if positive, also adjust the transition ratio internally for a smoother start and/or end to the transition.
+  必须禁用 Auto Trans 才能使用此参数。它决定前景和背景输入之间的转场比例，通常从 0 动画到 100 以执行完整的转场。可以调整控制此参数的曲线，以更精细地控制溶解的时间。如果 Slow In 和 Slow Out 参数为正值，它们也会在内部调整转场比例，使转场开始和/或结束更平滑。
 
 - **Center** (X & Y, Default: [0 0], Range: any)
-  The location of the vortex center in screen coordinates relative to the center of the frame. This parameter can be set by enabling and moving the Center Widget. Note that moving the vortex center can also cause the vortex size to change so that the current value of Wipe Amt remains correct.
+  漩涡中心相对于帧中心的屏幕坐标位置。可以通过启用并移动 Center 控件来设置此参数。请注意，移动漩涡中心也可能导致漩涡大小发生变化，以使 Wipe Amt 的当前值保持正确。
 
 - **Vortex Amount** (Default: 72, Range: any)
-  The amount of vortex rotation, in approximate degrees at the edge of the frame.
+  漩涡旋转的量，以帧边缘处的近似度数表示。
 
 - **Rel Amount2** (Default: -1, Range: any)
-  The relative amount of the second clip vortex rotation. If this is positive instead of negative the second clip will be unvortexed from the opposite direction.
+  第二个素材漩涡旋转的相对量。如果此值为正而非负，第二个素材将从相反方向解除漩涡。
 
 - **Rotate Amount** (Default: 0, Range: any)
-  If non-zero, a rotation is also added to the warping. Make negative to rotate the inner and outer regions in different directions.
+  如果非零，还会在扭曲中添加旋转效果。设为负值可使内外区域向不同方向旋转。
 
 - **Inner Radius** (Default: 0.04, Range: 0 or greater)
-  The radius from the center at which the vortexing is phased in. This can be used to reduce excessive distortion and aliasing at the very center of the vortex.
+  从中心到漩涡效果逐渐加入的半径。可用于减少漩涡中心处过度的失真和锯齿。
 
 - **Slow In** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to start more gradually.
+  如果为正值，使转场开始更加缓和。
 
 - **Slow Out** (Default: 0.5, Range: 0 to 1)
-  If positive, causes the transition to end more gradually.
+  如果为正值，使转场结束更加缓和。
 
 - **Wrap** (X & Y, Popup menu, Default: [ Reflect Reflect ])
-  Determines the method for accessing outside the borders of the source images.
-  - **No**: gives black beyond the borders.
-  - **Tile**: repeats a copy of the image.
-  - **Reflect**: repeats a mirrored copy. Edges are often less
-visible with this method.
+  决定访问源图像边界之外区域的方法。
+  - **No**: 边界外呈现黑色。
+  - **Tile**: 重复图像的副本。
+  - **Reflect**: 重复镜像副本。此方法通常边缘不太明显。
 
 - **Filter** (Check-box, Default: on)
-  If enabled, the image is adaptively filtered when it is resampled. This gives a better quality result when parts of the image are warped smaller.
+  如果启用，在重新采样时对图像进行自适应滤波。当图像的某些部分被扭曲得更小时，这可以提供更好的质量结果。
 
 - **Opacity** (Popup menu, Default: Normal)
-  Determines the method used for dealing with opacity/transparency.
-  - **All Opaque**: Use this option to render slightly faster when
-the input image is fully opaque with no transparency (alpha=1).
-  - **Normal**: Process opacity normally.
-  - **As Premult**: Process as if the image is already in
-premultiplied form (colors have been scaled by opacity). This option
-also renders slightly faster than Normal mode, but the results will
-also be in premultiplied form, which is sometimes less correct.
-If your image has sharp color changes where the matte
-channel also has sharp edges, you may get better results with Normal
-mode.
+  决定处理不透明度/透明度的方法。
+  - **All Opaque**: 当输入图像完全不透明且没有透明度 (alpha=1) 时使用此选项可稍微加快渲染速度。
+  - **Normal**: 正常处理不透明度。
+  - **As Premult**: 按图像已经是预乘形式（颜色已按不透明度缩放）来处理。此选项的渲染速度也比 Normal 模式稍快，但结果也将是预乘形式，有时不太准确。如果您的图像在遮罩通道也有锐利边缘的地方有锐利的颜色变化，Normal 模式可能会给出更好的结果。
 
 - **Crop Input Parameters** (Default: 0, Range: 0 or greater)
-  These 4 parameters, Crop Top , Crop Bottom , Crop Left, and Crop Right , allow selecting a rectangular subsection of the input image to be processed. If the Wrap parameters are set to "No" the exposed borders will be transparent. If the Wrap is "Tile" or "Reflect" the source image is wrapped on the new cropped borders to fill the frame. This can make it easier to avoid artifacts due to distorting an image with bad edges.
-
+  这 4 个参数（Crop Top、Crop Bottom、Crop Left 和 Crop Right）允许选择要处理的输入图像的矩形子区域。如果 Wrap 参数设为"No"，暴露的边框将是透明的。如果 Wrap 为"Tile"或"Reflect"，源图像将在新裁剪的边框上进行环绕以填充帧。这可以更容易地避免因扭曲边缘不良的图像而产生的伪像。
