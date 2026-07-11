@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "@platform/ui/theme.css";
+
+/* Self-hosted brand fonts (offline-resilient; design-system §5/§12):
+   Space Grotesk = display/headings, DM Sans = body. No Google fetch. */
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/dm-sans";
+
+@plugin "@tailwindcss/typography";
+
+/* Article rendering (code highlight / math / mermaid / callouts) + theme-aware
+   code-block background, now shared via the @platform/content layer. Must come
+   after the typography plugin to override it (so it stays a consumer-side @import
+   here rather than a layer-injected global, where ordering isn't guaranteed). */
+@import "@platform/content/article.css";
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — re-skin the docs from these homes (a borrowed, reusable setup):
+     • radius scale ↔ --ui-radius, fonts → @platform/ui/theme.css (shared mechanism)
+     • option lists + shape     → @platform/ui/tokens.ts      (shared, reusable)
+     • primary color            → app/app.config.ts           (platformAppConfig('docs'))
+     • page width               → app/utils/page.ts           (PAGE_WIDTHS)
+   Radius derives from one var (--ui-radius), so every rounded-* across front +
+   console follows it — no hardcoded corner sizes anywhere.
+   ══════════════════════════════════════════════════════════════════════════ */

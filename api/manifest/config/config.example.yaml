@@ -1,0 +1,54 @@
+# ── CONFIG TEMPLATE ──────────────────────────────────────────────────────────
+# Setup (once):  cp config.example.yaml config.yaml  → then set local values.
+# The real config.yaml is GITIGNORED (holds dev DB host 192.168.5.5 + secrets);
+# this template is committed. Platform standard — see backend-platform-conventions §7.
+# ─────────────────────────────────────────────────────────────────────────────
+server:
+  # Dev-stage: bind loopback so Windows Firewall never prompts (go run re-compiles
+  # to a new temp exe each time → repeated prompts on 0.0.0.0). Prod hardening:
+  # bind all interfaces (":8086"). See checklists/local-dev-gotchas.md §2.
+  address: "127.0.0.1:8086"
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+logger:
+  level: "info"
+  stdout: true
+database:
+  default:
+    # GoFrame's pgsql driver builds the DSN from these structured fields.
+    # NOTE: GoFrame does NOT read GF_DATABASE_DEFAULT_HOST for the running service
+    # (only tests read <SVC>_PG_HOST explicitly) — see checklists/local-dev-gotchas.md
+    # §6. The shared dev PG actually listens on 192.168.5.5: to run locally, set host
+    # below to 192.168.5.5 (and revert before commit).
+    type: "pgsql"
+    host: "127.0.0.1"
+    port: "5432"
+    user: "postgres"
+    pass: "postgres"
+    name: "docs"
+
+docs:
+  siteSlug: "docs-local"
+  brand: "文档库"
+  domain: "docs.localhost"
+  siteUrl: "http://localhost:3003"
+  assetSpace: "default"
+  assetNamespace: "default"
+  assetProfile: "docs-default"
+  # Docs-local RBAC (authz is per-site, not the IdP's global role). The owner(s)
+  # = the site operator: full admin powers, scoped to THIS docs hub. Listed by
+  # their identity `sub` (UUID). Authentication still comes from the IdP;
+  # authorization is the docs service's own — being an owner here says nothing
+  # about other sites.
+  operatorSubs:
+    - "ac73d232-ce55-487d-bb39-fd336f1a9806"   # test@example.com (devkit PG+Redis identity stack)
+  # IdP JWKS for user access-token verification (gokit/authjwt). Lazy-fetched.
+  jwks:
+    url: "http://localhost:8081/oauth2/jwks.json"
+    issuer: "http://localhost:8081"
+    audience: ""
+  identity:
+    baseUrl: "http://localhost:8081"
+  assetService:
+    baseUrl: "http://localhost:8082"
+  coverCategory: "docs-collection-cover"

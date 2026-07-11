@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS doc_search_events;
+DROP TABLE IF EXISTS docs;
+DROP TABLE IF EXISTS collections;
