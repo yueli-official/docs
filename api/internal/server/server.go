@@ -7,6 +7,7 @@ import (
 
 	"platform/gokit/authjwt"
 	"platform/gokit/ghttpx"
+	"platform/gokit/healthcheck"
 	"platform/products/docs/api/internal/catalog"
 	"platform/products/docs/api/internal/controller"
 )
@@ -23,6 +24,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	s.Group("/", func(grp *ghttp.RouterGroup) {
 		grp.Middleware(ghttpx.Middleware)
 		grp.GET("/healthz", controller.Healthz)
+		grp.GET("/readyz", healthcheck.Handler(map[string]healthcheck.Check{"database": healthcheck.Database}))
 	})
 
 	// Identity probe: JWT parsed-if-present, never 401. Available regardless of
