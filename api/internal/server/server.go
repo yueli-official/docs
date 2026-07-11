@@ -21,6 +21,7 @@ type Deps struct {
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
 func Configure(s *ghttp.Server, d Deps) {
+	s.Use(ghttpx.TraceRouteMiddleware)
 	s.Group("/", func(grp *ghttp.RouterGroup) {
 		grp.Middleware(ghttpx.Middleware)
 		grp.GET("/healthz", controller.Healthz)

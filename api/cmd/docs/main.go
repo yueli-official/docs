@@ -8,6 +8,7 @@ import (
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 
 	"platform/gokit/authjwt"
+	"platform/gokit/observability"
 	"platform/gokit/openapiexport"
 	"platform/products/docs/api/internal/appconfig"
 	"platform/products/docs/api/internal/catalog"
@@ -17,6 +18,11 @@ import (
 
 func main() {
 	ctx := gctx.New()
+	shutdown, err := observability.StartFromEnvironment(ctx, "docs-api")
+	if err != nil {
+		panic(err)
+	}
+	defer observability.ShutdownWithTimeout(shutdown)
 
 	// ── Catalog logic (DB access) ─────────────────────────────────────────────
 	cat := catalog.New(dao.NewPG(g.DB())).

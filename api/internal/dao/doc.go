@@ -113,7 +113,7 @@ func (p *PG) searchPublishedDocsFTS(ctx context.Context, collectionID, versionID
 	var out []*model.Doc
 	rowsSQL := "SELECT d.* FROM " + from + " WHERE " + where +
 		" ORDER BY ts_rank(d.search_vector, tsq) DESC, d.updated_at DESC LIMIT ?"
-	err = p.db.Raw(rowsSQL, append(args, limit)...).Scan(&out)
+	err = p.db.Ctx(ctx).Raw(rowsSQL, append(args, limit)...).Scan(&out)
 	if out == nil {
 		out = []*model.Doc{}
 	}
@@ -125,7 +125,7 @@ func (p *PG) searchPublishedDocsFTS(ctx context.Context, collectionID, versionID
 	facetSQL := "SELECT c.id, c.slug, c.title, COUNT(*) AS count " +
 		"FROM docs d JOIN collections c ON c.id = d.collection_id JOIN collection_versions v ON v.id = d.version_id, websearch_to_tsquery('chinese_zh', ?) tsq " +
 		"WHERE " + where + " GROUP BY c.id, c.slug, c.title ORDER BY count DESC, c.title ASC"
-	if err := p.db.Raw(facetSQL, args...).Scan(&facets); err != nil {
+	if err := p.db.Ctx(ctx).Raw(facetSQL, args...).Scan(&facets); err != nil {
 		return nil, err
 	}
 	if facets == nil {
@@ -168,7 +168,7 @@ func (p *PG) searchPublishedDocsLike(ctx context.Context, collectionID, versionI
 	rowsSQL := "SELECT d.* FROM docs d JOIN collection_versions v ON v.id = d.version_id WHERE " + where +
 		" ORDER BY CASE WHEN d.title ILIKE ? ESCAPE '\\' THEN 0 WHEN d.excerpt ILIKE ? ESCAPE '\\' THEN 1 ELSE 2 END, d.updated_at DESC LIMIT ?"
 	rowArgs := append(append([]any{}, args...), pattern, pattern, limit)
-	err = p.db.Raw(rowsSQL, rowArgs...).Scan(&out)
+	err = p.db.Ctx(ctx).Raw(rowsSQL, rowArgs...).Scan(&out)
 	if out == nil {
 		out = []*model.Doc{}
 	}
@@ -180,7 +180,7 @@ func (p *PG) searchPublishedDocsLike(ctx context.Context, collectionID, versionI
 	facetSQL := "SELECT c.id, c.slug, c.title, COUNT(*) AS count " +
 		"FROM docs d JOIN collections c ON c.id = d.collection_id JOIN collection_versions v ON v.id = d.version_id " +
 		"WHERE " + where + " GROUP BY c.id, c.slug, c.title ORDER BY count DESC, c.title ASC"
-	if err := p.db.Raw(facetSQL, args...).Scan(&facets); err != nil {
+	if err := p.db.Ctx(ctx).Raw(facetSQL, args...).Scan(&facets); err != nil {
 		return nil, err
 	}
 	if facets == nil {
