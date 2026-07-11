@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ActionFeedbackButton, ManageEmpty, ManageHeader, ManageIconPicker, SkeletonList } from '@platform/ui/components'
-import { useActionFeedback } from '@platform/ui/use-action-feedback'
+import { ActionFeedbackButton, ManageEmpty, ManageHeader, ManageIconPicker, SkeletonList } from '@platform/manage/components'
+import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { Collection, CollectionList, HomeConfigResponse, HomeQuickLink } from '~/types'
 

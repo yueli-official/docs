@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageCollectionCoverCrop, ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/ui/components'
+import { ManageCollectionCoverCrop, ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { CollectionView } from '~/types'
 

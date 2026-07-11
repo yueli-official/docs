@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageTabs, SkeletonList } from '@platform/ui/components'
+import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageTabs, SkeletonList } from '@platform/manage/components'
 import type { CollectionManageTree, CollectionVersion, CollectionVersionsResponse, CollectionView, DocDetail } from '~/types'
 import { buildDocTree, docManageRoute, findDocSlugPathById } from '~/utils/docsManageRoutes.mjs'
 

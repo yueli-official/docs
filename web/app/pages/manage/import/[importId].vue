@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageEmpty, ManageHeader, SkeletonList } from '@platform/ui/components'
+import { ManageEmpty, ManageHeader, SkeletonList } from '@platform/manage/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { DocsImportBatch, DocsImportDetailResponse, DocsImportItem } from '~/types'
 

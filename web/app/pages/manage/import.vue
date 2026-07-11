@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageEmpty, ManageHeader } from '@platform/ui/components'
+import { ManageEmpty, ManageHeader } from '@platform/manage/components'
 import type { DocsImportBatch, DocsImportSummary, DocsImportUploadResponse } from '~/types'
 
 definePageMeta({ layout: 'manage' })
