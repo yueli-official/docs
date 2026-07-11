@@ -8,6 +8,7 @@ import (
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 
 	"platform/gokit/authjwt"
+	"platform/gokit/openapiexport"
 	"platform/products/docs/api/internal/appconfig"
 	"platform/products/docs/api/internal/catalog"
 	"platform/products/docs/api/internal/dao"
@@ -32,6 +33,12 @@ func main() {
 
 	s := g.Server()
 	server.Configure(s, server.Deps{Verifier: verifier, Catalog: cat})
+	if handled, err := openapiexport.ExportIfRequested(s); handled {
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
 	g.Log().Info(ctx, "docs-service starting")
 	s.Run()
 }
