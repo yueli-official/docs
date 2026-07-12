@@ -2,14 +2,14 @@
 // Shared public site header (logo home-link + account menu). Used by the
 // default layout and the collection (reading) layout so no public page is
 // stranded without top chrome.
-import type { DropdownMenuItem } from '@nuxt/ui'
+import { PlatformUserMenu } from '@platform/ui/components'
+import type { PlatformUserMenuAction } from '@platform/ui/components'
 import type { HomeConfigResponse } from '~/types'
 
 withDefaults(defineProps<{ widthClass?: string }>(), { widthClass: 'max-w-screen-xl' })
 const { user, loggedIn, login, logout } = useAuth()
 const { isOwner, refresh: refreshMe } = useMe()
 const accountUrl = computed(() => useRuntimeConfig().public.accountUrl || 'http://localhost:3000')
-const initial = computed(() => (user.value?.name || user.value?.email || '?').charAt(0).toUpperCase())
 const searchOpen = ref(false)
 const { call } = useApi()
 const { data: siteConfigData } = await useAsyncData(
@@ -27,15 +27,14 @@ watch(loggedIn, async (value) => {
   if (value) await refreshMe()
 }, { immediate: true })
 
-const userMenuItems = computed<DropdownMenuItem[][]>(() => {
-  const primary = [{ label: user.value?.name || user.value?.email || '', type: 'label' as const }]
-  const nav = [
+const contextActions = computed<PlatformUserMenuAction[]>(() => [
     ...(isOwner.value ? [{ label: '控制台', icon: 'i-tabler-layout-dashboard', to: '/manage' }] : []),
-    { label: '用户设置', icon: 'i-tabler-user-cog', onSelect: () => navigateTo(accountUrl.value, { external: true }) },
-  ]
-  const session = [{ label: '退出登录', icon: 'i-tabler-logout', onSelect: () => logout() }]
-  return [primary, nav, session]
-})
+])
+const utilityActions = computed<PlatformUserMenuAction[]>(() => [{
+  label: '用户设置',
+  icon: 'i-tabler-user-cog',
+  onSelect: async () => { await navigateTo(accountUrl.value, { external: true }) },
+}])
 </script>
 
 <template>
@@ -79,15 +78,13 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => {
         </UTooltip>
         <UColorModeButton aria-label="切换夜间模式" />
         <template v-if="loggedIn">
-          <UDropdownMenu
-            :items="userMenuItems"
-            :ui="{ content: 'w-48' }"
-          >
-            <UButton variant="ghost" color="neutral" class="gap-2 px-1.5">
-              <UAvatar :text="initial" size="xs" />
-              <span class="hidden max-w-32 truncate text-sm sm:block">{{ user?.name || user?.email }}</span>
-            </UButton>
-          </UDropdownMenu>
+          <PlatformUserMenu
+            :name="user?.name"
+            :email="user?.email"
+            :context-actions="contextActions"
+            :utility-actions="utilityActions"
+            :logout
+          />
         </template>
         <UButton v-else variant="ghost" color="neutral" icon="i-tabler-login-2" label="登录" @click="handleLogin" />
       </div>

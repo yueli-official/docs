@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { BackToTop } from '@platform/manage/components'
+
 const route = useRoute()
 const slug = computed(() => route.params.collection as string)
 const locale = computed(() => typeof route.query.locale === 'string' ? route.query.locale : 'en')
@@ -44,7 +46,7 @@ const currentPath = computed(() => {
           <DocTree v-else :nodes="tree" :current-path="currentPath" />
         </div>
       </aside>
-      <div class="min-w-0 flex-1">
+      <main id="public-main" tabindex="-1" class="min-w-0 flex-1 outline-none">
         <div v-if="currentPath" class="mb-5 flex items-center justify-between gap-3 rounded-xl border border-default bg-elevated/35 px-3 py-2 lg:hidden">
           <div class="flex min-w-0 items-center gap-3">
             <span class="relative size-10 shrink-0 overflow-hidden rounded-md bg-elevated">
@@ -68,7 +70,7 @@ const currentPath = computed(() => {
           />
         </div>
         <slot />
-      </div>
+      </main>
     </div>
     <UDrawer v-model:open="navOpen" title="文档目录" handle>
       <template #body>
@@ -89,5 +91,6 @@ const currentPath = computed(() => {
       </template>
     </UDrawer>
     <SiteFooter />
+    <BackToTop target-id="public-main" />
   </div>
 </template>

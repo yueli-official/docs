@@ -39,7 +39,7 @@ function isChildActive(section?: string) {
       {{ siteBrand }}
     </NuxtLink>
 
-    <nav class="flex-1 space-y-1 p-3">
+    <nav aria-label="文档后台" class="flex-1 space-y-1 p-3">
       <div v-for="item in nav" :key="item.to" class="space-y-1">
         <NuxtLink
           :to="item.to"
