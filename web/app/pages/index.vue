@@ -14,10 +14,18 @@ const { data } = await useAsyncData('collections', () => call<CollectionList>('/
 const { data: homeData } = await useAsyncData(
   'docs-home-config',
   () => call<HomeConfigResponse>('/api/v1/home'),
-  { default: () => ({ config: { quickLinks: [], featuredCollections: [] } }) },
+  { default: () => ({ config: {
+    quickLinks: [], featuredCollections: [], homeEyebrow: 'Product manual', homeTitle: '',
+    homeSubtitle: '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+    siteTitle: '', siteDescription: '', supportEmail: '', footerTagline: '', footerCopyright: '',
+  } }) },
 )
 const collections = computed(() => data.value?.items ?? [])
-const homeConfig = computed(() => homeData.value?.config ?? { quickLinks: [], featuredCollections: [] })
+const homeConfig = computed(() => homeData.value?.config ?? {
+  quickLinks: [], featuredCollections: [], homeEyebrow: 'Product manual', homeTitle: '',
+  homeSubtitle: '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+  siteTitle: '', siteDescription: '', supportEmail: '', footerTagline: '', footerCopyright: '',
+})
 const stats = computed(() => collectionStats(collections.value))
 const taskLinks = computed(() => homeQuickLinks(homeConfig.value, collections.value))
 const searchOpen = ref(false)
@@ -41,7 +49,10 @@ function sweepBrokenCovers() {
 }
 watch(collections, sweepBrokenCovers, { immediate: true })
 onMounted(sweepBrokenCovers)
-useSeoMeta({ title: () => siteBrand.value, description: '搜索产品手册、集成说明和操作指南' })
+useSeoMeta({
+  title: () => homeConfig.value?.siteTitle || siteBrand.value,
+  description: () => homeConfig.value?.siteDescription || '搜索产品手册、集成说明和操作指南',
+})
 </script>
 
 <template>
@@ -50,11 +61,11 @@ useSeoMeta({ title: () => siteBrand.value, description: '搜索产品手册、�
       <div class="min-w-0 max-w-3xl">
         <p class="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
           <UIcon name="i-tabler-book-2" class="size-4" />
-          Product manual
+          {{ homeConfig?.homeEyebrow || 'Product manual' }}
         </p>
-        <h1 class="font-display text-balance text-4xl font-bold leading-tight tracking-tight text-highlighted sm:text-5xl">{{ siteBrand }}</h1>
+        <h1 class="font-display text-balance text-4xl font-bold leading-tight tracking-tight text-highlighted sm:text-5xl">{{ homeConfig?.homeTitle || homeConfig?.siteTitle || siteBrand }}</h1>
         <p class="mt-4 max-w-[66ch] break-words text-base leading-7 text-muted">
-          搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。
+          {{ homeConfig?.homeSubtitle || '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。' }}
         </p>
 
         <div class="mt-6 flex min-w-0 flex-col gap-3 sm:flex-row">

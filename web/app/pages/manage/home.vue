@@ -11,7 +11,18 @@ useSeoMeta({ title: '设置 · 控制台' })
 
 const { call } = useApi()
 const toast = createPlatformNotifier(useToast())
+const { brand: siteBrand } = useSiteRuntime()
+const route = useRoute()
+const router = useRouter()
 const saveError = ref('')
+const section = ref<'home' | 'footer' | 'site'>('home')
+const sections = [
+  { key: 'home', label: '首页', icon: 'i-tabler-home-cog', description: '首屏文案、快速入口和推荐文档' },
+  { key: 'footer', label: '页脚', icon: 'i-tabler-layout-bottombar', description: '页脚标语、版权与联系入口' },
+  { key: 'site', label: '基础', icon: 'i-tabler-adjustments-horizontal', description: '站点名称、描述与支持邮箱' },
+] as const
+const sectionKeys = sections.map(item => item.key)
+const activeSection = computed(() => sections.find(item => item.key === section.value) || sections[0])
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
 
@@ -23,7 +34,11 @@ const { data: collectionsData, pending: collectionsPending } = await useAsyncDat
 const { data: homeData, pending: homePending, refresh } = await useAsyncData(
   'manage-home-config',
   () => call<HomeConfigResponse>('/api/v1/home'),
-  { server: false, default: () => ({ config: { quickLinks: [], featuredCollections: [] } }) },
+  { server: false, default: () => ({ config: {
+    quickLinks: [], featuredCollections: [], homeEyebrow: 'Product manual', homeTitle: '',
+    homeSubtitle: '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+    siteTitle: '', siteDescription: '', supportEmail: '', footerTagline: '', footerCopyright: '',
+  } }) },
 )
 
 const collections = computed(() => collectionsData.value?.items ?? [])
@@ -32,14 +47,30 @@ const loading = computed(() => !mounted.value || collectionsPending.value || hom
 const showSkeleton = useMinLoading(loading)
 const quickLinks = ref<HomeQuickLink[]>([])
 const featuredCollections = ref<string[]>([])
+const homeCopy = reactive({
+  eyebrow: 'Product manual',
+  title: siteBrand.value,
+  subtitle: '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+})
+const siteForm = reactive({ title: siteBrand.value, description: '产品手册、集成说明和操作指南', supportEmail: '' })
+const footerForm = reactive({ tagline: '产品手册、集成说明和操作指南', copyright: '' })
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const initialized = ref(false)
 const activeIconPickerLinkId = ref('')
 const settingsState = useManageSettings({
-  snapshot: () => ({ quickLinks: quickLinks.value, featuredCollections: featuredCollections.value }),
+  snapshot: () => ({
+    quickLinks: quickLinks.value,
+    featuredCollections: featuredCollections.value,
+    homeCopy,
+    site: siteForm,
+    footer: footerForm,
+  }),
   restore: snapshot => {
     quickLinks.value = snapshot.quickLinks
     featuredCollections.value = snapshot.featuredCollections
+    Object.assign(homeCopy, snapshot.homeCopy)
+    Object.assign(siteForm, snapshot.site)
+    Object.assign(footerForm, snapshot.footer)
   },
 })
 
@@ -65,9 +96,34 @@ watch(homeData, (value) => {
     enabled: link.enabled !== false,
   }))
   featuredCollections.value = [...(config?.featuredCollections ?? [])]
+  Object.assign(homeCopy, {
+    eyebrow: config?.homeEyebrow || 'Product manual',
+    title: config?.homeTitle || siteBrand.value,
+    subtitle: config?.homeSubtitle || '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+  })
+  Object.assign(siteForm, {
+    title: config?.siteTitle || siteBrand.value,
+    description: config?.siteDescription || '产品手册、集成说明和操作指南',
+    supportEmail: config?.supportEmail || '',
+  })
+  Object.assign(footerForm, {
+    tagline: config?.footerTagline || '产品手册、集成说明和操作指南',
+    copyright: config?.footerCopyright || '',
+  })
   initialized.value = true
   nextTick(settingsState.capture)
 }, { immediate: true })
+
+watch(() => route.query.section, (value) => {
+  section.value = typeof value === 'string' && sectionKeys.includes(value as typeof section.value)
+    ? value as typeof section.value
+    : 'home'
+}, { immediate: true })
+
+watch(section, (value) => {
+  if (route.query.section === value) return
+  router.replace({ query: { ...route.query, section: value } })
+})
 
 function addQuickLink() {
   quickLinks.value.push({
@@ -157,6 +213,14 @@ async function save() {
     const body = {
       quickLinks: quickLinks.value.map((link, index) => ({ ...link, sortOrder: index })),
       featuredCollections: featuredCollections.value,
+      homeEyebrow: homeCopy.eyebrow,
+      homeTitle: homeCopy.title,
+      homeSubtitle: homeCopy.subtitle,
+      siteTitle: siteForm.title,
+      siteDescription: siteForm.description,
+      supportEmail: siteForm.supportEmail,
+      footerTagline: footerForm.tagline,
+      footerCopyright: footerForm.copyright,
     }
     await call<HomeConfigResponse>('/api/v1/home', { method: 'PATCH', body })
     initialized.value = false
@@ -179,11 +243,32 @@ function discardChanges() {
 </script>
 
 <template>
-  <ManageSettingsLayout title="设置" description="配置公开首页的快速入口和推荐文档。">
+  <ManageSettingsLayout
+    v-model:active-section="section"
+    :title="activeSection.label"
+    :description="activeSection.description"
+    :sections="sections"
+    :show-section-navigation="false"
+  >
 
     <SkeletonList v-if="showSkeleton" :rows="8" />
 
-    <template v-else>
+    <template v-else-if="section === 'home'">
+      <ManageSettingCard title="首页首屏" description="控制公开首页的眉标、标题和任务导向说明。" class="mb-5">
+        <div class="grid gap-4">
+          <div class="rounded-lg border border-default bg-elevated/30 p-4">
+            <p class="text-xs font-medium text-primary">{{ homeCopy.eyebrow }}</p>
+            <p class="font-display mt-2 text-2xl font-semibold text-highlighted">{{ homeCopy.title }}</p>
+            <p class="mt-2 text-sm leading-6 text-muted">{{ homeCopy.subtitle }}</p>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
+            <UFormField label="眉标"><UInput v-model="homeCopy.eyebrow" class="w-full" /></UFormField>
+            <UFormField label="首页标题"><UInput v-model="homeCopy.title" class="w-full" /></UFormField>
+          </div>
+          <UFormField label="首页介绍"><UTextarea v-model="homeCopy.subtitle" :rows="3" class="w-full" /></UFormField>
+        </div>
+      </ManageSettingCard>
+
       <ManageSettingCard title="首页预览" description="仅预览公开首页中受这些视觉设置影响的区域。" class="mb-5">
         <div class="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div class="border-b border-default p-4 lg:border-b-0 lg:border-r">
@@ -381,6 +466,26 @@ function discardChanges() {
         </aside>
       </div>
     </template>
+
+    <ManageSettingCard v-else-if="section === 'footer'" title="页脚内容" description="用于所有文档页面底部的品牌说明与联系信息。">
+      <div class="grid gap-4">
+        <div class="rounded-lg border border-default bg-elevated/30 p-4 text-center">
+          <p class="text-sm text-default">{{ footerForm.tagline || siteForm.description }}</p>
+          <p class="mt-2 text-xs text-muted">{{ footerForm.copyright || siteForm.title }}</p>
+          <p v-if="siteForm.supportEmail" class="mt-2 text-xs text-primary">{{ siteForm.supportEmail }}</p>
+        </div>
+        <UFormField label="页脚标语"><UInput v-model="footerForm.tagline" class="w-full" /></UFormField>
+        <UFormField label="版权信息" description="留空时显示站点名称。"><UInput v-model="footerForm.copyright" placeholder="© 2026 Yueli" class="w-full" /></UFormField>
+      </div>
+    </ManageSettingCard>
+
+    <ManageSettingCard v-else title="站点基础" description="这些字段用于导航品牌、SEO 描述和支持入口。">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <UFormField label="站点名称" required><UInput v-model="siteForm.title" class="w-full" /></UFormField>
+        <UFormField label="支持邮箱"><UInput v-model="siteForm.supportEmail" type="email" class="w-full" /></UFormField>
+        <UFormField label="站点描述" class="sm:col-span-2"><UTextarea v-model="siteForm.description" :rows="3" class="w-full" /></UFormField>
+      </div>
+    </ManageSettingCard>
     <ManageSaveDock
       :dirty="settingsState.dirty.value"
       :status="saveStatus"

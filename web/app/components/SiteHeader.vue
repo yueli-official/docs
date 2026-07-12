@@ -3,6 +3,7 @@
 // default layout and the collection (reading) layout so no public page is
 // stranded without top chrome.
 import type { DropdownMenuItem } from '@nuxt/ui'
+import type { HomeConfigResponse } from '~/types'
 
 withDefaults(defineProps<{ widthClass?: string }>(), { widthClass: 'max-w-screen-xl' })
 const { user, loggedIn, login, logout } = useAuth()
@@ -11,6 +12,13 @@ const accountUrl = computed(() => useRuntimeConfig().public.accountUrl || 'http:
 const initial = computed(() => (user.value?.name || user.value?.email || '?').charAt(0).toUpperCase())
 const searchOpen = ref(false)
 const { brand: siteBrand } = useSiteRuntime()
+const { call } = useApi()
+const { data: siteConfigData } = await useAsyncData(
+  'docs-public-site-config',
+  () => call<HomeConfigResponse>('/api/v1/home'),
+  { default: () => ({ config: {} as HomeConfigResponse['config'] }) },
+)
+const siteTitle = computed(() => siteConfigData.value?.config?.siteTitle || siteBrand.value)
 
 async function handleLogin() {
   await login()
@@ -38,7 +46,7 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => {
         <span class="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
           <UIcon name="i-tabler-book-2" class="size-5" />
         </span>
-        {{ siteBrand }}
+        {{ siteTitle }}
       </NuxtLink>
       <div class="flex items-center gap-1.5">
         <UButton

@@ -40,6 +40,14 @@ export interface HomeQuickLink {
 export interface HomeConfig {
   quickLinks: HomeQuickLink[]
   featuredCollections: string[]
+  homeEyebrow: string
+  homeTitle: string
+  homeSubtitle: string
+  siteTitle: string
+  siteDescription: string
+  supportEmail: string
+  footerTagline: string
+  footerCopyright: string
 }
 export interface HomeConfigResponse { config: HomeConfig }
 export interface CollectionVersion {

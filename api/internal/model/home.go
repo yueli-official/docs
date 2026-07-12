@@ -16,4 +16,12 @@ type HomeQuickLink struct {
 type HomeConfig struct {
 	QuickLinks          []*HomeQuickLink `json:"quickLinks"`
 	FeaturedCollections []string         `json:"featuredCollections"`
+	HomeEyebrow         string           `json:"homeEyebrow"`
+	HomeTitle           string           `json:"homeTitle"`
+	HomeSubtitle        string           `json:"homeSubtitle"`
+	SiteTitle           string           `json:"siteTitle"`
+	SiteDescription     string           `json:"siteDescription"`
+	SupportEmail        string           `json:"supportEmail"`
+	FooterTagline       string           `json:"footerTagline"`
+	FooterCopyright     string           `json:"footerCopyright"`
 }

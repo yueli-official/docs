@@ -475,16 +475,22 @@ func TestUpdateHomeConfig(t *testing.T) {
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
 		down2, _ := os.ReadFile("../../manifest/sql/migrations/0002_home_config.down.sql")
+		down6, _ := os.ReadFile("../../manifest/sql/migrations/0006_site_settings.down.sql")
 		down1, _ := os.ReadFile("../../manifest/sql/migrations/0001_init.down.sql")
 		up1, err := os.ReadFile("../../manifest/sql/migrations/0001_init.up.sql")
 		t.AssertNil(err)
 		up2, err := os.ReadFile("../../manifest/sql/migrations/0002_home_config.up.sql")
 		t.AssertNil(err)
+		up6, err := os.ReadFile("../../manifest/sql/migrations/0006_site_settings.up.sql")
+		t.AssertNil(err)
+		_, _ = sdb.Exec(string(down6))
 		_, _ = sdb.Exec(string(down2))
 		_, _ = sdb.Exec(string(down1))
 		_, err = sdb.Exec(string(up1))
 		t.AssertNil(err)
 		_, err = sdb.Exec(string(up2))
+		t.AssertNil(err)
+		_, err = sdb.Exec(string(up6))
 		t.AssertNil(err)
 		sdb.Close()
 
@@ -528,6 +534,14 @@ func TestUpdateHomeConfig(t *testing.T) {
 				"enabled":        true,
 			}},
 			"featuredCollections": []string{"quickstart", "reference"},
+			"homeEyebrow":         "Manual",
+			"homeTitle":           "开发文档",
+			"homeSubtitle":        "从任务开始阅读。",
+			"siteTitle":           "Yueli Docs",
+			"siteDescription":     "产品与开发文档",
+			"supportEmail":        "docs@example.com",
+			"footerTagline":       "可靠的产品文档",
+			"footerCopyright":     "© 2026 Yueli",
 		})
 		t.AssertNil(err)
 		saveBody := save.ReadAllString()
@@ -536,6 +550,8 @@ func TestUpdateHomeConfig(t *testing.T) {
 		t.Assert(save.StatusCode, 200)
 		t.Assert(saveJSON.Get("data.config.quickLinks.0.title").String(), "Quickstart")
 		t.Assert(saveJSON.Get("data.config.featuredCollections.1").String(), "reference")
+		t.Assert(saveJSON.Get("data.config.siteTitle").String(), "Yueli Docs")
+		t.Assert(saveJSON.Get("data.config.footerTagline").String(), "可靠的产品文档")
 
 		read, err := anon().Get(ctx, "/api/v1/home")
 		t.AssertNil(err)
@@ -544,6 +560,8 @@ func TestUpdateHomeConfig(t *testing.T) {
 		t.Assert(read.StatusCode, 200)
 		t.Assert(readJSON.Get("data.config.quickLinks.0.icon").String(), "i-tabler-rocket")
 		t.Assert(readJSON.Get("data.config.featuredCollections.0").String(), "quickstart")
+		t.Assert(readJSON.Get("data.config.homeTitle").String(), "开发文档")
+		t.Assert(readJSON.Get("data.config.supportEmail").String(), "docs@example.com")
 	})
 }
 

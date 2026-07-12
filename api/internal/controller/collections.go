@@ -36,6 +36,14 @@ func (c *Collections) UpdateHomeConfig(ctx context.Context, req *v1.UpdateHomeCo
 	cfg, err := c.svc.UpdateHomeConfig(ctx, &model.HomeConfig{
 		QuickLinks:          req.QuickLinks,
 		FeaturedCollections: req.FeaturedCollections,
+		HomeEyebrow:         req.HomeEyebrow,
+		HomeTitle:           req.HomeTitle,
+		HomeSubtitle:        req.HomeSubtitle,
+		SiteTitle:           req.SiteTitle,
+		SiteDescription:     req.SiteDescription,
+		SupportEmail:        req.SupportEmail,
+		FooterTagline:       req.FooterTagline,
+		FooterCopyright:     req.FooterCopyright,
 	})
 	if err != nil {
 		return nil, err

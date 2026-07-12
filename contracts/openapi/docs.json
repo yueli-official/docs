@@ -708,6 +708,26 @@
             },
             "type": "array"
           },
+          "footerCopyright": {
+            "format": "string",
+            "type": "string"
+          },
+          "footerTagline": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeEyebrow": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeSubtitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeTitle": {
+            "format": "string",
+            "type": "string"
+          },
           "quickLinks": {
             "format": "[]*v1.HomeQuickLinkView",
             "items": {
@@ -715,6 +735,18 @@
               "description": ""
             },
             "type": "array"
+          },
+          "siteDescription": {
+            "format": "string",
+            "type": "string"
+          },
+          "siteTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "supportEmail": {
+            "format": "string",
+            "type": "string"
           }
         },
         "type": "object"
@@ -1259,6 +1291,26 @@
             },
             "type": "array"
           },
+          "footerCopyright": {
+            "format": "string",
+            "type": "string"
+          },
+          "footerTagline": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeEyebrow": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeSubtitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeTitle": {
+            "format": "string",
+            "type": "string"
+          },
           "quickLinks": {
             "format": "[]*model.HomeQuickLink",
             "items": {
@@ -1266,6 +1318,18 @@
               "description": ""
             },
             "type": "array"
+          },
+          "siteDescription": {
+            "format": "string",
+            "type": "string"
+          },
+          "siteTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "supportEmail": {
+            "format": "string",
+            "type": "string"
           }
         },
         "type": "object"

@@ -20,6 +20,14 @@ type HomeQuickLinkView struct {
 type HomeConfigView struct {
 	QuickLinks          []*HomeQuickLinkView `json:"quickLinks"`
 	FeaturedCollections []string             `json:"featuredCollections"`
+	HomeEyebrow         string               `json:"homeEyebrow"`
+	HomeTitle           string               `json:"homeTitle"`
+	HomeSubtitle        string               `json:"homeSubtitle"`
+	SiteTitle           string               `json:"siteTitle"`
+	SiteDescription     string               `json:"siteDescription"`
+	SupportEmail        string               `json:"supportEmail"`
+	FooterTagline       string               `json:"footerTagline"`
+	FooterCopyright     string               `json:"footerCopyright"`
 }
 
 type GetHomeConfigReq struct {
@@ -33,6 +41,14 @@ type UpdateHomeConfigReq struct {
 	g.Meta              `path:"/api/v1/home" method:"patch" tags:"docs" summary:"Update homepage configuration"`
 	QuickLinks          []*model.HomeQuickLink `json:"quickLinks"`
 	FeaturedCollections []string               `json:"featuredCollections"`
+	HomeEyebrow         string                 `json:"homeEyebrow"`
+	HomeTitle           string                 `json:"homeTitle"`
+	HomeSubtitle        string                 `json:"homeSubtitle"`
+	SiteTitle           string                 `json:"siteTitle"`
+	SiteDescription     string                 `json:"siteDescription"`
+	SupportEmail        string                 `json:"supportEmail"`
+	FooterTagline       string                 `json:"footerTagline"`
+	FooterCopyright     string                 `json:"footerCopyright"`
 }
 type UpdateHomeConfigRes struct {
 	Config *HomeConfigView `json:"config"`
