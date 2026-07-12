@@ -79,7 +79,6 @@ async function confirmImport() {
   confirming.value = true
   try {
     const res = await call<DocsImportUploadResponse>(`/api/v1/imports/docs/${batch.value.id}/confirm`, { method: 'POST' })
-    toast.add({ title: '导入完成', color: 'success', icon: 'i-tabler-check' })
     await navigateTo(`/manage/import/${res.batch.id}`)
   }
   catch (err: any) {

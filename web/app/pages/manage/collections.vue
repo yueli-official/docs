@@ -260,7 +260,6 @@ async function doDelete() {
   deletingBusy.value = true
   try {
     await call(`/api/v1/collections/${current.value.id}`, { method: 'DELETE' })
-    toast.add({ title: `已删除「${current.value.title}」`, color: 'success', icon: 'i-tabler-check' })
     open.value = false
     await refresh()
   }

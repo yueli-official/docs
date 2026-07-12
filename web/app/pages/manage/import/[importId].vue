@@ -71,7 +71,6 @@ async function rollback() {
   rollbackBusy.value = true
   try {
     await call(`/api/v1/imports/docs/${batch.value.id}/rollback`, { method: 'POST' })
-    toast.add({ title: '已回滚导入批次', color: 'success', icon: 'i-tabler-check' })
     rollbackConfirm.value = false
     await refresh()
   }

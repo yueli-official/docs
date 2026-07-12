@@ -8,7 +8,7 @@ definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '设置 · 控制台' })
 
 const { call } = useApi()
-const toast = useToast()
+const saveError = ref('')
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
 
@@ -141,6 +141,7 @@ function quickLinkTarget(link: HomeQuickLink) {
 
 async function save() {
   markSaving()
+  saveError.value = ''
   try {
     const body = {
       quickLinks: quickLinks.value.map((link, index) => ({ ...link, sortOrder: index })),
@@ -153,7 +154,7 @@ async function save() {
   }
   catch (e: any) {
     resetSave()
-    toast.add({ title: '保存失败', description: e?.data?.message || '请稍后重试', color: 'error' })
+    saveError.value = e?.data?.message || '请稍后重试'
   }
 }
 </script>
@@ -168,6 +169,8 @@ async function save() {
         <ActionFeedbackButton :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
       </template>
     </ManageHeader>
+
+    <UAlert v-if="saveError" class="mb-5" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="saveError" role="alert" />
 
     <SkeletonList v-if="showSkeleton" :rows="8" />
 

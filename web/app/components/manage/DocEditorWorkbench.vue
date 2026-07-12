@@ -278,11 +278,6 @@ async function setStatus(status: 'draft' | 'published' | 'archived') {
     }
     await refresh()
     form.status = doc.value?.status || status
-    toast.add({
-      title: status === 'published' ? '已发布' : status === 'archived' ? '已归档' : '已转为草稿',
-      color: 'success',
-      icon: 'i-tabler-check',
-    })
   }
   catch (e: any) {
     toast.add({ title: '操作失败', description: e?.data?.message || '请重试', color: 'error' })
@@ -383,6 +378,7 @@ async function copyText(value: string, title: string) {
   if (!value) return
   try {
     await navigator.clipboard.writeText(value)
+    // feedback-contract: clipboard state is invisible
     toast.add({ title, color: 'success', icon: 'i-tabler-check' })
   }
   catch {

@@ -4,7 +4,7 @@ useHead({ titleTemplate: t => (t ? `${t} · ${siteBrand.value}` : siteBrand.valu
 </script>
 
 <template>
-  <UApp>
+  <UApp :toaster="{ duration: 4500 }">
     <NuxtLoadingIndicator color="var(--ui-primary)" :height="3" />
     <NuxtLayout>
       <NuxtPage />
