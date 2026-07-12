@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ActionFeedbackButton, ManageEmpty, ManageHeader, ManageIconPicker, SkeletonList } from '@platform/manage/components'
+import { ManageEmpty, ManageIconPicker, ManageRepeaterRow, ManageSaveDock, ManageSettingCard, ManageSettingsLayout, SkeletonList } from '@platform/manage/components'
 import { useActionFeedback } from '@platform/manage/use-action-feedback'
+import { useManageSettings } from '@platform/manage/use-manage-settings'
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { Collection, CollectionList, HomeConfigResponse, HomeQuickLink } from '~/types'
 
@@ -8,6 +10,7 @@ definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '设置 · 控制台' })
 
 const { call } = useApi()
+const toast = createPlatformNotifier(useToast())
 const saveError = ref('')
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
@@ -32,6 +35,13 @@ const featuredCollections = ref<string[]>([])
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const initialized = ref(false)
 const activeIconPickerLinkId = ref('')
+const settingsState = useManageSettings({
+  snapshot: () => ({ quickLinks: quickLinks.value, featuredCollections: featuredCollections.value }),
+  restore: snapshot => {
+    quickLinks.value = snapshot.quickLinks
+    featuredCollections.value = snapshot.featuredCollections
+  },
+})
 
 const enabledQuickLinks = computed(() => quickLinks.value.filter(link => link.enabled !== false))
 const previewQuickLinks = computed(() => enabledQuickLinks.value.slice(0, 4))
@@ -56,6 +66,7 @@ watch(homeData, (value) => {
   }))
   featuredCollections.value = [...(config?.featuredCollections ?? [])]
   initialized.value = true
+  nextTick(settingsState.capture)
 }, { immediate: true })
 
 function addQuickLink() {
@@ -150,32 +161,30 @@ async function save() {
     await call<HomeConfigResponse>('/api/v1/home', { method: 'PATCH', body })
     initialized.value = false
     await refresh()
+    settingsState.capture()
     markSaved()
   }
   catch (e: any) {
     resetSave()
     saveError.value = e?.data?.message || '请稍后重试'
+    toast.add({ title: '设置保存失败', description: saveError.value, color: 'error' })
   }
+}
+
+function discardChanges() {
+  settingsState.discard()
+  saveError.value = ''
+  resetSave()
 }
 </script>
 
 <template>
-  <div>
-    <ManageHeader title="设置">
-      <template #subtitle>
-        <span>配置公开首页的快速入口和推荐文档</span>
-      </template>
-      <template #actions>
-        <ActionFeedbackButton :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
-      </template>
-    </ManageHeader>
-
-    <UAlert v-if="saveError" class="mb-5" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="saveError" role="alert" />
+  <ManageSettingsLayout title="设置" description="配置公开首页的快速入口和推荐文档。">
 
     <SkeletonList v-if="showSkeleton" :rows="8" />
 
     <template v-else>
-      <section class="mb-5 overflow-hidden rounded-lg border border-default bg-default">
+      <ManageSettingCard title="首页预览" description="仅预览公开首页中受这些视觉设置影响的区域。" class="mb-5">
         <div class="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div class="border-b border-default p-4 lg:border-b-0 lg:border-r">
             <div class="flex flex-wrap items-start justify-between gap-3">
@@ -232,7 +241,7 @@ async function save() {
             <p v-else class="text-sm text-muted">还没有选择推荐文档。</p>
           </div>
         </div>
-      </section>
+      </ManageSettingCard>
 
       <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section class="min-w-0 rounded-lg border border-default bg-default">
@@ -248,10 +257,10 @@ async function save() {
             <ManageEmpty v-if="!quickLinks.length" icon="i-tabler-route" text="还没有快速入口" />
 
             <div v-else class="grid gap-3">
-              <article
+              <ManageRepeaterRow
                 v-for="(link, index) in quickLinks"
                 :key="link.id"
-                class="grid gap-4 rounded-lg border border-default bg-default p-4"
+                :label="`快速入口 ${index + 1}`"
               >
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div class="grid min-w-0 grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-3">
@@ -322,7 +331,7 @@ async function save() {
                   </div>
 
                 </div>
-              </article>
+              </ManageRepeaterRow>
             </div>
           </div>
         </section>
@@ -372,5 +381,12 @@ async function save() {
         </aside>
       </div>
     </template>
-  </div>
+    <ManageSaveDock
+      :dirty="settingsState.dirty.value"
+      :status="saveStatus"
+      :error="saveError"
+      @discard="discardChanges"
+      @save="save"
+    />
+  </ManageSettingsLayout>
 </template>
