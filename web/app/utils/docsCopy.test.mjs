@@ -90,9 +90,9 @@ test('docs site exposes color mode controls in public and manage chrome', () => 
   assert.match(css, /color-scheme: dark/)
 })
 
-test('collection cover upload uses a crop dialog before upload', () => {
+test('collection cover upload uses the shared crop dialog before upload', () => {
   const page = readApp('pages/manage/collections.vue')
-  assert.match(page, /ManageCollectionCoverCrop/)
+  assert.match(page, /PlatformImageCropper/)
   assert.match(page, /onCroppedCover/)
 })
 

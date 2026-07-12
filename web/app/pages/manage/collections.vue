@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { PlatformImageCropper } from '@platform/ui/components'
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageCollectionCoverCrop, ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
+import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
 import { useMinLoading } from '@platform/ui/use-min-loading'
@@ -179,7 +180,8 @@ function onPickCover(file: File) {
   coverCropOpen.value = true
 }
 
-function onCroppedCover(file: File) {
+function onCroppedCover(payload: { file: File }) {
+  const { file } = payload
   if (pendingCoverPreview.value) URL.revokeObjectURL(pendingCoverPreview.value)
   pendingCoverFile.value = file
   pendingCoverPreview.value = URL.createObjectURL(file)
@@ -459,9 +461,14 @@ async function doDelete() {
         </div>
       </template>
     </USlideover>
-    <ManageCollectionCoverCrop
+    <PlatformImageCropper
       v-model:open="coverCropOpen"
       :file="coverCropFile"
+      title="裁剪文档集封面"
+      :aspect-ratio="3 / 2"
+      :output-width="600"
+      :output-height="400"
+      output-type="image/jpeg"
       @cropped="onCroppedCover"
     />
   </div>
