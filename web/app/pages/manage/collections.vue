@@ -1,19 +1,37 @@
 <script setup lang="ts">
-import { ManageCollectionCoverCrop, ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
+import { ManageCollectionCoverCrop, ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
+import type { ManageCollectionDefinition } from '@platform/manage/collection'
+import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { CollectionView } from '~/types'
 
 definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '文档集 · 控制台' })
 
-type HealthTone = 'success' | 'warning' | 'error'
-
 const { call } = useApi()
 const toast = useToast()
 const route = useRoute()
-const search = ref('')
-const page = ref(1)
-const pageSize = 24
+const router = useRouter()
+const collectionDefinition = {
+  resourceKind: 'docs-collection',
+  statuses: [''],
+  views: ['list'],
+  sortKeys: ['title', 'docCount'],
+  pageSizes: [12, 24, 48],
+  defaultStatus: '',
+  defaultView: 'list',
+  defaultSort: 'title',
+  defaultDirection: 'asc',
+  defaultPageSize: 24,
+  pagination: 'client',
+  selection: 'page',
+  filters: []
+} as const satisfies ManageCollectionDefinition
+const { searchInput, q, sort, direction, page, size } = useManageCollectionState({
+  definition: collectionDefinition,
+  routeQuery: computed(() => route.query),
+  replaceQuery: query => router.replace({ query })
+})
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
 
@@ -33,51 +51,34 @@ const loadErrorMessage = computed(() =>
   isAuthError.value ? '登录已失效，请重新登录后继续管理文档集。' : (loadError.value?.data?.message || loadError.value?.message || '加载文档集失败，请稍后重试。'),
 )
 const showSkeleton = useMinLoading(computed(() => !loadError.value && (!mounted.value || pending.value)))
-const selectedId = ref('')
 const { login } = useAuth()
 
 function loginAgain() {
   return login(route.fullPath)
 }
 
-const opsStats = computed(() => {
-  const collections = items.value
-  const empty = collections.filter(item => !item.docCount).length
-  const withCover = collections.filter(item => Boolean(item.coverUrl)).length
-  const ready = collections.filter(item => collectionIssues(item).length === 0).length
-  return { collections: collections.length, empty, withCover, ready }
-})
-
-const opsCards = computed(() => [
-  { label: '文档集', value: opsStats.value.collections, detail: `${opsStats.value.ready} 个就绪`, icon: 'i-tabler-stack-2', tone: 'primary' },
-  { label: '空集合', value: opsStats.value.empty, detail: '需要补内容', icon: 'i-tabler-folder-off', tone: opsStats.value.empty ? 'warning' : 'neutral' },
-  { label: '封面覆盖', value: opsStats.value.withCover, detail: '集合页视觉资产', icon: 'i-tabler-photo-check', tone: 'neutral' },
-])
-
 const filteredItems = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return items.value
-  return items.value.filter(item =>
-    [item.title, item.slug, item.description].some(v => (v || '').toLowerCase().includes(q)),
-  )
+  const keyword = q.value.trim().toLowerCase()
+  const filtered = keyword
+    ? items.value.filter(item => [item.title, item.slug, item.description].some(value => (value || '').toLowerCase().includes(keyword)))
+    : [...items.value]
+  const multiplier = direction.value === 'asc' ? 1 : -1
+  return filtered.sort((a, b) => {
+    if (sort.value === 'docCount') return ((a.docCount || 0) - (b.docCount || 0)) * multiplier
+    return a.title.localeCompare(b.title, 'zh-CN') * multiplier
+  })
 })
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / pageSize)))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / size.value)))
 const pagedItems = computed(() =>
-  filteredItems.value.slice((page.value - 1) * pageSize, page.value * pageSize),
-)
-const selectedItem = computed(() =>
-  items.value.find(item => item.id === selectedId.value) ?? pagedItems.value[0] ?? null,
+  filteredItems.value.slice((page.value - 1) * size.value, page.value * size.value),
 )
 
-watch(search, () => { page.value = 1 })
 watch(totalPages, (n) => { if (page.value > n) page.value = n })
-watch(pagedItems, (pageItems) => {
-  if (!pageItems.length) {
-    selectedId.value = ''
-    return
-  }
-  if (!pageItems.some(item => item.id === selectedId.value)) selectedId.value = pageItems[0]!.id
-}, { immediate: true })
+const sortItems = [
+  { label: '按标题', value: 'title' },
+  { label: '按文档数', value: 'docCount' }
+]
+const pageSizeItems = [12, 24, 48].map(value => ({ label: `${value}/页`, value }))
 
 const open = ref(false)
 const current = ref<CollectionView | null>(null)
@@ -112,31 +113,8 @@ function collectionPublicPath(col: CollectionView) {
   return col.slug ? `/${col.slug}` : ''
 }
 
-function collectionIssues(col: CollectionView) {
-  const issues: string[] = []
-  if (!col.slug) issues.push('缺路径标识')
-  if (!col.description?.trim()) issues.push('缺描述')
-  if (!col.docCount) issues.push('空集合')
-  if (!col.icon && !col.coverUrl) issues.push('缺视觉资产')
-  return issues
-}
-
-function collectionHealth(col: CollectionView): { label: string; color: HealthTone; icon: string } {
-  const issues = collectionIssues(col)
-  if (!issues.length) return { label: '就绪', color: 'success', icon: 'i-tabler-shield-check' }
-  if (issues.includes('缺路径标识') || issues.length > 2) return { label: `${issues.length} 项`, color: 'error', icon: 'i-tabler-alert-triangle' }
-  return { label: issues[0]!, color: 'warning', icon: 'i-tabler-alert-circle' }
-}
-
-function statToneClass(tone: string) {
-  if (tone === 'success') return 'bg-success/10 text-success ring-success/20'
-  if (tone === 'warning') return 'bg-warning/10 text-warning ring-warning/20'
-  if (tone === 'primary') return 'bg-primary/10 text-primary ring-primary/20'
-  return 'bg-elevated text-muted ring-default'
-}
-
-function selectCollection(col: CollectionView) {
-  selectedId.value = col.id
+function toggleDirection() {
+  direction.value = direction.value === 'asc' ? 'desc' : 'asc'
 }
 
 function openCreate() {
@@ -155,7 +133,6 @@ function openCreate() {
 function openEdit(col: CollectionView) {
   clearPendingCover()
   current.value = col
-  selectedId.value = col.id
   form.title = col.title
   form.slug = col.slug || ''
   form.description = col.description || ''
@@ -234,17 +211,6 @@ async function uploadCollectionCover(collectionId: string, file: File) {
   return res
 }
 
-async function copyText(value: string, title: string) {
-  if (!value) return
-  try {
-    await navigator.clipboard.writeText(value)
-    toast.add({ title, color: 'success', icon: 'i-tabler-check' })
-  }
-  catch {
-    toast.add({ title: '复制失败', color: 'error', icon: 'i-tabler-alert-circle' })
-  }
-}
-
 async function save() {
   if (!form.title.trim()) {
     toast.add({ title: '请填写标题', color: 'warning', icon: 'i-tabler-alert-triangle' })
@@ -277,14 +243,8 @@ async function save() {
       clearPendingCover()
     }
 
-    toast.add({
-      title: current.value ? '已更新文档集' : '已创建',
-      color: 'success',
-      icon: 'i-tabler-check',
-    })
     open.value = false
     await refresh()
-    if (saved?.id) selectedId.value = saved.id
   }
   catch (e: any) {
     toast.add({ title: current.value ? '更新失败' : '创建失败', description: e?.data?.message || '请重试', color: 'error' })
@@ -302,7 +262,6 @@ async function doDelete() {
     await call(`/api/v1/collections/${current.value.id}`, { method: 'DELETE' })
     toast.add({ title: `已删除「${current.value.title}」`, color: 'success', icon: 'i-tabler-check' })
     open.value = false
-    selectedId.value = ''
     await refresh()
   }
   catch (e: any) {
@@ -318,7 +277,7 @@ async function doDelete() {
   <div>
     <ManageHeader title="文档集">
       <template #subtitle>
-        <span>{{ filteredItems.length }} / {{ items.length }} 个集合</span>
+        <span>维护公开路径、说明和集合视觉资产。</span>
       </template>
       <template #actions>
         <UButton icon="i-tabler-plus" label="新建文档集" @click="openCreate" />
@@ -342,249 +301,76 @@ async function doDelete() {
     <SkeletonList v-else-if="showSkeleton" :rows="8" />
 
     <template v-else>
-      <section class="mb-5 overflow-hidden rounded-lg border border-default bg-default">
-        <div class="grid 2xl:grid-cols-[minmax(360px,0.85fr)_minmax(0,1.15fr)]">
-          <div class="border-b border-default bg-elevated/35 p-5 2xl:border-b-0 2xl:border-r">
-            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
-              <UIcon name="i-tabler-building-bank" class="size-4 text-primary" />
-              文档集运营
-            </div>
-            <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
-              <div class="min-w-0">
-                <h2 class="text-2xl font-semibold text-highlighted">文档集管理</h2>
-                <p class="mt-1 text-sm text-muted">维护公开路径、说明文案和集合页视觉资产</p>
-              </div>
-              <UBadge
-                :label="pending ? '同步中' : '实时数据'"
-                :color="pending ? 'warning' : 'success'"
-                :icon="pending ? 'i-tabler-loader-2' : 'i-tabler-radar-2'"
-                variant="subtle"
-              />
-            </div>
-          </div>
-
-          <div class="grid sm:grid-cols-3">
-            <div
-              v-for="card in opsCards"
-              :key="card.label"
-              class="border-b border-default p-4 sm:border-r xl:border-b-0"
-            >
-              <div class="mb-4 grid size-10 place-items-center rounded-lg ring-1" :class="statToneClass(card.tone)">
-                <UIcon :name="card.icon" class="size-5" />
-              </div>
-              <p class="text-xs font-medium text-muted">{{ card.label }}</p>
-              <div class="mt-1 flex items-baseline gap-2">
-                <span class="text-2xl font-semibold text-highlighted">{{ card.value }}</span>
-                <span class="truncate text-xs text-muted">{{ card.detail }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="mb-4 rounded-lg border border-default bg-elevated/30 p-3">
-        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-          <UInput
-            v-model="search"
-            icon="i-tabler-search"
-            placeholder="搜索标题、路径标识或说明"
-            class="min-w-0"
+      <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、路径标识或说明…" class="mb-5">
+        <template #filters>
+          <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
+          <UButton
+            :icon="direction === 'asc' ? 'i-tabler-sort-ascending' : 'i-tabler-sort-descending'"
+            :label="direction === 'asc' ? '升序' : '降序'"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            @click="toggleDirection"
           />
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-default bg-default px-3 py-2 text-sm lg:min-w-64">
-            <span class="text-muted">当前结果</span>
-            <span class="font-mono text-highlighted">{{ filteredItems.length }} / {{ items.length }}</span>
-          </div>
+        </template>
+      </ManageCollectionToolbar>
+
+      <ManageEmpty v-if="!items.length" icon="i-tabler-stack-2" text="还没有文档集" />
+      <ManageEmpty v-else-if="!filteredItems.length" icon="i-tabler-search-off" text="没有匹配的文档集" />
+
+      <div v-else class="overflow-hidden rounded-xl border border-default bg-default">
+        <div class="hidden grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_3rem] items-center gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid">
+          <span>文档集</span>
+          <span>公开路径</span>
+          <span>文档数</span>
+          <span class="sr-only">操作</span>
+        </div>
+
+        <div class="divide-y divide-default">
+          <button
+            v-for="col in pagedItems"
+            :key="col.id"
+            type="button"
+            class="grid w-full grid-cols-[minmax(0,1fr)_2.75rem] items-center gap-3 p-3 text-left transition hover:bg-elevated/55 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary sm:p-4 lg:grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_3rem]"
+            :aria-label="`编辑文档集：${col.title}`"
+            @click="openEdit(col)"
+          >
+            <span class="flex min-w-0 items-center gap-3">
+              <img v-if="col.coverUrl" :src="col.coverUrl" :alt="col.title" class="size-11 shrink-0 rounded-lg object-cover" />
+              <span v-else class="grid size-11 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                <UIcon :name="col.icon || 'i-tabler-stack-2'" class="size-5" />
+              </span>
+              <span class="min-w-0">
+                <span class="line-clamp-1 text-sm font-semibold text-highlighted">{{ col.title }}</span>
+                <span class="mt-1 line-clamp-1 text-xs text-muted">{{ col.description || '未填写集合说明' }}</span>
+              </span>
+            </span>
+
+            <span class="col-start-1 min-w-0 pl-14 font-mono text-xs text-muted sm:text-sm lg:col-start-auto lg:pl-0">
+              <span class="line-clamp-1">{{ collectionPublicPath(col) || '-' }}</span>
+            </span>
+
+            <span class="col-start-1 pl-14 text-xs text-muted sm:text-sm lg:col-start-auto lg:pl-0">
+              <span class="font-semibold text-highlighted">{{ col.docCount }}</span> 篇文档
+            </span>
+
+            <span class="row-start-1 col-start-2 grid size-11 place-items-center text-muted lg:row-auto lg:col-start-auto" aria-hidden="true">
+              <UIcon name="i-tabler-pencil" class="size-4" />
+            </span>
+          </button>
         </div>
       </div>
 
-      <ManageEmpty
-        v-if="!items.length"
-        icon="i-tabler-stack-2"
-        text="还没有文档集"
-      />
-
-      <ManageEmpty
-        v-else-if="!filteredItems.length"
-        icon="i-tabler-search-off"
-        text="没有匹配的文档集"
-      />
-
-      <template v-else>
-        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div class="min-w-0 overflow-hidden rounded-lg border border-default bg-default">
-            <div class="hidden grid-cols-[minmax(260px,1.8fr)_160px_120px_130px] gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid">
-              <span>文档集</span>
-              <span>公开路径</span>
-              <span>文档数</span>
-              <span>检查</span>
-            </div>
-
-            <div class="divide-y divide-default">
-              <button
-                v-for="col in pagedItems"
-                :key="col.id"
-                type="button"
-                class="grid w-full gap-3 px-4 py-3 text-left transition lg:grid-cols-[minmax(260px,1.8fr)_160px_120px_130px] lg:items-center"
-                :class="selectedItem?.id === col.id ? 'bg-primary/5 ring-1 ring-inset ring-primary/20' : 'hover:bg-elevated/55'"
-                @click="selectCollection(col)"
-              >
-                <div class="min-w-0">
-                  <div class="flex min-w-0 items-center gap-3">
-                    <img
-                      v-if="col.coverUrl"
-                      :src="col.coverUrl"
-                      :alt="col.title"
-                      class="size-10 shrink-0 rounded-lg object-cover"
-                    />
-                    <span v-else class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                      <UIcon :name="col.icon || 'i-tabler-stack-2'" class="size-5" />
-                    </span>
-                    <div class="min-w-0">
-                      <p class="truncate text-sm font-semibold text-highlighted">{{ col.title }}</p>
-                      <p class="truncate text-xs text-muted">{{ col.description || '未填写集合说明' }}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="min-w-0 font-mono text-sm text-default">
-                  <p class="truncate">{{ collectionPublicPath(col) || '-' }}</p>
-                </div>
-
-                <div class="text-sm text-default">
-                  <span class="font-semibold text-highlighted">{{ col.docCount }}</span>
-                  <span class="ml-1 text-muted">篇</span>
-                </div>
-
-                <div>
-                  <UBadge
-                    :label="collectionHealth(col).label"
-                    :color="collectionHealth(col).color"
-                    :icon="collectionHealth(col).icon"
-                    variant="subtle"
-                    size="sm"
-                  />
-                </div>
-
-              </button>
-            </div>
-          </div>
-
-          <aside class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start">
-            <template v-if="selectedItem">
-              <div class="mb-4 flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-xs font-medium uppercase tracking-wide text-muted">文档集详情</p>
-                  <h2 class="mt-1 truncate text-base font-semibold text-highlighted">{{ selectedItem.title }}</h2>
-                </div>
-                <UBadge
-                  :label="collectionHealth(selectedItem).label"
-                  :color="collectionHealth(selectedItem).color"
-                  :icon="collectionHealth(selectedItem).icon"
-                  variant="subtle"
-                />
-              </div>
-
-              <div class="rounded-lg border border-default bg-elevated/35 p-3">
-                <div class="mb-3 flex items-center justify-between gap-3">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-muted">发布检查</p>
-                  <span class="font-mono text-xs text-muted">{{ selectedItem.slug }}</span>
-                </div>
-                <div class="grid gap-2">
-                  <div
-                    v-for="issue in ['路径标识', '描述', '文档内容', '视觉资产']"
-                    :key="issue"
-                    class="flex items-center justify-between gap-3 rounded-md bg-default px-2.5 py-2 text-sm"
-                  >
-                    <span class="text-default">{{ issue }}</span>
-                    <UIcon
-                      :name="
-                        (issue === '路径标识' && selectedItem.slug)
-                          || (issue === '描述' && selectedItem.description)
-                          || (issue === '文档内容' && selectedItem.docCount)
-                          || (issue === '视觉资产' && (selectedItem.icon || selectedItem.coverUrl))
-                          ? 'i-tabler-circle-check'
-                          : 'i-tabler-circle-x'
-                      "
-                      class="size-4"
-                      :class="
-                        (issue === '路径标识' && selectedItem.slug)
-                          || (issue === '描述' && selectedItem.description)
-                          || (issue === '文档内容' && selectedItem.docCount)
-                          || (issue === '视觉资产' && (selectedItem.icon || selectedItem.coverUrl))
-                          ? 'text-success'
-                          : 'text-warning'
-                      "
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <USeparator class="my-4" />
-
-              <div class="space-y-3 text-sm">
-                <div>
-                  <div class="flex items-center justify-between gap-3">
-                    <p class="text-xs font-medium text-muted">线上入口</p>
-                    <div class="flex gap-1">
-                      <UTooltip text="打开公开页">
-                        <UButton
-                          icon="i-tabler-external-link"
-                          color="neutral"
-                          variant="ghost"
-                          size="sm"
-                          square
-                          class="size-8"
-                          aria-label="打开公开页"
-                          :to="collectionPublicPath(selectedItem)"
-                          target="_blank"
-                        />
-                      </UTooltip>
-                      <UTooltip text="复制路径">
-                        <UButton
-                          icon="i-tabler-copy"
-                          color="neutral"
-                          variant="ghost"
-                          size="sm"
-                          square
-                          class="size-8"
-                          aria-label="复制路径"
-                          @click="copyText(collectionPublicPath(selectedItem), '已复制路径')"
-                        />
-                      </UTooltip>
-                    </div>
-                  </div>
-                  <p class="mt-1 truncate font-mono text-default">{{ collectionPublicPath(selectedItem) }}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-medium text-muted">文档容量</p>
-                  <p class="mt-1 text-default">{{ selectedItem.docCount }} 篇文档</p>
-                </div>
-                <div v-if="selectedItem.description">
-                  <p class="text-xs font-medium text-muted">说明</p>
-                  <p class="mt-1 line-clamp-3 text-default">{{ selectedItem.description }}</p>
-                </div>
-              </div>
-
-              <USeparator class="my-4" />
-
-              <div class="grid gap-2">
-                <UButton label="编辑文档集" icon="i-tabler-pencil" block @click="openEdit(selectedItem)" />
-              </div>
-            </template>
-            <ManageEmpty v-else icon="i-tabler-stack-2" text="选择一个文档集查看操作" />
-          </aside>
-        </div>
-
-        <ManagePageFooter>
-          <template #left>
-            <span>每页 {{ pageSize }} 个</span>
-            <span class="hidden sm:inline">当前 {{ (page - 1) * pageSize + 1 }}-{{ Math.min(page * pageSize, filteredItems.length) }}</span>
-          </template>
-          <template #right>
-            <ManagePagination v-model="page" :total-pages="totalPages" />
-          </template>
-        </ManagePageFooter>
-      </template>
+      <ManageCollectionDock v-if="pagedItems.length" label="文档集统计与分页">
+        <template #selection>
+          <span>共 {{ filteredItems.length }} 个文档集</span>
+          <span v-if="q" class="text-xs text-muted">全部 {{ items.length }} 个</span>
+        </template>
+        <template #pagination>
+          <USelect v-model="size" :items="pageSizeItems" value-key="value" size="sm" class="w-24" />
+          <ManagePagination v-model="page" :total-pages="totalPages" class="!mt-0" />
+        </template>
+      </ManageCollectionDock>
     </template>
 
     <USlideover v-model:open="open" :title="current ? '编辑文档集' : '新建文档集'">
