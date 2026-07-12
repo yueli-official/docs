@@ -19,6 +19,7 @@ export default defineNuxtConfig({
       ],
     },
   },
+  buildDir: process.env.NUXT_BUILD_DIR || ".nuxt",
   devServer: { port: Number(process.env.NUXT_DEV_PORT || "3003") },
   runtimeConfig: {
     apiBase: process.env.NUXT_API_BASE || "http://127.0.0.1:8086",
