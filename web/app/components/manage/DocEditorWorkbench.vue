@@ -369,6 +369,8 @@ async function copyText(value: string) {
   try {
     await navigator.clipboard.writeText(value)
     markCopied()
+    // feedback-contract: clipboard writes have no persistent visible result outside the current control
+    toast.add({ title: '公开链接已复制', color: 'success', icon: 'i-tabler-copy-check' })
   }
   catch {
     markCopyFailed()
