@@ -5,6 +5,7 @@ import {
   ManageEmpty,
   ManageHeader,
   ManageLifecycleTabs,
+  ManagePageSelection,
   ManagePagination,
   ManageRowShell,
   ManageViewToggle,
@@ -713,10 +714,10 @@ async function onDelete(id: string) {
           <ManageCollectionDock label="文档批量操作与分页">
             <template #selection>
               <div class="flex flex-wrap items-center gap-2">
-                <UCheckbox
+                <ManagePageSelection
                   :model-value="isPageSelected"
                   :indeterminate="isPageIndeterminate"
-                  aria-label="选择当前页文档"
+                  label="选择当前页文档"
                   @update:model-value="togglePageSelection"
                 />
                 <div v-if="bulkResult" class="flex min-w-0 flex-wrap items-center gap-2 rounded-lg bg-elevated px-2.5 py-1.5">
