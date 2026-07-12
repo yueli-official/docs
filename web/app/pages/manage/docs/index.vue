@@ -6,6 +6,7 @@ import {
   ManageHeader,
   ManageLifecycleTabs,
   ManagePagination,
+  ManageRowShell,
   ManageViewToggle,
   SkeletonList
 } from '@platform/manage/components'
@@ -24,7 +25,6 @@ const route = useRoute()
 const router = useRouter()
 
 type StatusKey = 'all' | 'draft' | 'published' | 'archived' | 'issues'
-type ViewMode = 'list' | 'tree'
 type BulkDocAction = 'publish' | 'draft' | 'archive'
 
 interface ManagedDoc extends DocDetail {
@@ -81,18 +81,18 @@ const {
 const collectionFilter = filterModel('collection', 'all')
 const versionFilter = filterModel('version')
 const localeFilter = filterModel('locale', 'en')
-const selectedDocId = ref('')
 const bulkAction = ref<BulkDocAction | undefined>()
 const bulkBusy = ref(false)
+const bulkResult = ref<{ changed: number, failedIds: string[], interrupted?: boolean, message?: string }>()
 const quickEditTarget = ref<ManagedDoc>()
 const showQuickEdit = ref(false)
-const showLegacyDetails = false
 
 const bulkItems: Array<{ label: string; value: BulkDocAction; icon: string }> = [
   { label: '发布', value: 'publish', icon: 'i-tabler-rocket' },
   { label: '转草稿', value: 'draft', icon: 'i-tabler-pencil' },
   { label: '归档', value: 'archive', icon: 'i-tabler-archive' },
 ]
+const pageSizeItems = [30, 60, 90].map(value => ({ label: `${value}/页`, value }))
 
 const { data: cols, pending: collectionsPending } = await useAsyncData(
   'manage-doc-workbench-collections',
@@ -268,22 +268,6 @@ function qualityIssues(doc: ManagedDoc) {
   return issues
 }
 
-function qualityMeta(doc: ManagedDoc) {
-  const issues = qualityIssues(doc)
-  if (!issues.length) return { label: '', color: 'neutral' as const, icon: '' }
-  if (issues.length > 1) return { label: `${issues.length} 项`, color: 'error' as const, icon: 'i-tabler-alert-triangle' }
-  return { label: issues[0], color: 'warning' as const, icon: 'i-tabler-alert-circle' }
-}
-
-function readinessItems(doc: ManagedDoc) {
-  return [
-    { label: '已发布', ok: doc.status === 'published' },
-    { label: '摘要', ok: Boolean(doc.excerpt?.trim()) },
-    { label: '语义路径', ok: doc.slugPath.length > 0 },
-    { label: '文档集', ok: Boolean(doc.collectionSlug) },
-  ]
-}
-
 const filteredDocs = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   return allDocs.value.filter((doc) => {
@@ -313,7 +297,8 @@ const {
   toggleOne: toggleDocSelection,
   togglePage: togglePageSelection,
   clear: clearDocSelection,
-  keepOnly: keepValidSelection
+  keepOnly: keepValidSelection,
+  replace: replaceSelection
 } = useManageSelection({
   visibleIds: computed(() => pagedDocs.value.map(doc => doc.id)),
   filteredTotal: computed(() => filteredDocs.value.length),
@@ -322,23 +307,14 @@ const {
 const selectedDocs = computed(() =>
   allDocs.value.filter(doc => selectedDocIds.value.includes(doc.id)),
 )
-const selectedDoc = computed(() =>
-  allDocs.value.find(doc => doc.id === selectedDocId.value) ?? pagedDocs.value[0] ?? null,
-)
 
 watch([activeCollection, activeStatus, activeLocale, activeVersion], () => {
   selectedDocIds.value = []
   bulkAction.value = undefined
+  bulkResult.value = undefined
 })
 watch(activeCollection, () => { versionFilter.value = '' })
 watch(totalPages, (n) => { if (page.value > n) page.value = n })
-watch(pagedDocs, (docs) => {
-  if (!docs.length) {
-    selectedDocId.value = ''
-    return
-  }
-  if (!docs.some(doc => doc.id === selectedDocId.value)) selectedDocId.value = docs[0]!.id
-}, { immediate: true })
 watch(allDocs, (docs) => {
   keepValidSelection(docs.map(doc => doc.id))
 })
@@ -374,10 +350,6 @@ function addChild(doc: ManagedDoc) {
   navigateTo(`/manage/docs/new?collection=${encodeURIComponent(doc.collectionSlug)}&parent=${encodeURIComponent(doc.id)}`)
 }
 
-function selectDoc(doc: ManagedDoc) {
-  selectedDocId.value = doc.id
-}
-
 function openQuickEdit(doc: ManagedDoc) {
   quickEditTarget.value = doc
   showQuickEdit.value = true
@@ -390,54 +362,6 @@ async function onQuickEditSaved() {
 function clearBulkSelection() {
   clearDocSelection()
   bulkAction.value = undefined
-}
-
-function docPublicPath(doc: ManagedDoc) {
-  return `/${doc.collectionSlug}/${doc.slugPath.map(encodeURIComponent).join('/')}`
-}
-
-async function copyText(value: string, title: string) {
-  try {
-    await navigator.clipboard.writeText(value)
-    toast.add({ title, color: 'success', icon: 'i-tabler-check' })
-  }
-  catch {
-    toast.add({ title: '复制失败', color: 'error', icon: 'i-tabler-alert-circle' })
-  }
-}
-
-async function setDocStatus(doc: ManagedDoc, status: 'draft' | 'published' | 'archived') {
-  try {
-    await updateDocStatus(doc.id, status)
-    toast.add({
-      title: status === 'published' ? '已发布' : status === 'archived' ? '已归档' : '已转为草稿',
-      color: 'success',
-      icon: 'i-tabler-check',
-    })
-    await Promise.all([loadDocs(), refreshTree()])
-  }
-  catch (err: any) {
-    toast.add({ title: '状态更新失败', description: err?.data?.message || '请重试', color: 'error' })
-  }
-}
-
-function selectedDocMoreItems(doc: ManagedDoc) {
-  const lifecycle: Array<{ label: string; icon: string; onSelect: () => void }> = []
-  if (doc.status !== 'draft') {
-    lifecycle.push({
-      label: '转回草稿',
-      icon: 'i-tabler-pencil',
-      onSelect: () => setDocStatus(doc, 'draft'),
-    })
-  }
-  if (doc.status !== 'archived') {
-    lifecycle.push({
-      label: '归档',
-      icon: 'i-tabler-archive',
-      onSelect: () => setDocStatus(doc, 'archived'),
-    })
-  }
-  return [lifecycle]
 }
 
 async function updateDocStatus(id: string, status: 'draft' | 'published' | 'archived') {
@@ -461,26 +385,29 @@ async function applyBulkAction() {
       ? 'archived'
       : 'draft'
   const docs = [...selectedDocs.value]
+  const requestedIds = docs.map(doc => doc.id)
   bulkBusy.value = true
+  bulkResult.value = undefined
   try {
     const results = await Promise.allSettled(docs.map(doc => updateDocStatus(doc.id, status)))
     const changed = results.filter(result => result.status === 'fulfilled').length
-    const failed = results.length - changed
-    if (changed) {
-      toast.add({
-        title: `已处理 ${changed} 篇文档`,
-        description: failed ? `${failed} 篇失败，请刷新后重试` : undefined,
-        color: failed ? 'warning' : 'success',
-        icon: failed ? 'i-tabler-alert-circle' : 'i-tabler-check',
-      })
+    const failedIds = results.flatMap((result, index) => result.status === 'rejected' ? [requestedIds[index]!] : [])
+    bulkResult.value = { changed, failedIds }
+    if (failedIds.length) replaceSelection(failedIds)
+    else clearBulkSelection()
+    bulkAction.value = undefined
+    await refreshTree()
+  }
+  catch (error) {
+    const apiError = error as { data?: { message?: string } }
+    replaceSelection(requestedIds)
+    bulkResult.value = {
+      changed: 0,
+      failedIds: requestedIds,
+      interrupted: true,
+      message: apiError.data?.message || '批量请求中断，已保留选择，请核对当前状态后重试。'
     }
-    if (!changed && failed) {
-      toast.add({ title: '批量操作失败', description: '没有文档被更新', color: 'error' })
-    }
-    if (changed) {
-      clearBulkSelection()
-      await refreshTree()
-    }
+    await refreshTree()
   }
   finally {
     bulkBusy.value = false
@@ -651,7 +578,6 @@ async function onMove(intent: MoveIntent) {
 async function onDelete(id: string) {
   try {
     await call(`/api/v1/docs/${id}`, { method: 'DELETE' })
-    toast.add({ title: '已删除文档', color: 'success', icon: 'i-tabler-check' })
     await Promise.all([refreshTree(), loadDocs()])
   }
   catch (err: any) {
@@ -736,205 +662,52 @@ async function onDelete(id: string) {
         />
 
         <template v-else>
-          <div class="min-w-0">
-            <div class="min-w-0 overflow-hidden rounded-lg border border-default bg-default">
-              <div class="hidden grid-cols-[42px_minmax(200px,2fr)_140px_92px_108px_76px] gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid">
-                <span class="flex items-center justify-center">
-                  <UCheckbox
-                    :model-value="isPageSelected"
-                    :indeterminate="isPageIndeterminate"
-                    aria-label="选择当前页文档"
-                    @update:model-value="togglePageSelection"
-                  />
+          <div class="overflow-hidden rounded-lg border border-default bg-default" :inert="bulkBusy" :aria-busy="bulkBusy">
+            <ManageRowShell
+              v-for="doc in pagedDocs"
+              :key="doc.id"
+              :selected="selectedDocIds.includes(doc.id)"
+              :selection-disabled="bulkBusy"
+              :selection-label="`选择文档：${doc.title}`"
+              @select="toggleDocSelection(doc.id)"
+            >
+              <template #media>
+                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <UIcon name="i-tabler-file-text" class="size-5" />
                 </span>
-                <span>标题</span>
-                <span>文档集</span>
-                <span>质量</span>
-                <span>父级</span>
-                <span class="text-right">操作</span>
+              </template>
+
+              <div class="min-w-0">
+                <button type="button" class="block max-w-full truncate text-left text-sm font-semibold text-highlighted hover:text-primary" @click="openQuickEdit(doc)">
+                  {{ doc.title }}
+                </button>
+                <p class="mt-0.5 truncate font-mono text-xs text-muted">{{ doc.slugPath.join(' / ') }}</p>
+                <p class="mt-1 truncate text-xs text-dimmed">{{ doc.collectionTitle }} · {{ doc.parentTitle || '顶级文档' }}</p>
+                <p v-if="qualityIssues(doc).length" class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-warning">
+                  <UIcon name="i-tabler-alert-circle" class="size-3.5 shrink-0" />
+                  <span class="truncate">{{ qualityIssues(doc).slice(0, 2).join(' · ') }}</span>
+                </p>
               </div>
 
-              <div class="divide-y divide-default">
-                <div
-                  v-for="doc in pagedDocs"
-                  :key="doc.id"
-                  data-doc-row
-                  class="grid cursor-pointer gap-3 px-4 py-3 transition lg:grid-cols-[42px_minmax(200px,2fr)_140px_92px_108px_76px] lg:items-center"
-                  :class="selectedDoc?.id === doc.id ? 'bg-primary/5 ring-1 ring-inset ring-primary/20' : selectedDocIds.includes(doc.id) ? 'bg-primary/5' : 'hover:bg-elevated/55'"
-                  @click="selectDoc(doc)"
-                >
-                  <div class="flex items-center lg:justify-center">
-                    <UCheckbox
-                      :model-value="selectedDocIds.includes(doc.id)"
-                      :aria-label="`选择 ${doc.title}`"
-                      @click.stop
-                      @update:model-value="toggleDocSelection(doc.id)"
-                    />
-                  </div>
-
-                  <div class="min-w-0 text-left">
-                    <div class="flex min-w-0 items-center gap-2">
-                      <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                        <UIcon name="i-tabler-file-text" class="size-4" />
-                      </span>
-                      <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-highlighted">{{ doc.title }}</p>
-                        <p class="truncate text-xs text-muted">{{ doc.path }}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="min-w-0 text-sm text-default">
-                    <p class="truncate">{{ doc.collectionTitle }}</p>
-                    <p class="truncate text-xs text-muted">{{ doc.collectionSlug }}</p>
-                  </div>
-
-                  <div>
-                    <UBadge
-                      v-if="qualityMeta(doc)"
-                      :label="qualityMeta(doc).label"
-                      :color="qualityMeta(doc).color"
-                      :icon="qualityMeta(doc).icon"
-                      variant="subtle"
-                      size="sm"
-                    />
-                  </div>
-
-                  <div class="min-w-0 text-sm text-muted">
-                    <span v-if="doc.parentTitle" class="truncate">{{ doc.parentTitle }}</span>
-                    <span v-else class="text-dimmed">顶级</span>
-                  </div>
-
-                  <div class="flex justify-end gap-1">
-                    <UTooltip text="添加子文档">
-                      <UButton icon="i-tabler-file-plus" color="neutral" variant="ghost" size="sm" square @click.stop="addChild(doc)" />
-                    </UTooltip>
-                    <UTooltip text="快速编辑">
-                      <UButton icon="i-tabler-pencil" color="neutral" variant="ghost" size="sm" square @click.stop="openQuickEdit(doc)" />
-                    </UTooltip>
-                    <UTooltip text="完整编辑">
-                      <UButton icon="i-tabler-file-pencil" color="neutral" variant="ghost" size="sm" square @click.stop="openDoc(doc)" />
-                    </UTooltip>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <aside v-if="selectedDoc && showLegacyDetails" class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start">
-              <template v-if="selectedDoc">
-                <div class="mb-4 flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-xs font-medium uppercase tracking-wide text-muted">文档详情</p>
-                    <h2 class="mt-1 truncate text-base font-semibold text-highlighted">{{ selectedDoc.title }}</h2>
-                  </div>
-                </div>
-
-                <div class="rounded-lg border border-default bg-elevated/35 p-3">
-                  <div class="mb-3 flex items-center justify-between gap-3">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-muted">发布检查</p>
-                    <UBadge
-                      :label="qualityMeta(selectedDoc).label"
-                      :color="qualityMeta(selectedDoc).color"
-                      :icon="qualityMeta(selectedDoc).icon"
-                      variant="subtle"
-                      size="sm"
-                    />
-                  </div>
-                  <div class="grid gap-2">
-                    <div
-                      v-for="item in readinessItems(selectedDoc)"
-                      :key="item.label"
-                      class="flex items-center justify-between gap-3 rounded-md bg-default px-2.5 py-2 text-sm"
-                    >
-                      <span class="text-default">{{ item.label }}</span>
-                      <UIcon
-                        :name="item.ok ? 'i-tabler-circle-check' : 'i-tabler-circle-x'"
-                        class="size-4"
-                        :class="item.ok ? 'text-success' : 'text-warning'"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <USeparator class="my-4" />
-
-                <div class="space-y-3 text-sm">
-                  <div>
-                    <div class="flex items-center justify-between gap-3">
-                      <p class="text-xs font-medium text-muted">公开路径</p>
-                      <div class="flex gap-1">
-                        <UTooltip text="打开公开页">
-                          <UButton
-                            icon="i-tabler-external-link"
-                            color="neutral"
-                            variant="ghost"
-                            size="sm"
-                            square
-                            class="size-8"
-                            aria-label="打开公开页"
-                            :to="docPublicPath(selectedDoc)"
-                            target="_blank"
-                          />
-                        </UTooltip>
-                        <UTooltip text="复制路径">
-                          <UButton
-                            icon="i-tabler-copy"
-                            color="neutral"
-                            variant="ghost"
-                            size="sm"
-                            square
-                            class="size-8"
-                            aria-label="复制路径"
-                            @click="copyText(docPublicPath(selectedDoc), '已复制路径')"
-                          />
-                        </UTooltip>
-                      </div>
-                    </div>
-                    <p class="mt-1 truncate font-mono text-default">{{ docPublicPath(selectedDoc) }}</p>
-                  </div>
-                  <div class="grid grid-cols-2 gap-3">
-                    <div>
-                      <p class="text-xs font-medium text-muted">文档集</p>
-                      <p class="mt-1 truncate text-default">{{ selectedDoc.collectionTitle }}</p>
-                    </div>
-                    <div>
-                      <p class="text-xs font-medium text-muted">父级</p>
-                      <p class="mt-1 truncate text-default">{{ selectedDoc.parentTitle || '顶级' }}</p>
-                    </div>
-                  </div>
-                  <div v-if="selectedDoc.excerpt">
-                    <p class="text-xs font-medium text-muted">摘要</p>
-                    <p class="mt-1 line-clamp-3 text-default">{{ selectedDoc.excerpt }}</p>
-                  </div>
-                </div>
-
-                <USeparator class="my-4" />
-
-                <div class="grid gap-2">
-                  <div class="mb-1 flex items-center justify-between gap-3">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-muted">文档操作</p>
-                    <span class="font-mono text-xs text-muted">{{ selectedDoc.collectionSlug }}</span>
-                  </div>
-                  <UButton label="编辑文档" icon="i-tabler-pencil" block @click="openDoc(selectedDoc)" />
-                  <UButton
-                    v-if="selectedDoc.status !== 'published'"
-                    label="发布"
-                    icon="i-tabler-rocket"
-                    color="primary"
-                    variant="soft"
-                    block
-                    @click="setDocStatus(selectedDoc, 'published')"
-                  />
-                  <div class="grid grid-cols-2 gap-2">
-                    <UButton label="子文档" icon="i-tabler-file-plus" color="neutral" variant="outline" @click="addChild(selectedDoc)" />
-                    <UDropdownMenu :items="selectedDocMoreItems(selectedDoc)" :ui="{ content: 'w-40' }">
-                      <UButton label="更多设置" icon="i-tabler-dots-vertical" color="neutral" variant="outline" block />
-                    </UDropdownMenu>
-                  </div>
+              <template #meta>
+                <div class="min-w-0 text-xs md:w-36 md:text-right">
+                  <p class="truncate text-default">{{ doc.locale }}</p>
+                  <p class="mt-0.5 truncate text-muted">{{ doc.parentTitle || '顶级文档' }}</p>
                 </div>
               </template>
-              <ManageEmpty v-else icon="i-tabler-file-search" text="选择一篇文档查看操作" />
-            </aside>
+
+              <template #actions>
+                <UTooltip text="添加子文档">
+                  <UButton icon="i-tabler-file-plus" color="neutral" variant="ghost" size="sm" square :aria-label="`添加子文档：${doc.title}`" @click="addChild(doc)" />
+                </UTooltip>
+                <UTooltip text="快速编辑">
+                  <UButton icon="i-tabler-pencil" color="neutral" variant="ghost" size="sm" square :aria-label="`快速编辑：${doc.title}`" @click="openQuickEdit(doc)" />
+                </UTooltip>
+                <UTooltip text="完整编辑">
+                  <UButton icon="i-tabler-file-pencil" color="neutral" variant="ghost" size="sm" square :aria-label="`完整编辑：${doc.title}`" @click="openDoc(doc)" />
+                </UTooltip>
+              </template>
+            </ManageRowShell>
           </div>
 
           <ManageCollectionDock label="文档批量操作与分页">
@@ -946,6 +719,27 @@ async function onDelete(id: string) {
                   aria-label="选择当前页文档"
                   @update:model-value="togglePageSelection"
                 />
+                <div v-if="bulkResult" class="flex min-w-0 flex-wrap items-center gap-2 rounded-lg bg-elevated px-2.5 py-1.5">
+                  <UIcon
+                    :name="bulkResult.interrupted || bulkResult.failedIds.length ? 'i-tabler-alert-triangle' : 'i-tabler-circle-check'"
+                    :class="bulkResult.interrupted || bulkResult.failedIds.length ? 'text-warning' : 'text-success'"
+                  />
+                  <span class="text-xs text-default">
+                    <template v-if="bulkResult.interrupted">{{ bulkResult.message }}</template>
+                    <template v-else>
+                      已处理 {{ bulkResult.changed }} 篇<span v-if="bulkResult.failedIds.length">，{{ bulkResult.failedIds.length }} 篇未完成</span>
+                    </template>
+                  </span>
+                  <UButton
+                    v-if="bulkResult.failedIds[0]"
+                    label="查看首个失败项"
+                    color="warning"
+                    variant="link"
+                    size="xs"
+                    @click="openDoc(bulkResult.failedIds[0])"
+                  />
+                  <UButton icon="i-tabler-x" color="neutral" variant="ghost" size="xs" square aria-label="关闭批量结果" @click="bulkResult = undefined" />
+                </div>
                 <template v-if="selectedDocIds.length">
                   <span class="text-sm text-default">已选 {{ selectedDocIds.length }}</span>
                   <USeparator orientation="vertical" class="hidden h-4 sm:block" />
@@ -983,7 +777,8 @@ async function onDelete(id: string) {
               </div>
             </template>
             <template #pagination>
-              <ManagePagination v-model="page" :total-pages="totalPages" />
+              <USelect v-model="pageSize" :items="pageSizeItems" value-key="value" size="sm" class="w-20" :disabled="bulkBusy" />
+              <ManagePagination v-model="page" :total-pages="totalPages" class="!mt-0" />
             </template>
           </ManageCollectionDock>
         </template>
