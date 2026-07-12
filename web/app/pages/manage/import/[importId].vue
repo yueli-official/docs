@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ManageEmpty, ManageHeader, SkeletonList } from '@platform/manage/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { DocsImportBatch, DocsImportDetailResponse, DocsImportItem } from '~/types'
@@ -8,7 +9,7 @@ useSeoMeta({ title: '导入详情 · 控制台' })
 
 const route = useRoute('/manage/import/[importId]')
 const { call } = useApi()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 
 const importId = computed(() => String(route.params.importId || ''))
 const mounted = ref(false)

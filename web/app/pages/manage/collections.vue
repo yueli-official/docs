@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ManageCollectionCoverCrop, ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
@@ -9,7 +10,7 @@ definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '文档集 · 控制台' })
 
 const { call } = useApi()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 const route = useRoute()
 const router = useRouter()
 const collectionDefinition = {
@@ -92,6 +93,7 @@ const pendingCoverFile = ref<File | null>(null)
 const pendingCoverPreview = ref('')
 const confirmingDelete = ref(false)
 const deletingBusy = ref(false)
+const formError = ref('')
 
 const normalizedFormSlug = computed(() => clientSlug(form.slug))
 const canSave = computed(() => Boolean(form.title.trim() && normalizedFormSlug.value))
@@ -118,6 +120,7 @@ function toggleDirection() {
 }
 
 function openCreate() {
+  formError.value = ''
   clearPendingCover()
   current.value = null
   form.title = ''
@@ -131,6 +134,7 @@ function openCreate() {
 }
 
 function openEdit(col: CollectionView) {
+  formError.value = ''
   clearPendingCover()
   current.value = col
   form.title = col.title
@@ -159,13 +163,14 @@ function setCoverUrl(value: string) {
 
 function onPickCover(file: File) {
   if (!file.type.startsWith('image/')) {
-    toast.add({ title: '请选择图片文件', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    formError.value = '请选择图片文件'
     return
   }
   if (file.size > 10 * 1024 * 1024) {
-    toast.add({ title: '图片不能超过 10MB', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    formError.value = '图片不能超过 10MB'
     return
   }
+  formError.value = ''
   if (pendingCoverPreview.value) URL.revokeObjectURL(pendingCoverPreview.value)
   pendingCoverPreview.value = ''
   pendingCoverFile.value = null
@@ -212,12 +217,13 @@ async function uploadCollectionCover(collectionId: string, file: File) {
 }
 
 async function save() {
+  formError.value = ''
   if (!form.title.trim()) {
-    toast.add({ title: '请填写标题', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    formError.value = '请填写标题'
     return
   }
   if (!normalizedFormSlug.value) {
-    toast.add({ title: '请填写路径标识', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    formError.value = '请填写路径标识'
     return
   }
 
@@ -375,6 +381,7 @@ async function doDelete() {
     <USlideover v-model:open="open" :title="current ? '编辑文档集' : '新建文档集'">
       <template #body>
         <div class="space-y-5">
+          <UAlert v-if="formError" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善文档集信息" :description="formError" role="alert" />
           <div class="space-y-4">
             <UFormField label="标题" required>
               <UInput v-model="form.title" placeholder="文档集标题" class="w-full" autofocus />

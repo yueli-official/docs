@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ActionFeedbackButton } from '@platform/manage/components'
 import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import type { CollectionVersion, CollectionVersionsResponse, CollectionView, CollectionManageTree, DocDetail, DocDetailResponse } from '~/types'
@@ -14,7 +15,7 @@ import {
 // Fields: collection (required, new only) + parent + slug + title + body + status.
 const route = useRoute()
 const { call } = useApi()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 const ROOT = '__root__' // USelect/Reka SelectItem cannot use an empty-string value.
 const routeId = computed(() => String(route.params.id ?? ''))
 const semanticCollectionSlug = computed(() => String(route.params.collectionSlug ?? ''))
@@ -287,17 +288,19 @@ async function setStatus(status: 'draft' | 'published' | 'archived') {
 
 // ── save ───────────────────────────────────────────────────────────────────────
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
+const validationError = ref('')
 async function save() {
+  validationError.value = ''
   if (!form.title.trim()) {
-    toast.add({ title: '请填写标题', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    validationError.value = '请填写标题'
     return
   }
   if (!form.collectionId) {
-    toast.add({ title: '请选择文档集', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    validationError.value = '请选择文档集'
     return
   }
   if (!isNew.value && !form.slug.trim()) {
-    toast.add({ title: '请填写 URL slug', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    validationError.value = '请填写 URL slug'
     return
   }
   markSaving()
@@ -448,6 +451,8 @@ onMounted(() => nextTick(autoGrowTitle))
         </div>
       </div>
     </div>
+
+    <UAlert v-if="validationError" class="mx-auto mb-5 max-w-[1440px]" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善文档信息" :description="validationError" role="alert" />
 
     <!-- loading (edit mode only; !mounted guards hydration mismatch) -->
     <div v-if="!mounted || (!isNew && pending && !doc)" class="mx-auto grid max-w-[1440px] gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">

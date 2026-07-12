@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ManageEmpty, ManageHeader } from '@platform/manage/components'
 import type { DocsImportBatch, DocsImportSummary, DocsImportUploadResponse } from '~/types'
 
@@ -6,7 +7,7 @@ definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '批量导入 · 控制台' })
 
 const { call } = useApi()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 
 const file = ref<File | null>(null)
 const uploading = ref(false)
@@ -48,7 +49,7 @@ function onFileChange(event: Event) {
 async function upload() {
   if (!file.value) return
   if (!file.value.name.toLowerCase().endsWith('.zip')) {
-    toast.add({ title: '请选择 ZIP 文件', color: 'warning', icon: 'i-tabler-alert-triangle' })
+    errorMessage.value = '请选择 ZIP 文件'
     return
   }
   uploading.value = true
@@ -59,11 +60,6 @@ async function upload() {
     const res = await call<DocsImportUploadResponse>('/api/v1/imports/docs', { method: 'POST', body })
     batch.value = res.batch
     summary.value = res.summary
-    toast.add({
-      title: res.summary.blocking ? '预检发现阻塞问题' : '预检完成',
-      color: res.summary.blocking ? 'warning' : 'success',
-      icon: res.summary.blocking ? 'i-tabler-alert-triangle' : 'i-tabler-check',
-    })
   }
   catch (err: any) {
     errorMessage.value = err?.data?.message || err?.message || '上传失败'

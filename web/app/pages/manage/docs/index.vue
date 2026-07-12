@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import {
   ManageCollectionDock,
   ManageCollectionToolbar,
@@ -21,7 +22,7 @@ definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '文档 · 控制台' })
 
 const { call } = useApi()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 const route = useRoute()
 const router = useRouter()
 
