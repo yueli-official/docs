@@ -248,20 +248,6 @@ const contentText = computed(() =>
     .replace(/\s+/g, ' ')
     .trim(),
 )
-const editorReadinessItems = computed(() => [
-  { label: '标题', ok: Boolean(form.title.trim()) },
-  { label: '正文', ok: contentText.value.length > 0 },
-  { label: '摘要', ok: Boolean(form.excerpt.trim()) },
-  { label: '文档集', ok: Boolean(form.collectionId) },
-  { label: 'URL slug', ok: Boolean(form.slug.trim()) || isNew.value },
-])
-const editorIssueCount = computed(() => editorReadinessItems.value.filter(item => !item.ok).length)
-const editorQuality = computed(() => {
-  if (!editorIssueCount.value) return { label: 'Ready', color: 'success' as const, icon: 'i-tabler-shield-check' }
-  if (editorIssueCount.value > 1) return { label: `${editorIssueCount.value} 项`, color: 'error' as const, icon: 'i-tabler-alert-triangle' }
-  return { label: '待补齐', color: 'warning' as const, icon: 'i-tabler-alert-circle' }
-})
-
 // ── quick publish / unpublish (edit mode) ──────────────────────────────────────
 const busy = ref('')
 async function setStatus(status: 'draft' | 'published' | 'archived') {
@@ -376,15 +362,16 @@ async function save() {
 
 // ── settings drawer ────────────────────────────────────────────────────────────
 const settingsOpen = ref(false)
+const { status: copyStatus, success: markCopied, error: markCopyFailed } = useActionFeedback()
 
-async function copyText(value: string, title: string) {
+async function copyText(value: string) {
   if (!value) return
   try {
     await navigator.clipboard.writeText(value)
-    // feedback-contract: clipboard state is invisible
-    toast.add({ title, color: 'success', icon: 'i-tabler-check' })
+    markCopied()
   }
   catch {
+    markCopyFailed()
     toast.add({ title: '复制失败', color: 'error', icon: 'i-tabler-alert-circle' })
   }
 }
@@ -520,36 +507,6 @@ onMounted(() => nextTick(autoGrowTitle))
 
       <aside class="min-w-0 space-y-4 xl:sticky xl:top-36 xl:self-start">
         <div class="rounded-lg border border-default bg-default p-4">
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-highlighted">发布检查</p>
-              <p class="text-xs text-muted">{{ collectionTitle || '未选择文档集' }}</p>
-            </div>
-            <UBadge
-              :color="editorQuality.color"
-              :icon="editorQuality.icon"
-              :label="editorQuality.label"
-              variant="subtle"
-            />
-          </div>
-
-          <div class="grid gap-2">
-            <div
-              v-for="item in editorReadinessItems"
-              :key="item.label"
-              class="flex items-center justify-between gap-3 rounded-md bg-elevated px-2.5 py-2 text-sm"
-            >
-              <span class="text-default">{{ item.label }}</span>
-              <UIcon
-                :name="item.ok ? 'i-tabler-circle-check' : 'i-tabler-circle-x'"
-                class="size-4"
-                :class="item.ok ? 'text-success' : 'text-warning'"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-lg border border-default bg-default p-4">
           <div class="mb-4 flex items-center justify-between gap-3">
             <div>
               <p class="text-sm font-semibold text-highlighted">发布控制</p>
@@ -575,16 +532,16 @@ onMounted(() => nextTick(autoGrowTitle))
         <div class="rounded-lg border border-default bg-default p-4">
           <div class="mb-3 flex items-center justify-between gap-3">
             <p class="text-sm font-semibold text-highlighted">公开链接</p>
-            <UTooltip text="复制公开链接">
+            <UTooltip :text="copyStatus === 'success' ? '已复制' : '复制公开链接'">
               <UButton
-                icon="i-tabler-copy"
+                :icon="copyStatus === 'success' ? 'i-tabler-check' : 'i-tabler-copy'"
                 color="neutral"
                 variant="ghost"
                 size="xs"
                 square
-                aria-label="复制公开链接"
+                :aria-label="copyStatus === 'success' ? '公开链接已复制' : '复制公开链接'"
                 :disabled="!publicDocUrl"
-                @click="copyText(publicDocUrl, '已复制公开链接')"
+                @click="copyText(publicDocUrl)"
               />
             </UTooltip>
           </div>

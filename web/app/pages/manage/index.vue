@@ -105,7 +105,7 @@ const continueCollections = computed(() => [...items.value].sort((a, b) => (b.do
       <UAlert v-if="error" color="error" variant="subtle" icon="i-tabler-alert-circle" title="文档服务暂时不可用" description="刷新后仍失败时，请到平台状态检查服务。" />
       <div v-else class="space-y-3">
         <div class="flex items-center justify-between gap-3 rounded-lg bg-success/10 px-3 py-2.5 text-sm"><span class="flex items-center gap-2 text-success"><UIcon name="i-tabler-circle-check" class="size-4" />文档服务可用</span><span class="text-xs text-muted">正常</span></div>
-        <p class="text-xs leading-5 text-muted">内容缺口归入待完善队列，不展示常驻发布检查或“就绪”标签。</p>
+        <p class="text-xs leading-5 text-muted">内容缺口统一进入待完善队列，不展示常驻完整度面板或正常状态噪声。</p>
       </div>
     </template>
 
