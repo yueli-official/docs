@@ -7,12 +7,7 @@ import (
 
 func homeConfigView(m *model.HomeConfig) *v1.HomeConfigView {
 	if m == nil {
-		return &v1.HomeConfigView{
-			QuickLinks:          []*v1.HomeQuickLinkView{},
-			FeaturedCollections: []string{},
-			HomeEyebrow:         "Product manual",
-			HomeSubtitle:        "搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。",
-		}
+		return nil
 	}
 	links := make([]*v1.HomeQuickLinkView, len(m.QuickLinks))
 	for i, link := range m.QuickLinks {

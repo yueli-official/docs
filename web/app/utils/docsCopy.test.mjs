@@ -25,14 +25,14 @@ test('manage navigation puts homepage configuration in settings at the end', () 
   assert.match(sidebar, /i-tabler-settings/)
   assert.ok(sidebar.indexOf("label: '设置'") > sidebar.indexOf("label: '文档'"))
   assert.doesNotMatch(sidebar, /首页布局/)
-  assert.match(page, /ManageHeader title="设置"/)
-  assert.match(page, /配置公开首页的快速入口和推荐文档/)
+  assert.match(page, /ManageSettingsLayout/)
+  assert.match(page, /首屏文案、快速入口和推荐文档/)
   assert.doesNotMatch(page, /推荐入口/)
 })
 
-test('manage homepage layout uses the shared icon picker', () => {
+test('manage homepage layout uses the shared icon picker without preview chrome', () => {
   const page = readApp('pages/manage/home.vue')
-  assert.match(page, /公开首页预览/)
+  assert.doesNotMatch(page, /首页预览|页脚预览|公开首页预览/)
   assert.match(page, /快速入口配置/)
   assert.match(page, /ManageIconPicker/)
   assert.match(page, /UPopover/)
@@ -75,8 +75,8 @@ test('docs manage keeps low frequency actions out of the primary editor chrome',
   assert.match(settingsStatus, /label="归档"/)
 
   const docsIndex = readApp('pages/manage/docs/index.vue')
-  assert.match(docsIndex, /selectedDocMoreItems/)
-  assert.match(docsIndex, /label="更多设置"/)
+  assert.doesNotMatch(docsIndex, /selectedDocMoreItems/)
+  assert.doesNotMatch(docsIndex, /label="更多设置"/)
 })
 
 test('docs site exposes color mode controls in public and manage chrome', () => {

@@ -4,14 +4,13 @@ import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import { useManageSettings } from '@platform/manage/use-manage-settings'
 import { createPlatformNotifier } from '@platform/ui/feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
-import type { Collection, CollectionList, HomeConfigResponse, HomeQuickLink } from '~/types'
+import type { CollectionList, HomeConfigResponse, HomeQuickLink } from '~/types'
 
 definePageMeta({ layout: 'manage' })
 useSeoMeta({ title: '设置 · 控制台' })
 
 const { call } = useApi()
 const toast = createPlatformNotifier(useToast())
-const { brand: siteBrand } = useSiteRuntime()
 const route = useRoute()
 const router = useRouter()
 const saveError = ref('')
@@ -31,14 +30,10 @@ const { data: collectionsData, pending: collectionsPending } = await useAsyncDat
   () => call<CollectionList>('/api/v1/collections'),
   { server: false, default: () => ({ items: [] }) },
 )
-const { data: homeData, pending: homePending, refresh } = await useAsyncData(
+const { data: homeData, pending: homePending, error: homeError, refresh } = await useAsyncData(
   'manage-home-config',
   () => call<HomeConfigResponse>('/api/v1/home'),
-  { server: false, default: () => ({ config: {
-    quickLinks: [], featuredCollections: [], homeEyebrow: 'Product manual', homeTitle: '',
-    homeSubtitle: '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
-    siteTitle: '', siteDescription: '', supportEmail: '', footerTagline: '', footerCopyright: '',
-  } }) },
+  { server: false },
 )
 
 const collections = computed(() => collectionsData.value?.items ?? [])
@@ -48,12 +43,12 @@ const showSkeleton = useMinLoading(loading)
 const quickLinks = ref<HomeQuickLink[]>([])
 const featuredCollections = ref<string[]>([])
 const homeCopy = reactive({
-  eyebrow: 'Product manual',
-  title: siteBrand.value,
-  subtitle: '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+  eyebrow: '',
+  title: '',
+  subtitle: '',
 })
-const siteForm = reactive({ title: siteBrand.value, description: '产品手册、集成说明和操作指南', supportEmail: '' })
-const footerForm = reactive({ tagline: '产品手册、集成说明和操作指南', copyright: '' })
+const siteForm = reactive({ title: '', description: '', supportEmail: '' })
+const footerForm = reactive({ tagline: '', copyright: '' })
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const initialized = ref(false)
 const activeIconPickerLinkId = ref('')
@@ -74,18 +69,11 @@ const settingsState = useManageSettings({
   },
 })
 
-const enabledQuickLinks = computed(() => quickLinks.value.filter(link => link.enabled !== false))
-const previewQuickLinks = computed(() => enabledQuickLinks.value.slice(0, 4))
-const selectedFeaturedCollections = computed(() =>
-  featuredCollections.value
-    .map(slug => collections.value.find(item => item.slug === slug))
-    .filter((item): item is Collection => Boolean(item)),
-)
-
 watch(homeData, (value) => {
   if (initialized.value) return
   const config = value?.config
-  quickLinks.value = (config?.quickLinks ?? []).map((link, index) => ({
+  if (!config) return
+  quickLinks.value = config.quickLinks.map((link, index) => ({
     id: link.id || crypto.randomUUID(),
     title: link.title || '',
     description: link.description || '',
@@ -95,20 +83,20 @@ watch(homeData, (value) => {
     sortOrder: index,
     enabled: link.enabled !== false,
   }))
-  featuredCollections.value = [...(config?.featuredCollections ?? [])]
+  featuredCollections.value = [...config.featuredCollections]
   Object.assign(homeCopy, {
-    eyebrow: config?.homeEyebrow || 'Product manual',
-    title: config?.homeTitle || siteBrand.value,
-    subtitle: config?.homeSubtitle || '搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。',
+    eyebrow: config.homeEyebrow,
+    title: config.homeTitle,
+    subtitle: config.homeSubtitle,
   })
   Object.assign(siteForm, {
-    title: config?.siteTitle || siteBrand.value,
-    description: config?.siteDescription || '产品手册、集成说明和操作指南',
-    supportEmail: config?.supportEmail || '',
+    title: config.siteTitle,
+    description: config.siteDescription,
+    supportEmail: config.supportEmail,
   })
   Object.assign(footerForm, {
-    tagline: config?.footerTagline || '产品手册、集成说明和操作指南',
-    copyright: config?.footerCopyright || '',
+    tagline: config.footerTagline,
+    copyright: config.footerCopyright,
   })
   initialized.value = true
   nextTick(settingsState.capture)
@@ -253,78 +241,16 @@ function discardChanges() {
 
     <SkeletonList v-if="showSkeleton" :rows="8" />
 
-    <template v-else-if="section === 'home'">
+    <UAlert v-else-if="homeError" color="error" variant="subtle" icon="i-tabler-alert-circle" title="设置加载失败" description="站点配置尚未初始化或服务不可用，请先运行开发环境 provision。" />
+
+    <template v-else-if="section === 'home' && !homeError">
       <ManageSettingCard title="首页首屏" description="控制公开首页的眉标、标题和任务导向说明。" class="mb-5">
         <div class="grid gap-4">
-          <div class="rounded-lg border border-default bg-elevated/30 p-4">
-            <p class="text-xs font-medium text-primary">{{ homeCopy.eyebrow }}</p>
-            <p class="font-display mt-2 text-2xl font-semibold text-highlighted">{{ homeCopy.title }}</p>
-            <p class="mt-2 text-sm leading-6 text-muted">{{ homeCopy.subtitle }}</p>
-          </div>
           <div class="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
             <UFormField label="眉标"><UInput v-model="homeCopy.eyebrow" class="w-full" /></UFormField>
             <UFormField label="首页标题"><UInput v-model="homeCopy.title" class="w-full" /></UFormField>
           </div>
           <UFormField label="首页介绍"><UTextarea v-model="homeCopy.subtitle" :rows="3" class="w-full" /></UFormField>
-        </div>
-      </ManageSettingCard>
-
-      <ManageSettingCard title="首页预览" description="仅预览公开首页中受这些视觉设置影响的区域。" class="mb-5">
-        <div class="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div class="border-b border-default p-4 lg:border-b-0 lg:border-r">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="text-xs font-medium text-muted">公开首页预览</p>
-                <h2 class="mt-1 text-base font-semibold text-highlighted">首页内容编排</h2>
-              </div>
-              <div class="flex gap-2">
-                <UBadge color="neutral" variant="soft">{{ enabledQuickLinks.length }} 个入口</UBadge>
-                <UBadge color="neutral" variant="soft">{{ featuredCollections.length }} 篇推荐</UBadge>
-              </div>
-            </div>
-
-            <div class="mt-4 grid gap-3 md:grid-cols-2">
-              <div
-                v-for="link in previewQuickLinks"
-                :key="link.id"
-                class="flex min-w-0 items-start gap-3 rounded-lg border border-default bg-elevated/35 p-3"
-              >
-                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <UIcon :name="link.icon || 'i-tabler-arrow-up-right'" class="size-5" />
-                </span>
-                <span class="min-w-0">
-                  <span class="block truncate text-sm font-semibold text-highlighted">{{ link.title || '未命名入口' }}</span>
-                  <span class="mt-1 block truncate text-xs text-muted">{{ quickLinkTarget(link) }}</span>
-                </span>
-              </div>
-              <div v-if="!previewQuickLinks.length" class="rounded-lg border border-dashed border-default p-4 text-sm text-muted">
-                还没有启用的快速入口。
-              </div>
-            </div>
-          </div>
-
-          <div class="grid content-start gap-3 bg-elevated/30 p-4">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-xs font-medium text-muted">推荐文档</span>
-              <UIcon name="i-tabler-layout-grid" class="size-5 text-muted" />
-            </div>
-            <div v-if="selectedFeaturedCollections.length" class="grid gap-2">
-              <div
-                v-for="collection in selectedFeaturedCollections"
-                :key="collection.id"
-                class="flex items-center gap-3 rounded-lg bg-default px-3 py-2 ring-1 ring-default"
-              >
-                <span class="grid size-8 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-                  <UIcon :name="collection.icon || 'i-tabler-stack-2'" class="size-4" />
-                </span>
-                <span class="min-w-0">
-                  <span class="block truncate text-sm font-medium text-highlighted">{{ collection.title }}</span>
-                  <span class="block truncate font-mono text-xs text-muted">/{{ collection.slug }}</span>
-                </span>
-              </div>
-            </div>
-            <p v-else class="text-sm text-muted">还没有选择推荐文档。</p>
-          </div>
         </div>
       </ManageSettingCard>
 
@@ -467,19 +393,14 @@ function discardChanges() {
       </div>
     </template>
 
-    <ManageSettingCard v-else-if="section === 'footer'" title="页脚内容" description="用于所有文档页面底部的品牌说明与联系信息。">
+    <ManageSettingCard v-else-if="section === 'footer' && !homeError" title="页脚内容" description="用于所有文档页面底部的品牌说明与联系信息。">
       <div class="grid gap-4">
-        <div class="rounded-lg border border-default bg-elevated/30 p-4 text-center">
-          <p class="text-sm text-default">{{ footerForm.tagline || siteForm.description }}</p>
-          <p class="mt-2 text-xs text-muted">{{ footerForm.copyright || siteForm.title }}</p>
-          <p v-if="siteForm.supportEmail" class="mt-2 text-xs text-primary">{{ siteForm.supportEmail }}</p>
-        </div>
         <UFormField label="页脚标语"><UInput v-model="footerForm.tagline" class="w-full" /></UFormField>
-        <UFormField label="版权信息" description="留空时显示站点名称。"><UInput v-model="footerForm.copyright" placeholder="© 2026 Yueli" class="w-full" /></UFormField>
+        <UFormField label="版权信息"><UInput v-model="footerForm.copyright" placeholder="© 2026 Yueli" class="w-full" /></UFormField>
       </div>
     </ManageSettingCard>
 
-    <ManageSettingCard v-else title="站点基础" description="这些字段用于导航品牌、SEO 描述和支持入口。">
+    <ManageSettingCard v-else-if="!homeError" title="站点基础" description="这些字段用于导航品牌、SEO 描述和支持入口。">
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="站点名称" required><UInput v-model="siteForm.title" class="w-full" /></UFormField>
         <UFormField label="支持邮箱"><UInput v-model="siteForm.supportEmail" type="email" class="w-full" /></UFormField>

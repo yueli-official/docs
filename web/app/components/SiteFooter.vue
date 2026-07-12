@@ -2,18 +2,16 @@
 import type { HomeConfigResponse } from '~/types'
 
 withDefaults(defineProps<{ widthClass?: string }>(), { widthClass: 'max-w-screen-xl' })
-const { brand: siteBrand } = useSiteRuntime()
 const { call } = useApi()
 const { data: siteConfigData } = await useAsyncData(
   'docs-public-site-config',
   () => call<HomeConfigResponse>('/api/v1/home'),
-  { default: () => ({ config: {} as HomeConfigResponse['config'] }) },
 )
-const config = computed(() => siteConfigData.value?.config)
-const title = computed(() => config.value?.siteTitle || siteBrand.value)
-const tagline = computed(() => config.value?.footerTagline || config.value?.siteDescription || '产品手册、集成说明和操作指南')
-const copyright = computed(() => config.value?.footerCopyright || title.value)
-const supportEmail = computed(() => config.value?.supportEmail || '')
+if (!siteConfigData.value?.config) throw createError({ statusCode: 500, statusMessage: '文档站点配置尚未初始化' })
+const config = computed(() => siteConfigData.value!.config)
+const tagline = computed(() => config.value.footerTagline)
+const copyright = computed(() => config.value.footerCopyright)
+const supportEmail = computed(() => config.value.supportEmail)
 </script>
 
 <template>

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/gogf/gf/v2/errors/gerror"
+
 	"platform/products/docs/api/internal/model"
 )
 
@@ -22,17 +24,6 @@ type homeConfigRow struct {
 	FooterCopyright     string `orm:"footer_copyright"`
 }
 
-func defaultHomeConfig() *model.HomeConfig {
-	return &model.HomeConfig{
-		QuickLinks:          []*model.HomeQuickLink{},
-		FeaturedCollections: []string{},
-		HomeEyebrow:         "Product manual",
-		HomeSubtitle:        "搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。",
-		SiteDescription:     "产品手册、集成说明和操作指南",
-		FooterTagline:       "产品手册、集成说明和操作指南",
-	}
-}
-
 func (p *PG) GetHomeConfig(ctx context.Context) (*model.HomeConfig, error) {
 	var row *homeConfigRow
 	err := p.db.Model(tHomeConfig).Ctx(ctx).
@@ -44,17 +35,9 @@ func (p *PG) GetHomeConfig(ctx context.Context) (*model.HomeConfig, error) {
 		return nil, err
 	}
 	if row == nil {
-		return defaultHomeConfig(), nil
+		return nil, gerror.New("docs site configuration is not seeded")
 	}
-	out := defaultHomeConfig()
-	out.HomeEyebrow = row.HomeEyebrow
-	out.HomeTitle = row.HomeTitle
-	out.HomeSubtitle = row.HomeSubtitle
-	out.SiteTitle = row.SiteTitle
-	out.SiteDescription = row.SiteDescription
-	out.SupportEmail = row.SupportEmail
-	out.FooterTagline = row.FooterTagline
-	out.FooterCopyright = row.FooterCopyright
+	out := &model.HomeConfig{QuickLinks: []*model.HomeQuickLink{}, FeaturedCollections: []string{}, HomeEyebrow: row.HomeEyebrow, HomeTitle: row.HomeTitle, HomeSubtitle: row.HomeSubtitle, SiteTitle: row.SiteTitle, SiteDescription: row.SiteDescription, SupportEmail: row.SupportEmail, FooterTagline: row.FooterTagline, FooterCopyright: row.FooterCopyright}
 	if row.QuickLinks != "" {
 		if err := json.Unmarshal([]byte(row.QuickLinks), &out.QuickLinks); err != nil {
 			return nil, err

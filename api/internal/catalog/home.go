@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/google/uuid"
 
 	"platform/products/docs/api/internal/model"
@@ -14,29 +15,28 @@ func (s *Service) GetHomeConfig(ctx context.Context) (*model.HomeConfig, error) 
 }
 
 func (s *Service) UpdateHomeConfig(ctx context.Context, cfg *model.HomeConfig) (*model.HomeConfig, error) {
+	if cfg == nil {
+		return nil, gerror.New("docs site configuration is required")
+	}
 	clean := &model.HomeConfig{
 		QuickLinks:          sanitizeHomeQuickLinks(cfg.QuickLinks),
 		FeaturedCollections: sanitizeFeaturedCollections(cfg.FeaturedCollections),
-		HomeEyebrow:         fallback(strings.TrimSpace(cfg.HomeEyebrow), "Product manual"),
+		HomeEyebrow:         strings.TrimSpace(cfg.HomeEyebrow),
 		HomeTitle:           strings.TrimSpace(cfg.HomeTitle),
-		HomeSubtitle:        fallback(strings.TrimSpace(cfg.HomeSubtitle), "搜索产品手册、集成说明和操作指南。先找到任务，再进入对应文档集继续阅读。"),
+		HomeSubtitle:        strings.TrimSpace(cfg.HomeSubtitle),
 		SiteTitle:           strings.TrimSpace(cfg.SiteTitle),
 		SiteDescription:     strings.TrimSpace(cfg.SiteDescription),
 		SupportEmail:        strings.TrimSpace(cfg.SupportEmail),
 		FooterTagline:       strings.TrimSpace(cfg.FooterTagline),
 		FooterCopyright:     strings.TrimSpace(cfg.FooterCopyright),
 	}
+	if clean.HomeEyebrow == "" || clean.HomeTitle == "" || clean.HomeSubtitle == "" || clean.SiteTitle == "" || clean.SiteDescription == "" || clean.FooterTagline == "" || clean.FooterCopyright == "" {
+		return nil, gerror.New("docs homepage, site, and footer content must be configured")
+	}
 	if err := s.dao.UpsertHomeConfig(ctx, clean); err != nil {
 		return nil, err
 	}
 	return s.dao.GetHomeConfig(ctx)
-}
-
-func fallback(value, fallbackValue string) string {
-	if value == "" {
-		return fallbackValue
-	}
-	return value
 }
 
 func sanitizeHomeQuickLinks(in []*model.HomeQuickLink) []*model.HomeQuickLink {

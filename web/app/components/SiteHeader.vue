@@ -11,14 +11,13 @@ const { isOwner, refresh: refreshMe } = useMe()
 const accountUrl = computed(() => useRuntimeConfig().public.accountUrl || 'http://localhost:3000')
 const initial = computed(() => (user.value?.name || user.value?.email || '?').charAt(0).toUpperCase())
 const searchOpen = ref(false)
-const { brand: siteBrand } = useSiteRuntime()
 const { call } = useApi()
 const { data: siteConfigData } = await useAsyncData(
   'docs-public-site-config',
   () => call<HomeConfigResponse>('/api/v1/home'),
-  { default: () => ({ config: {} as HomeConfigResponse['config'] }) },
 )
-const siteTitle = computed(() => siteConfigData.value?.config?.siteTitle || siteBrand.value)
+if (!siteConfigData.value?.config) throw createError({ statusCode: 500, statusMessage: '文档站点配置尚未初始化' })
+const siteTitle = computed(() => siteConfigData.value!.config.siteTitle)
 
 async function handleLogin() {
   await login()
