@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageTabs, SkeletonList } from '@platform/manage/components'
+import {
+  ManageCollectionDock,
+  ManageCollectionToolbar,
+  ManageEmpty,
+  ManageHeader,
+  ManageLifecycleTabs,
+  ManagePagination,
+  ManageViewToggle,
+  SkeletonList
+} from '@platform/manage/components'
+import type { ManageCollectionDefinition } from '@platform/manage/collection'
+import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
+import { useManageSelection } from '@platform/manage/use-manage-selection'
 import type { CollectionManageTree, CollectionVersion, CollectionVersionsResponse, CollectionView, DocDetail } from '~/types'
 import { buildDocTree, docManageRoute, findDocSlugPathById } from '~/utils/docsManageRoutes.mjs'
 
@@ -8,6 +20,8 @@ useSeoMeta({ title: '文档 · 控制台' })
 
 const { call } = useApi()
 const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
 type StatusKey = 'all' | 'draft' | 'published' | 'archived' | 'issues'
 type ViewMode = 'list' | 'tree'
@@ -33,20 +47,46 @@ interface PatchItem {
   sortOrder: number
 }
 
-const search = ref('')
-const collectionFilter = ref('all')
-const versionFilter = ref('')
-const localeFilter = ref('en')
-const statusFilter = ref<StatusKey>('all')
-const viewMode = ref<ViewMode>('list')
-const page = ref(1)
-const pageSize = 30
+const collectionDefinition = {
+  resourceKind: 'doc',
+  statuses: ['all', 'draft', 'published', 'archived', 'issues'],
+  views: ['list', 'tree'],
+  sortKeys: ['sortOrder'],
+  pageSizes: [30, 60, 90],
+  defaultStatus: 'all',
+  defaultView: 'list',
+  defaultSort: 'sortOrder',
+  defaultDirection: 'asc',
+  defaultPageSize: 30,
+  pagination: 'client',
+  selection: 'page',
+  filters: ['collection', 'version', 'locale'],
+  quickEditFields: ['title', 'slug', 'status', 'parent'],
+  bulkActions: ['publish', 'draft', 'archive']
+} as const satisfies ManageCollectionDefinition
+
+const {
+  status: statusFilter,
+  searchInput: search,
+  q: searchQuery,
+  page,
+  size: pageSize,
+  view: viewMode,
+  filterModel
+} = useManageCollectionState({
+  definition: collectionDefinition,
+  routeQuery: computed(() => route.query),
+  replaceQuery: query => router.replace({ query })
+})
+const collectionFilter = filterModel('collection', 'all')
+const versionFilter = filterModel('version')
+const localeFilter = filterModel('locale', 'en')
 const selectedDocId = ref('')
-const selectedDocIds = ref<string[]>([])
 const bulkAction = ref<BulkDocAction | undefined>()
 const bulkBusy = ref(false)
 const quickEditTarget = ref<ManagedDoc>()
 const showQuickEdit = ref(false)
+const showLegacyDetails = false
 
 const bulkItems: Array<{ label: string; value: BulkDocAction; icon: string }> = [
   { label: '发布', value: 'publish', icon: 'i-tabler-rocket' },
@@ -212,18 +252,16 @@ const allDocs = computed(() =>
 
 const statusTabs = computed(() => {
   return [
-    { key: 'all', label: '全部' },
-    { key: 'draft', label: '草稿' },
-    { key: 'published', label: '已发布' },
-    { key: 'archived', label: '归档' },
-    { key: 'issues', label: '待完善' },
+    { key: 'all', label: '全部', count: allDocs.value.length },
+    { key: 'draft', label: '草稿', count: allDocs.value.filter(doc => doc.status === 'draft').length },
+    { key: 'published', label: '已发布', count: allDocs.value.filter(doc => doc.status === 'published').length },
+    { key: 'archived', label: '归档', count: allDocs.value.filter(doc => doc.status === 'archived').length },
+    { key: 'issues', label: '待完善', count: allDocs.value.filter(doc => qualityIssues(doc).length > 0).length },
   ]
 })
 
 function qualityIssues(doc: ManagedDoc) {
   const issues: string[] = []
-  if (doc.status === 'draft') issues.push('未发布')
-  if (doc.status === 'archived') issues.push('已归档')
   if (!doc.excerpt?.trim()) issues.push('缺摘要')
   if (!doc.slugPath.length) issues.push('缺路径')
   if (!doc.collectionSlug) issues.push('缺文档集')
@@ -232,7 +270,7 @@ function qualityIssues(doc: ManagedDoc) {
 
 function qualityMeta(doc: ManagedDoc) {
   const issues = qualityIssues(doc)
-  if (!issues.length) return { label: '就绪', color: 'success' as const, icon: 'i-tabler-shield-check' }
+  if (!issues.length) return { label: '', color: 'neutral' as const, icon: '' }
   if (issues.length > 1) return { label: `${issues.length} 项`, color: 'error' as const, icon: 'i-tabler-alert-triangle' }
   return { label: issues[0], color: 'warning' as const, icon: 'i-tabler-alert-circle' }
 }
@@ -247,7 +285,7 @@ function readinessItems(doc: ManagedDoc) {
 }
 
 const filteredDocs = computed(() => {
-  const q = search.value.trim().toLowerCase()
+  const q = searchQuery.value.trim().toLowerCase()
   return allDocs.value.filter((doc) => {
     if (activeCollection.value !== 'all' && doc.collectionId !== activeCollection.value) return false
     if (activeStatus.value === 'issues' && !qualityIssues(doc).length) return false
@@ -263,10 +301,23 @@ const filteredDocs = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredDocs.value.length / pageSize)))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredDocs.value.length / pageSize.value)))
 const pagedDocs = computed(() => {
-  const start = (page.value - 1) * pageSize
-  return filteredDocs.value.slice(start, start + pageSize)
+  const start = (page.value - 1) * pageSize.value
+  return filteredDocs.value.slice(start, start + pageSize.value)
+})
+const {
+  selectedIds: selectedDocIds,
+  isPageSelected,
+  isPageIndeterminate,
+  toggleOne: toggleDocSelection,
+  togglePage: togglePageSelection,
+  clear: clearDocSelection,
+  keepOnly: keepValidSelection
+} = useManageSelection({
+  visibleIds: computed(() => pagedDocs.value.map(doc => doc.id)),
+  filteredTotal: computed(() => filteredDocs.value.length),
+  resetKey: computed(() => route.fullPath)
 })
 const selectedDocs = computed(() =>
   allDocs.value.filter(doc => selectedDocIds.value.includes(doc.id)),
@@ -274,18 +325,8 @@ const selectedDocs = computed(() =>
 const selectedDoc = computed(() =>
   allDocs.value.find(doc => doc.id === selectedDocId.value) ?? pagedDocs.value[0] ?? null,
 )
-const pageSelectionCount = computed(() =>
-  pagedDocs.value.filter(doc => selectedDocIds.value.includes(doc.id)).length,
-)
-const isPageSelected = computed(() =>
-  pagedDocs.value.length > 0 && pageSelectionCount.value === pagedDocs.value.length,
-)
-const isPageIndeterminate = computed(() =>
-  pageSelectionCount.value > 0 && pageSelectionCount.value < pagedDocs.value.length,
-)
 
-watch([search, activeCollection, activeStatus, activeLocale, activeVersion], () => {
-  page.value = 1
+watch([activeCollection, activeStatus, activeLocale, activeVersion], () => {
   selectedDocIds.value = []
   bulkAction.value = undefined
 })
@@ -299,8 +340,7 @@ watch(pagedDocs, (docs) => {
   if (!docs.some(doc => doc.id === selectedDocId.value)) selectedDocId.value = docs[0]!.id
 }, { immediate: true })
 watch(allDocs, (docs) => {
-  const valid = new Set(docs.map(doc => doc.id))
-  selectedDocIds.value = selectedDocIds.value.filter(id => valid.has(id))
+  keepValidSelection(docs.map(doc => doc.id))
 })
 
 const selectedCollection = computed(() =>
@@ -347,23 +387,8 @@ async function onQuickEditSaved() {
   await Promise.all([loadDocs(), refreshTree()])
 }
 
-function toggleDocSelection(id: string) {
-  selectedDocIds.value = selectedDocIds.value.includes(id)
-    ? selectedDocIds.value.filter(item => item !== id)
-    : [...selectedDocIds.value, id]
-}
-
-function togglePageSelection(value?: boolean | 'indeterminate') {
-  const pageIds = pagedDocs.value.map(doc => doc.id)
-  if (value === false || isPageSelected.value) {
-    selectedDocIds.value = selectedDocIds.value.filter(id => !pageIds.includes(id))
-    return
-  }
-  selectedDocIds.value = Array.from(new Set([...selectedDocIds.value, ...pageIds]))
-}
-
 function clearBulkSelection() {
-  selectedDocIds.value = []
+  clearDocSelection()
   bulkAction.value = undefined
 }
 
@@ -647,16 +672,10 @@ async function onDelete(id: string) {
     </ManageHeader>
 
     <ClientOnly>
-      <ManageTabs v-model="statusFilter" :items="statusTabs" class="mb-4" />
+      <ManageLifecycleTabs v-model="statusFilter" :items="statusTabs" class="mb-4" />
 
-      <section class="mb-4 rounded-lg border border-default bg-elevated/30 p-3">
-        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_150px_170px_auto]">
-          <UInput
-            v-model="search"
-            icon="i-tabler-search"
-            placeholder="搜索标题、路径、slug 或文档集"
-            class="min-w-0"
-          />
+      <ManageCollectionToolbar v-model:search="search" search-placeholder="搜索标题、路径、slug 或文档集…" class="mb-4">
+        <template #filters>
           <USelectMenu
             :model-value="collectionFilter"
             :items="collectionItems"
@@ -683,26 +702,14 @@ async function onDelete(id: string) {
             class="w-full"
             @update:model-value="versionFilter = selectedValue($event)"
           />
-          <div class="inline-flex rounded-lg border border-default bg-default p-0.5">
-            <button
-              type="button"
-              class="flex min-h-9 items-center gap-1.5 rounded-md px-3 text-sm transition"
-              :class="viewMode === 'list' ? 'bg-elevated text-highlighted shadow-sm' : 'text-muted hover:text-default'"
-              @click="viewMode = 'list'"
-            >
-              <UIcon name="i-tabler-list" class="size-4" />列表
-            </button>
-            <button
-              type="button"
-              class="flex min-h-9 items-center gap-1.5 rounded-md px-3 text-sm transition"
-              :class="viewMode === 'tree' ? 'bg-elevated text-highlighted shadow-sm' : 'text-muted hover:text-default'"
-              @click="viewMode = 'tree'"
-            >
-              <UIcon name="i-tabler-sitemap" class="size-4" />树状
-            </button>
-          </div>
-        </div>
-      </section>
+        </template>
+        <template #actions>
+          <ManageViewToggle v-model="viewMode" :items="[
+            { key: 'list', label: '列表', icon: 'i-tabler-list' },
+            { key: 'tree', label: '树状', icon: 'i-tabler-sitemap' }
+          ]" />
+        </template>
+      </ManageCollectionToolbar>
 
       <UAlert
         v-if="docsError"
@@ -729,7 +736,7 @@ async function onDelete(id: string) {
         />
 
         <template v-else>
-          <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div class="min-w-0">
             <div class="min-w-0 overflow-hidden rounded-lg border border-default bg-default">
               <div class="hidden grid-cols-[42px_minmax(200px,2fr)_140px_92px_108px_76px] gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid">
                 <span class="flex items-center justify-center">
@@ -784,6 +791,7 @@ async function onDelete(id: string) {
 
                   <div>
                     <UBadge
+                      v-if="qualityMeta(doc)"
                       :label="qualityMeta(doc).label"
                       :color="qualityMeta(doc).color"
                       :icon="qualityMeta(doc).icon"
@@ -812,7 +820,7 @@ async function onDelete(id: string) {
               </div>
             </div>
 
-            <aside class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start">
+            <aside v-if="selectedDoc && showLegacyDetails" class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start">
               <template v-if="selectedDoc">
                 <div class="mb-4 flex items-start justify-between gap-3">
                   <div class="min-w-0">
@@ -929,8 +937,8 @@ async function onDelete(id: string) {
             </aside>
           </div>
 
-          <ManagePageFooter>
-            <template #left>
+          <ManageCollectionDock label="文档批量操作与分页">
+            <template #selection>
               <div class="flex flex-wrap items-center gap-2">
                 <UCheckbox
                   :model-value="isPageSelected"
@@ -974,10 +982,10 @@ async function onDelete(id: string) {
                 </template>
               </div>
             </template>
-            <template #right>
+            <template #pagination>
               <ManagePagination v-model="page" :total-pages="totalPages" />
             </template>
-          </ManagePageFooter>
+          </ManageCollectionDock>
         </template>
       </template>
 
