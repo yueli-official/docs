@@ -12,7 +12,9 @@ interface DragState {
   node: DocNode | null
 }
 
-defineProps<{ nodes: DocNode[]; collectionSlug: string }>()
+const props = withDefaults(defineProps<{ nodes: DocNode[], collectionSlug: string, parentId?: string }>(), {
+  parentId: ''
+})
 const emit = defineEmits<{
   edit: [id: string]
   addChild: [parentId: string]
@@ -88,6 +90,36 @@ function onDrop(e: DragEvent, node: DocNode) {
   if (dragging.id === node.id || isDescendantOf(dragging, node.id)) return
   emit('move', { dragId: dragging.id, targetId: node.id, position: info.position })
 }
+
+function nodeActionItems(node: DocNode, index: number) {
+  return [[
+    {
+      label: '上移',
+      icon: 'i-tabler-arrow-up',
+      disabled: index === 0,
+      onSelect: () => emit('move', { dragId: node.id, targetId: props.nodes[index - 1]!.id, position: 'before' })
+    },
+    {
+      label: '下移',
+      icon: 'i-tabler-arrow-down',
+      disabled: index === props.nodes.length - 1,
+      onSelect: () => emit('move', { dragId: node.id, targetId: props.nodes[index + 1]!.id, position: 'after' })
+    },
+    {
+      label: '提升一级',
+      icon: 'i-tabler-corner-left-up',
+      disabled: !props.parentId,
+      onSelect: () => emit('move', { dragId: node.id, targetId: props.parentId, position: 'after' })
+    }
+  ], [
+    {
+      label: '删除',
+      icon: 'i-tabler-trash',
+      color: 'error' as const,
+      onSelect: () => { confirmingId.value = node.id }
+    }
+  ]]
+}
 </script>
 
 <template>
@@ -120,17 +152,16 @@ function onDrop(e: DragEvent, node: DocNode) {
 
         <span class="flex min-w-0 flex-1 items-center gap-2">
           <span class="truncate text-sm text-default">{{ n.title }}</span>
-          <UBadge v-if="n.status === 'draft'" size="xs" variant="subtle" color="neutral">草稿</UBadge>
         </span>
 
-        <!-- normal actions (visible on hover) -->
-        <span v-if="confirmingId !== n.id" class="flex items-center gap-0.5 opacity-0 transition group-hover:opacity-100">
+        <!-- Explicit actions stay reachable on touch and keyboard. -->
+        <span v-if="confirmingId !== n.id" class="flex items-center gap-0.5">
           <UButton
-            icon="i-tabler-pencil"
+            icon="i-tabler-file-pencil"
             variant="ghost"
             size="xs"
             color="neutral"
-            aria-label="编辑"
+            :aria-label="`完整编辑：${n.title}`"
             @click="emit('edit', n.id)"
           />
           <UButton
@@ -138,17 +169,12 @@ function onDrop(e: DragEvent, node: DocNode) {
             variant="ghost"
             size="xs"
             color="neutral"
-            aria-label="加子文档"
+            :aria-label="`添加子文档：${n.title}`"
             @click="emit('addChild', n.id)"
           />
-          <UButton
-            icon="i-tabler-trash"
-            variant="ghost"
-            size="xs"
-            color="error"
-            aria-label="删除"
-            @click="() => { confirmingId = n.id }"
-          />
+          <UDropdownMenu :items="nodeActionItems(n, nodes.indexOf(n))" :ui="{ content: 'w-40' }">
+            <UButton icon="i-tabler-dots-vertical" variant="ghost" size="xs" color="neutral" :aria-label="`层级操作：${n.title}`" />
+          </UDropdownMenu>
         </span>
 
         <!-- inline delete confirm (replaces action icons, no modal) -->
@@ -180,6 +206,7 @@ function onDrop(e: DragEvent, node: DocNode) {
         <DocTreeAdmin
           :nodes="n.children"
           :collection-slug="collectionSlug"
+          :parent-id="n.id"
           @edit="emit('edit', $event)"
           @add-child="emit('addChild', $event)"
           @delete="emit('delete', $event)"
