@@ -209,7 +209,11 @@ func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*m
 		return nil, docserr.NotFound(id)
 	}
 	if in.Title != nil {
-		d.Title = *in.Title
+		title := strings.TrimSpace(*in.Title)
+		if title == "" {
+			return nil, docserr.InvalidInput("title required")
+		}
+		d.Title = title
 	}
 	slugStr := ""
 	if in.Slug != nil {
@@ -232,7 +236,11 @@ func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*m
 		d.SEODescription = *in.SEODescription
 	}
 	if in.Status != nil {
-		d.Status = *in.Status
+		status := strings.TrimSpace(*in.Status)
+		if status != "draft" && status != "published" && status != "archived" {
+			return nil, docserr.InvalidInput("status must be draft, published or archived")
+		}
+		d.Status = status
 	}
 	if in.Locale != nil {
 		d.Locale = *in.Locale
@@ -247,7 +255,11 @@ func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*m
 		d.SortOrder = *in.SortOrder
 	}
 	if in.ParentID != nil {
-		d.ParentID = *in.ParentID
+		parentID := strings.TrimSpace(*in.ParentID)
+		if err := s.validateDocParent(ctx, d, parentID); err != nil {
+			return nil, err
+		}
+		d.ParentID = parentID
 	}
 	if err := s.dao.UpdateDoc(ctx, d); err != nil {
 		if slugStr != "" {
@@ -256,6 +268,35 @@ func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*m
 		return nil, err
 	}
 	return s.dao.GetDocByID(ctx, id)
+}
+
+func (s *Service) validateDocParent(ctx context.Context, doc *model.Doc, parentID string) error {
+	if parentID == "" {
+		return nil
+	}
+	if parentID == doc.ID {
+		return docserr.InvalidInput("document cannot be its own parent")
+	}
+	seen := map[string]struct{}{doc.ID: {}}
+	currentID := parentID
+	for currentID != "" {
+		if _, cycle := seen[currentID]; cycle {
+			return docserr.InvalidInput("document parent would create a cycle")
+		}
+		seen[currentID] = struct{}{}
+		parent, err := s.dao.GetDocByID(ctx, currentID)
+		if err != nil {
+			return err
+		}
+		if parent == nil {
+			return docserr.InvalidInput("document parent not found")
+		}
+		if parent.CollectionID != doc.CollectionID || parent.VersionID != doc.VersionID || parent.Locale != doc.Locale {
+			return docserr.InvalidInput("document parent must use the same collection, version and locale")
+		}
+		currentID = parent.ParentID
+	}
+	return nil
 }
 
 // PublishDoc marks a doc as visible to public readers.

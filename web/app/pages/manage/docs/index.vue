@@ -45,6 +45,8 @@ const selectedDocId = ref('')
 const selectedDocIds = ref<string[]>([])
 const bulkAction = ref<BulkDocAction | undefined>()
 const bulkBusy = ref(false)
+const quickEditTarget = ref<ManagedDoc>()
+const showQuickEdit = ref(false)
 
 const bulkItems: Array<{ label: string; value: BulkDocAction; icon: string }> = [
   { label: '发布', value: 'publish', icon: 'i-tabler-rocket' },
@@ -334,6 +336,15 @@ function addChild(doc: ManagedDoc) {
 
 function selectDoc(doc: ManagedDoc) {
   selectedDocId.value = doc.id
+}
+
+function openQuickEdit(doc: ManagedDoc) {
+  quickEditTarget.value = doc
+  showQuickEdit.value = true
+}
+
+async function onQuickEditSaved() {
+  await Promise.all([loadDocs(), refreshTree()])
 }
 
 function toggleDocSelection(id: string) {
@@ -790,8 +801,11 @@ async function onDelete(id: string) {
                     <UTooltip text="添加子文档">
                       <UButton icon="i-tabler-file-plus" color="neutral" variant="ghost" size="sm" square @click.stop="addChild(doc)" />
                     </UTooltip>
-                    <UTooltip text="编辑">
-                      <UButton icon="i-tabler-pencil" color="neutral" variant="ghost" size="sm" square @click.stop="openDoc(doc)" />
+                    <UTooltip text="快速编辑">
+                      <UButton icon="i-tabler-pencil" color="neutral" variant="ghost" size="sm" square @click.stop="openQuickEdit(doc)" />
+                    </UTooltip>
+                    <UTooltip text="完整编辑">
+                      <UButton icon="i-tabler-file-pencil" color="neutral" variant="ghost" size="sm" square @click.stop="openDoc(doc)" />
                     </UTooltip>
                   </div>
                 </div>
@@ -998,5 +1012,13 @@ async function onDelete(id: string) {
         </div>
       </template>
     </ClientOnly>
+
+    <ManageDocQuickEditModal
+      v-model:open="showQuickEdit"
+      :doc="quickEditTarget"
+      :docs="allDocs"
+      @saved="onQuickEditSaved"
+      @open-full="() => quickEditTarget && openDoc(quickEditTarget)"
+    />
   </div>
 </template>
