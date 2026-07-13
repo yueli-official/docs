@@ -24,7 +24,6 @@ const showBackToTop = computed(() => ['/manage', '/manage/home'].includes(route.
     :site-name="siteBrand"
     :context-label="contextLabel"
     storage-key="docs-manage"
-    content-class="max-w-screen-2xl"
     :show-back-to-top="showBackToTop"
   >
     <template #sidebar><ManageSidebar /></template>

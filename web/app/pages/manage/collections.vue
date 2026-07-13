@@ -304,7 +304,7 @@ async function doDelete() {
     <SkeletonList v-else-if="showSkeleton" :rows="8" />
 
     <template v-else>
-      <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、路径标识或说明…" class="mb-5">
+      <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、路径标识或说明…" compact-filters class="mb-5">
         <template #filters>
           <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
           <ManageSortDirectionButton v-model="direction" />
