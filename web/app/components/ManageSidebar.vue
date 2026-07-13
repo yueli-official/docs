@@ -20,6 +20,7 @@ const nav = [
       { label: '基础', icon: 'i-tabler-adjustments-horizontal', to: '/manage/home?section=site', section: 'site' },
     ],
   },
+  { label: '资源配置', icon: 'i-tabler-database-cog', to: '/manage/assets' },
 ]
 // `控制台` is the index — exact match; the rest match their subtree.
 function isActive(to: string) {

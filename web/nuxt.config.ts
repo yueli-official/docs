@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     "@platform/auth",
     "@platform/site",
     "@platform/manage",
+    "@platform/asset",
     "@platform/content",
   ],
   modules: ["@nuxt/ui"],
