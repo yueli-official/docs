@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PlatformImageCropper } from '@platform/ui/components'
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
+import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageSortDirectionButton, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
 import { useMinLoading } from '@platform/ui/use-min-loading'
@@ -114,10 +114,6 @@ watch(() => form.title, (title) => {
 
 function collectionPublicPath(col: CollectionView) {
   return col.slug ? `/${col.slug}` : ''
-}
-
-function toggleDirection() {
-  direction.value = direction.value === 'asc' ? 'desc' : 'asc'
 }
 
 function openCreate() {
@@ -311,14 +307,7 @@ async function doDelete() {
       <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、路径标识或说明…" class="mb-5">
         <template #filters>
           <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
-          <UButton
-            :icon="direction === 'asc' ? 'i-tabler-sort-ascending' : 'i-tabler-sort-descending'"
-            :label="direction === 'asc' ? '升序' : '降序'"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            @click="toggleDirection"
-          />
+          <ManageSortDirectionButton v-model="direction" />
         </template>
       </ManageCollectionToolbar>
 
