@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PlatformImageCropper } from '@platform/ui/components'
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageSortDirectionButton, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
+import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageSortControl, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
 import { useMinLoading } from '@platform/ui/use-min-loading'
@@ -306,8 +306,9 @@ async function doDelete() {
     <template v-else>
       <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、路径标识或说明…" class="mb-5">
         <template #filters>
-          <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
-          <ManageSortDirectionButton v-model="direction" />
+          <ManageSortControl v-model="direction">
+            <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
+          </ManageSortControl>
         </template>
       </ManageCollectionToolbar>
 
