@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BackToTop } from '@platform/manage/components'
+import BackToTop from '@platform/manage/back-to-top'
 
 const route = useRoute()
 const slug = computed(() => route.params.collection as string)
