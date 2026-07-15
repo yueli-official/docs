@@ -48,7 +48,7 @@ func TestHTTPClientUsesConfiguredSiteContextForAssetWrites(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewHTTP(server.URL, "docs-ae", "ae")
+	client := NewHTTP(server.URL, "docs-main", "yueli")
 	if _, err := client.UploadInit(context.Background(), "token", InitInput{
 		Filename: "cover.png", Mime: "image/png", Category: "docs-collection-cover", Visibility: "public", Size: 12,
 	}); err != nil {
@@ -69,11 +69,11 @@ func TestHTTPClientUsesConfiguredSiteContextForAssetWrites(t *testing.T) {
 		t.Fatalf("request count = %d, want 3", len(bodies))
 	}
 	for i, body := range bodies {
-		if body["siteKey"] != "docs-ae" {
-			t.Fatalf("request %d siteKey = %#v, want docs-ae", i, body["siteKey"])
+		if body["siteKey"] != "docs-main" {
+			t.Fatalf("request %d siteKey = %#v, want docs-main", i, body["siteKey"])
 		}
 	}
-	if bodies[0]["spaceKey"] != "ae" {
-		t.Fatalf("upload spaceKey = %#v, want ae", bodies[0]["spaceKey"])
+	if bodies[0]["spaceKey"] != "yueli" {
+		t.Fatalf("upload spaceKey = %#v, want yueli", bodies[0]["spaceKey"])
 	}
 }

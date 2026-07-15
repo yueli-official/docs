@@ -90,7 +90,7 @@ func TestPGDocCRUD(t *testing.T) {
 		db := openTestDB(t)
 		resetSchema(ctx, t, db)
 		p := dao.NewPG(db)
-		col := &model.Collection{ID: uuid.NewString(), Slug: "ae", Title: "AE", AuthorSub: "u1"}
+		col := &model.Collection{ID: uuid.NewString(), Slug: "yueli", Title: "YUELI", AuthorSub: "u1"}
 		t.AssertNil(p.InsertCollection(ctx, col))
 		version := &model.CollectionVersion{
 			ID:           uuid.NewString(),
