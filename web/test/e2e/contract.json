@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../../../tests/e2e/contract.schema.json",
+  "version": 1,
+  "public": { "path": "/", "readySelector": "main h1" },
+  "manage": {
+    "path": "/manage",
+    "heading": "控制台",
+    "readySelector": "main h1",
+    "settings": { "path": "/manage/home", "fieldLabel": "首页标题" },
+    "views": [
+      { "key": "list", "label": "列表" },
+      { "key": "tree", "label": "树状" }
+    ]
+  },
+  "empty": {
+    "path": "/collections",
+    "text": "没有匹配的文档集",
+    "inputPlaceholder": "输入标题、路径或说明"
+  },
+  "error": {
+    "path": "/__platform_e2e_missing__",
+    "status": 404,
+    "text": "页面暂时不可用"
+  },
+  "visual": { "managePath": "/manage/docs" },
+  "features": { "assetSettings": true }
+}
