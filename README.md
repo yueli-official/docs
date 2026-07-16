@@ -1,11 +1,8 @@
-# Docs product
+# 文档产品
 
-- Lifecycle: active reusable product type
-- Authority: Catalog product type `docs`, `api/` migrations/OpenAPI, `web/` UI
-- Consumers: Docs site instances such as `docs-main`
-- Verify: `pnpm platformctl verify product --file catalog/overlays/local.yaml --root . docs`
+- 生命周期：活跃的可复用产品类型
+- 权威来源：Catalog 产品类型 `docs`、`api/` 迁移/OpenAPI、`web/` 界面
+- 消费者：`docs-main` 等文档站点实例
+- 验证：`pnpm platformctl verify product --file catalog/overlays/local.yaml --root . docs`
 
-Docs owns documentation collections, hierarchical pages, navigation and search
-presentation. `api/` owns durable content/domain behavior; `web/` owns public
-manual reading and management. Identity and Asset remain platform dependencies;
-instance URLs, DB and OIDC values come from Catalog.
+Docs 负责文档集合、层级页面、导航和搜索呈现。`api/` 负责持久内容与领域行为，`web/` 负责公开阅读和管理。Identity 与 Asset 仍是平台依赖；实例 URL、数据库与 OIDC 值来自 Catalog。
