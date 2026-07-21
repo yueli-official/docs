@@ -10,7 +10,7 @@ import (
 	"platform/products/docs/api/internal/assetclient"
 )
 
-// JWKS is the IdP key/issuer config for the authjwt verifier.
+// JWKS is the IdP key/issuer config for the Foundation auth verifier.
 type JWKS struct {
 	URL      string
 	Issuer   string

@@ -8,13 +8,13 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 
-	"platform/gokit/authjwt"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"platform/products/docs/api/internal/docserr"
 )
 
 // subject extracts the authenticated subject (JWT group), or a forbidden error.
 func subject(ctx context.Context) (string, error) {
-	p, ok := authjwt.From(ctx)
+	p, ok := foundationauth.FromContext(ctx)
 	if !ok {
 		return "", docserr.Forbidden()
 	}
@@ -41,7 +41,7 @@ func stripBearer(h string) string {
 // role, held by whoever the catalog lists in docs.operatorSubs (their identity
 // sub). Per-site authz: deliberately does NOT read any IdP global role.
 func isAdmin(ctx context.Context) bool {
-	p, ok := authjwt.From(ctx)
+	p, ok := foundationauth.FromContext(ctx)
 	if !ok {
 		return false
 	}
