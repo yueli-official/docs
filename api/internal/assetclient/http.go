@@ -3,11 +3,15 @@ package assetclient
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	foundationhttpclient "github.com/yueli-official/foundation/go/httpclient"
 
 	"platform/products/docs/api/internal/docserr"
 )
@@ -23,19 +27,23 @@ func NewHTTP(baseURL, siteSlug, spaceKey string) Client {
 }
 
 func (c *httpClient) post(ctx context.Context, bearer, path string, body g.Map) (*gjson.Json, error) {
-	cli := g.Client()
-	cli.SetHeader("Authorization", "Bearer "+bearer)
-	cli.ContentJson()
-	resp, err := cli.Post(ctx, c.base+path, body)
+	raw, _ := json.Marshal(body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(raw))
+	if err != nil {
+		return nil, docserr.UpstreamFailed("foundation.request.invalid")
+	}
+	req.Header.Set("Authorization", "Bearer "+bearer)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, docserr.UpstreamFailed("asset service unreachable")
 	}
-	defer resp.Close()
-	j := gjson.New(resp.ReadAllString())
-	if code := j.Get("code").String(); code != "ok" {
-		return nil, docserr.UpstreamFailed(code)
+	defer resp.Body.Close()
+	out, err := foundationhttpclient.DecodeJSON[map[string]any](resp, foundationhttpclient.Limits{})
+	if err != nil {
+		return nil, docserr.UpstreamFailed(remoteCode(err))
 	}
-	return j, nil
+	return gjson.New(out), nil
 }
 
 func (c *httpClient) UploadInit(ctx context.Context, bearer string, in InitInput) (InitOutput, error) {
@@ -53,9 +61,9 @@ func (c *httpClient) UploadInit(ctx context.Context, bearer string, in InitInput
 		return InitOutput{}, err
 	}
 	return InitOutput{
-		UploadURL:     j.Get("data.uploadUrl").String(),
-		UploadToken:   j.Get("data.uploadToken").String(),
-		UploadHeaders: stringMap(j.Get("data.uploadHeaders").Map()),
+		UploadURL:     j.Get("uploadUrl").String(),
+		UploadToken:   j.Get("uploadToken").String(),
+		UploadHeaders: stringMap(j.Get("uploadHeaders").Map()),
 	}, nil
 }
 
@@ -76,11 +84,11 @@ func (c *httpClient) Finalize(ctx context.Context, bearer, uploadToken string) (
 		return View{}, err
 	}
 	return View{
-		ID:       j.Get("data.asset.id").String(),
-		CdnURL:   j.Get("data.asset.cdnUrl").String(),
-		Size:     j.Get("data.asset.size").Int64(),
-		Mime:     j.Get("data.asset.mime").String(),
-		Filename: j.Get("data.asset.filename").String(),
+		ID:       j.Get("asset.id").String(),
+		CdnURL:   j.Get("asset.cdnUrl").String(),
+		Size:     j.Get("asset.size").Int64(),
+		Mime:     j.Get("asset.mime").String(),
+		Filename: j.Get("asset.filename").String(),
 	}, nil
 }
 
@@ -93,22 +101,33 @@ func (c *httpClient) RegisterReference(ctx context.Context, bearer string, in Re
 }
 
 func (c *httpClient) UnregisterReference(ctx context.Context, bearer string, in ReferenceInput) error {
-	cli := g.Client()
-	cli.SetHeader("Authorization", "Bearer "+bearer)
 	q := url.Values{}
 	q.Set("assetId", in.AssetID)
 	q.Set("siteKey", c.siteSlug)
 	q.Set("refType", in.RefType)
 	q.Set("refId", in.RefID)
-	resp, err := cli.Delete(ctx, c.base+"/api/v1/asset-references?"+q.Encode())
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.base+"/api/v1/asset-references?"+q.Encode(), nil)
+	if err != nil {
+		return docserr.UpstreamFailed("foundation.request.invalid")
+	}
+	req.Header.Set("Authorization", "Bearer "+bearer)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return docserr.UpstreamFailed("asset service unreachable")
 	}
-	defer resp.Close()
-	if code := gjson.New(resp.ReadAllString()).Get("code").String(); code != "ok" {
-		return docserr.UpstreamFailed(code)
+	defer resp.Body.Close()
+	if _, err := foundationhttpclient.DecodeJSON[any](resp, foundationhttpclient.Limits{}); err != nil {
+		return docserr.UpstreamFailed(remoteCode(err))
 	}
 	return nil
+}
+
+func remoteCode(err error) string {
+	var remote *foundationhttpclient.RemoteError
+	if errors.As(err, &remote) {
+		return remote.Problem.Code
+	}
+	return "foundation.response.invalid"
 }
 
 func (c *httpClient) Upload(ctx context.Context, bearer string, in InitInput, data []byte) (View, error) {

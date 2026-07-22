@@ -22,9 +22,10 @@ type Deps struct {
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
 func Configure(s *ghttp.Server, d Deps) {
+	apiMiddleware := ghttpx.NewMiddleware(ghttpx.MustRateLimiterFromEnvironment(), ghttpx.ForwardedClientIPKey)
 	s.Use(ghttpx.TraceRouteMiddleware)
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware)
+		grp.Middleware(apiMiddleware)
 		grp.GET("/healthz", controller.Healthz)
 		grp.GET("/readyz", healthcheck.Handler(map[string]healthcheck.Check{"database": healthcheck.Database}))
 	})
@@ -32,7 +33,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Identity probe: JWT parsed-if-present, never 401. Available regardless of
 	// whether a Catalog is configured so health + auth probes work standalone.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware, authhttp.Optional(d.Verifier))
+		grp.Middleware(apiMiddleware, authhttp.Optional(d.Verifier))
 		grp.Bind(controller.NewMe())
 	})
 
@@ -42,13 +43,13 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Public browse: enveloped, no mandatory auth.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware)
+		grp.Middleware(apiMiddleware)
 		grp.Bind(controller.NewPublicCollections(d.Catalog))
 	})
 
 	// Admin API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware, authhttp.Required(d.Verifier))
+		grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier))
 		grp.Bind(controller.NewCollections(d.Catalog))
 		grp.Bind(controller.NewVersions(d.Catalog))
 		grp.Bind(controller.NewDocs(d.Catalog))
