@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     "@platform/asset",
     "@platform/content",
   ],
+  // Public raw SFC utilities are registered by the Tailwind source import in main.css.
   modules: ["@nuxt/ui", "@yueli/ui"],
   css: ["~/assets/css/main.css"],
   app: {

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+/* Scan responsive utilities shipped by the public Foundation UI package. */
+@import "@yueli/ui/tailwind.css";
 @import "@platform/ui/theme.css";
 
 /* Self-hosted brand fonts (offline-resilient; design-system §5/§12):

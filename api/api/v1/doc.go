@@ -1,6 +1,10 @@
 package v1
 
-import "github.com/gogf/gf/v2/frame/g"
+import (
+	"time"
+
+	"github.com/gogf/gf/v2/frame/g"
+)
 
 // DocView is the public JSON projection of a doc.
 type DocView struct {
@@ -45,6 +49,57 @@ type ListDocsReq struct {
 }
 type ListDocsRes struct {
 	Items []*DocView `json:"items"`
+}
+
+type ManageDocView struct {
+	ID              string    `json:"id"`
+	CollectionID    string    `json:"collectionId"`
+	CollectionSlug  string    `json:"collectionSlug"`
+	CollectionTitle string    `json:"collectionTitle"`
+	VersionID       string    `json:"versionId"`
+	VersionKey      string    `json:"versionKey"`
+	VersionLabel    string    `json:"versionLabel"`
+	ParentID        string    `json:"parentId,omitempty"`
+	ParentTitle     string    `json:"parentTitle"`
+	Slug            string    `json:"slug"`
+	SlugPath        string    `json:"slugPath"`
+	Title           string    `json:"title"`
+	Excerpt         string    `json:"excerpt"`
+	Status          string    `json:"status"`
+	Locale          string    `json:"locale"`
+	SortOrder       int       `json:"sortOrder"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+}
+
+type ManageDocCountsView struct {
+	All       int `json:"all"`
+	Draft     int `json:"draft"`
+	Published int `json:"published"`
+	Archived  int `json:"archived"`
+	Issues    int `json:"issues"`
+}
+
+type ManageDocsReq struct {
+	g.Meta       `path:"/api/v1/manage/docs" method:"get" tags:"docs" summary:"Query docs for the admin workbench"`
+	Q            string `json:"q" in:"query"`
+	Status       string `json:"status" in:"query"`
+	Quality      string `json:"quality" in:"query"`
+	CollectionID string `json:"collectionId" in:"query"`
+	Version      string `json:"version" in:"query"`
+	Locale       string `json:"locale" in:"query"`
+	ParentID     string `json:"parentId" in:"query"`
+	Sort         string `json:"sort" in:"query"`
+	Direction    string `json:"direction" in:"query"`
+	Page         int    `json:"page" in:"query"`
+	Size         int    `json:"size" in:"query"`
+}
+
+type ManageDocsRes struct {
+	Items  []*ManageDocView    `json:"items"`
+	Total  int                 `json:"total"`
+	Page   int                 `json:"page"`
+	Size   int                 `json:"size"`
+	Counts ManageDocCountsView `json:"counts"`
 }
 
 type GetDocReq struct {

@@ -1,124 +1,415 @@
 <script setup lang="ts">
-import { platformDashboardMessages } from '@platform/manage/dashboard'
-import { SkeletonList } from '@platform/manage/components'
-import { useMinimumLoading } from '@yueli/ui/feedback'
-import { DashboardLayout } from '@yueli/ui/dashboard/pattern'
-import type { CollectionList, CollectionView } from '~/types'
+import { SkeletonList } from "@platform/manage/components";
+import { useMinimumLoading } from "@yueli/ui/feedback";
+import type {
+  CollectionList,
+  ManageDocListItem,
+  ManageDocsResponse,
+} from "~/types";
+import { docManageRoute } from "~/utils/docsManageRoutes.mjs";
 
-definePageMeta({ layout: 'manage' })
-useSeoMeta({ title: '控制台' })
+definePageMeta({ layout: "manage" });
+useSeoMeta({ title: "控制台" });
 
-const { call } = useApi()
-const mounted = ref(false)
-onMounted(() => { mounted.value = true })
-
-const { data: collections, pending, error } = await useAsyncData(
-  'manage-overview-collections',
-  () => call<CollectionList>('/api/v1/collections'),
-  { server: false, default: () => ({ items: [] }) },
-)
-
-const items = computed(() => collections.value?.items ?? [])
-const showSkeleton = useMinimumLoading(computed(() => !mounted.value || pending.value))
-
-function collectionIssues(collection: CollectionView) {
-  const issues: string[] = []
-  if (!collection.description?.trim()) issues.push('缺少说明')
-  if (!collection.docCount) issues.push('还没有文档')
-  if (!collection.icon && !collection.coverUrl) issues.push('缺少识别图标或封面')
-  return issues
+interface DashboardData {
+  collections: CollectionList;
+  recent: ManageDocsResponse;
+  issues: ManageDocsResponse;
 }
 
-const totalDocs = computed(() => items.value.reduce((sum, collection) => sum + (collection.docCount || 0), 0))
-const attention = computed(() => items.value.filter(collection => collectionIssues(collection).length > 0))
-const emptyCollections = computed(() => items.value.filter(collection => !collection.docCount).length)
+const { call } = useApi();
+const mounted = ref(false);
+onMounted(() => {
+  mounted.value = true;
+});
+
+const { data, pending, error, refresh } = await useAsyncData(
+  "manage-overview",
+  async (): Promise<DashboardData> => {
+    const [collections, recent, issues] = await Promise.all([
+      call<CollectionList>("/api/v1/collections"),
+      call<ManageDocsResponse>("/api/v1/manage/docs", {
+        query: {
+          status: "all",
+          quality: "all",
+          sort: "updatedAt",
+          direction: "desc",
+          page: 1,
+          size: 6,
+        },
+      }),
+      call<ManageDocsResponse>("/api/v1/manage/docs", {
+        query: {
+          status: "all",
+          quality: "issues",
+          sort: "updatedAt",
+          direction: "desc",
+          page: 1,
+          size: 5,
+        },
+      }),
+    ]);
+    return { collections, recent, issues };
+  },
+  {
+    server: false,
+    default: () => ({
+      collections: { items: [] },
+      recent: emptyDocsResponse(),
+      issues: emptyDocsResponse(),
+    }),
+  },
+);
+
+function emptyDocsResponse(): ManageDocsResponse {
+  return {
+    items: [],
+    total: 0,
+    page: 1,
+    size: 0,
+    counts: { all: 0, draft: 0, published: 0, archived: 0, issues: 0 },
+  };
+}
+
+const showSkeleton = useMinimumLoading(
+  computed(() => !mounted.value || pending.value),
+);
+const counts = computed(
+  () => data.value?.recent.counts ?? emptyDocsResponse().counts,
+);
 const metrics = computed(() => [
-  { label: '文档集', value: items.value.length, icon: 'i-tabler-stack-2', to: '/manage/collections' },
-  { label: '文档总数', value: totalDocs.value, icon: 'i-tabler-files', to: '/manage/docs' },
-  { label: '空文档集', value: emptyCollections.value, icon: 'i-tabler-file-off', to: '/manage/collections' },
-  { label: '待完善', value: attention.value.length, icon: 'i-tabler-alert-circle', to: '/manage/collections' },
-])
-const continueCollections = computed(() => [...items.value].sort((a, b) => (b.docCount || 0) - (a.docCount || 0)).slice(0, 6))
+  {
+    label: "文档总数",
+    value: counts.value.all,
+    icon: "i-tabler-files",
+    to: "/manage/docs",
+  },
+  {
+    label: "已发布",
+    value: counts.value.published,
+    icon: "i-tabler-world-check",
+    to: { path: "/manage/docs", query: { status: "published" } },
+  },
+  {
+    label: "草稿",
+    value: counts.value.draft,
+    icon: "i-tabler-pencil",
+    to: { path: "/manage/docs", query: { status: "draft" } },
+  },
+  {
+    label: "待完善",
+    value: counts.value.issues,
+    icon: "i-tabler-alert-circle",
+    to: { path: "/manage/docs", query: { status: "issues" } },
+  },
+]);
+
+const recentDocs = computed(() => data.value?.recent.items ?? []);
+const issueDocs = computed(() => data.value?.issues.items ?? []);
+const collectionCount = computed(
+  () => data.value?.collections.items.length ?? 0,
+);
+const quickActions = [
+  {
+    label: "管理文档",
+    description: "查找、筛选与维护内容",
+    icon: "i-tabler-files",
+    to: "/manage/docs",
+  },
+  {
+    label: "管理文档集",
+    description: "调整内容结构与分组",
+    icon: "i-tabler-stack-2",
+    to: "/manage/collections",
+  },
+  {
+    label: "批量导入",
+    description: "一次导入多篇文档",
+    icon: "i-tabler-file-import",
+    to: "/manage/import",
+  },
+  {
+    label: "站点设置",
+    description: "维护站点展示信息",
+    icon: "i-tabler-settings",
+    to: "/manage/home",
+  },
+] as const;
+
+function docLink(doc: ManageDocListItem) {
+  return docManageRoute(
+    doc.collectionSlug,
+    doc.slugPath.split("/").filter(Boolean),
+  );
+}
+
+function issueLabel(doc: ManageDocListItem) {
+  const issues: string[] = [];
+  if (!doc.title.trim()) issues.push("缺标题");
+  if (!doc.slug.trim()) issues.push("缺路径");
+  if (!doc.excerpt.trim()) issues.push("缺摘要");
+  return issues.join(" · ") || "需要复核内容信息";
+}
+
+function statusLabel(status: string) {
+  return (
+    { draft: "草稿", published: "已发布", archived: "已归档" }[status] ?? status
+  );
+}
+
+function formatUpdatedAt(value: string) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
 </script>
 
 <template>
-  <DashboardLayout
+  <YAdminPage
+    id="dashboard"
     title="控制台"
-    description="查看文档运营队列，继续内容工作并确认当前站点可用。"
-    :messages="platformDashboardMessages"
-    recent-title="继续工作"
-    recent-description="按内容量列出常用文档集；进入后继续维护文档。"
+    icon="i-tabler-dashboard"
+    main-id="manage-main"
+    body-class="mx-auto w-full max-w-screen-2xl space-y-4"
   >
     <template #actions>
-      <UButton to="/manage/docs" icon="i-tabler-file-text" label="管理文档" />
+      <UButton to="/manage/docs/new" icon="i-tabler-plus" label="新建文档" />
     </template>
 
-    <template #metrics>
+    <section aria-label="关键指标">
       <div v-if="showSkeleton" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <USkeleton v-for="item in 4" :key="item" class="h-24 rounded-xl" />
+        <USkeleton v-for="item in 4" :key="item" class="h-20 rounded-xl" />
       </div>
       <div v-else class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <NuxtLink v-for="metric in metrics" :key="metric.label" :to="metric.to" class="rounded-xl border border-default bg-default p-4 transition hover:border-primary/40 hover:bg-elevated/30">
-          <div class="flex items-center gap-3">
-            <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"><UIcon :name="metric.icon" class="size-5" /></span>
-            <div class="min-w-0"><p class="text-xl font-semibold text-highlighted tabular-nums sm:text-2xl">{{ metric.value }}</p><p class="truncate text-xs text-muted">{{ metric.label }}</p></div>
+        <NuxtLink
+          v-for="metric in metrics"
+          :key="metric.label"
+          :to="metric.to"
+          class="group flex min-h-20 items-center gap-3 rounded-xl border border-default bg-default px-4 py-3 shadow-sm transition hover:border-primary/35 hover:bg-elevated/30"
+        >
+          <span
+            class="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
+          >
+            <UIcon :name="metric.icon" class="size-4" />
+          </span>
+          <div class="min-w-0">
+            <p class="text-xl font-semibold tabular-nums text-highlighted">
+              {{ metric.value }}
+            </p>
+            <p class="truncate text-xs text-muted">{{ metric.label }}</p>
           </div>
         </NuxtLink>
       </div>
-    </template>
+    </section>
 
-    <template #pending>
-      <div v-if="showSkeleton" class="grid gap-2"><USkeleton v-for="item in 3" :key="item" class="h-14 rounded-lg" /></div>
-      <div v-else-if="attention.length" class="divide-y divide-default">
-        <NuxtLink
-          v-for="collection in attention.slice(0, 5)"
-          :key="collection.id"
-          :to="{ path: '/manage/docs', query: { collection: collection.id } }"
-          class="group flex min-h-14 items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+    <div class="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div class="min-w-0 space-y-4">
+        <section
+          aria-labelledby="pending-docs-title"
+          class="overflow-hidden rounded-xl border border-default bg-default"
         >
-          <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-warning/10 text-warning"><UIcon name="i-tabler-alert-circle" class="size-4" /></span>
-          <div class="min-w-0 flex-1"><p class="truncate text-sm font-medium text-highlighted">{{ collection.title }}</p><p class="truncate text-xs text-muted">{{ collectionIssues(collection).join(' · ') }}</p></div>
-          <UIcon name="i-tabler-chevron-right" class="size-4 shrink-0 text-dimmed transition group-hover:translate-x-0.5" />
-        </NuxtLink>
-      </div>
-      <UAlert v-else color="success" variant="subtle" icon="i-tabler-circle-check" title="当前没有待完善的文档集" />
-    </template>
+          <div class="border-b border-default px-4 py-3 sm:px-5">
+            <h2
+              id="pending-docs-title"
+              class="text-sm font-semibold text-highlighted"
+            >
+              待完善文档
+            </h2>
+            <p class="mt-0.5 text-xs text-muted">
+              先处理缺少摘要、标题或路径的内容。
+            </p>
+          </div>
+          <div class="p-4 sm:p-5">
+            <div v-if="showSkeleton" class="grid gap-2">
+              <USkeleton
+                v-for="item in 3"
+                :key="item"
+                class="h-14 rounded-lg"
+              />
+            </div>
+            <div v-else-if="issueDocs.length" class="divide-y divide-default">
+              <NuxtLink
+                v-for="doc in issueDocs"
+                :key="doc.id"
+                :to="docLink(doc)"
+                class="group grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+              >
+                <span
+                  class="grid size-8 place-items-center rounded-lg bg-warning/10 text-warning"
+                >
+                  <UIcon name="i-tabler-alert-circle" class="size-4" />
+                </span>
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-highlighted">
+                    {{ doc.title || "未命名文档" }}
+                  </p>
+                  <p class="truncate text-xs text-muted">
+                    {{ doc.collectionTitle }} · {{ issueLabel(doc) }}
+                  </p>
+                </div>
+                <UIcon
+                  name="i-tabler-chevron-right"
+                  class="size-4 text-dimmed transition group-hover:translate-x-0.5"
+                />
+              </NuxtLink>
+            </div>
+            <div
+              v-else
+              class="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2.5 text-sm text-success"
+            >
+              <UIcon name="i-tabler-circle-check" class="size-4" />
+              当前没有待完善的文档
+            </div>
+          </div>
+        </section>
 
-    <template #recent>
-      <SkeletonList v-if="showSkeleton" :rows="5" class="p-4" />
-      <div v-else-if="continueCollections.length" class="divide-y divide-default">
-        <NuxtLink
-          v-for="collection in continueCollections"
-          :key="collection.id"
-          :to="{ path: '/manage/docs', query: { collection: collection.id } }"
-          class="group grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition hover:bg-elevated/50"
+        <section
+          aria-labelledby="recent-docs-title"
+          class="overflow-hidden rounded-xl border border-default bg-default"
         >
-          <span class="grid size-9 place-items-center overflow-hidden rounded-lg bg-primary/10 text-primary">
-            <img v-if="collection.coverUrl" :src="collection.coverUrl" :alt="collection.title" class="size-full object-cover" />
-            <UIcon v-else :name="collection.icon || 'i-tabler-stack-2'" class="size-4" />
-          </span>
-          <div class="min-w-0"><p class="truncate text-sm font-medium text-highlighted group-hover:text-primary">{{ collection.title }}</p><p class="truncate text-xs text-muted">{{ collection.description || '未填写文档集说明' }}</p></div>
-          <span class="text-xs text-muted">{{ collection.docCount }} 篇</span>
-        </NuxtLink>
+          <div class="border-b border-default px-4 py-3 sm:px-5">
+            <h2
+              id="recent-docs-title"
+              class="text-sm font-semibold text-highlighted"
+            >
+              最近更新
+            </h2>
+            <p class="mt-0.5 text-xs text-muted">继续处理近期有变更的文档。</p>
+          </div>
+          <SkeletonList v-if="showSkeleton" :rows="5" class="p-4" />
+          <div v-else-if="recentDocs.length" class="divide-y divide-default">
+            <NuxtLink
+              v-for="doc in recentDocs"
+              :key="doc.id"
+              :to="docLink(doc)"
+              class="group grid min-h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 px-4 py-3 transition hover:bg-elevated/40 sm:px-5"
+            >
+              <div class="min-w-0">
+                <p
+                  class="truncate text-sm font-medium text-highlighted group-hover:text-primary"
+                >
+                  {{ doc.title }}
+                </p>
+                <p class="truncate font-mono text-xs text-muted">
+                  /{{ doc.slugPath }}
+                </p>
+              </div>
+              <span class="hidden text-xs text-muted sm:inline">{{
+                statusLabel(doc.status)
+              }}</span>
+              <time
+                class="text-xs tabular-nums text-muted"
+                :datetime="doc.updatedAt"
+                >{{ formatUpdatedAt(doc.updatedAt) }}</time
+              >
+            </NuxtLink>
+          </div>
+          <div v-else class="p-8 text-center text-sm text-muted">
+            还没有文档，先创建第一篇内容。
+          </div>
+        </section>
       </div>
-      <div v-else class="p-8 text-center text-sm text-muted">还没有文档集，先创建内容容器。</div>
-    </template>
 
-    <template #health>
-      <UAlert v-if="error" color="error" variant="subtle" icon="i-tabler-alert-circle" title="文档服务暂时不可用" description="刷新后仍失败时，请到平台状态检查服务。" />
-      <div v-else class="space-y-3">
-        <div class="flex items-center justify-between gap-3 rounded-lg bg-success/10 px-3 py-2.5 text-sm"><span class="flex items-center gap-2 text-success"><UIcon name="i-tabler-circle-check" class="size-4" />文档服务可用</span><span class="text-xs text-muted">正常</span></div>
-        <p class="text-xs leading-5 text-muted">内容缺口统一进入待完善队列，不展示常驻完整度面板或正常状态噪声。</p>
-      </div>
-    </template>
+      <aside class="min-w-0 space-y-4">
+        <section
+          aria-labelledby="content-service-title"
+          class="rounded-xl border border-default bg-default p-4"
+        >
+          <div class="mb-4">
+            <h2
+              id="content-service-title"
+              class="text-sm font-semibold text-highlighted"
+            >
+              内容服务
+            </h2>
+            <p class="mt-0.5 text-xs text-muted">
+              当前站点的管理接口与内容概况。
+            </p>
+          </div>
+          <div v-if="error" class="space-y-3">
+            <div
+              class="flex items-center gap-2 rounded-lg bg-error/10 px-3 py-2.5 text-sm text-error"
+            >
+              <UIcon name="i-tabler-alert-circle" class="size-4" />
+              文档管理接口暂时不可用
+            </div>
+            <UButton
+              label="重新加载"
+              icon="i-tabler-refresh"
+              color="neutral"
+              variant="outline"
+              size="xs"
+              @click="() => refresh()"
+            />
+          </div>
+          <dl v-else class="grid gap-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-muted">服务状态</dt>
+              <dd class="inline-flex items-center gap-1.5 text-success">
+                <span class="size-1.5 rounded-full bg-success" />正常
+              </dd>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-muted">文档集</dt>
+              <dd class="font-medium tabular-nums text-highlighted">
+                {{ collectionCount }}
+              </dd>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-muted">归档文档</dt>
+              <dd class="font-medium tabular-nums text-highlighted">
+                {{ counts.archived }}
+              </dd>
+            </div>
+          </dl>
+        </section>
 
-    <template #quickActions>
-      <div class="grid gap-2">
-        <UButton to="/manage/docs" icon="i-tabler-file-text" label="管理文档" color="neutral" variant="soft" block />
-        <UButton to="/manage/collections" icon="i-tabler-stack-2" label="管理文档集" color="neutral" variant="soft" block />
-        <UButton to="/manage/import" icon="i-tabler-file-import" label="批量导入" color="neutral" variant="soft" block />
-        <UButton to="/manage/home" icon="i-tabler-settings" label="站点设置" color="neutral" variant="ghost" block />
-      </div>
-    </template>
-  </DashboardLayout>
+        <section
+          aria-labelledby="quick-actions-title"
+          class="rounded-xl border border-default bg-default p-4"
+        >
+          <div class="mb-2">
+            <h2
+              id="quick-actions-title"
+              class="text-sm font-semibold text-highlighted"
+            >
+              快捷操作
+            </h2>
+            <p class="mt-0.5 text-xs text-muted">进入常用的内容管理任务。</p>
+          </div>
+          <div class="divide-y divide-default">
+            <NuxtLink
+              v-for="action in quickActions"
+              :key="action.to"
+              :to="action.to"
+              class="group flex items-center gap-3 py-3 first:pt-2 last:pb-0"
+            >
+              <span
+                class="grid size-8 shrink-0 place-items-center rounded-lg bg-elevated text-muted transition group-hover:bg-primary/10 group-hover:text-primary"
+              >
+                <UIcon :name="action.icon" class="size-4" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span
+                  class="block text-sm font-medium text-highlighted group-hover:text-primary"
+                  >{{ action.label }}</span
+                >
+                <span class="block truncate text-xs text-muted">{{
+                  action.description
+                }}</span>
+              </span>
+              <UIcon
+                name="i-tabler-chevron-right"
+                class="size-4 shrink-0 text-dimmed transition group-hover:translate-x-0.5 group-hover:text-primary"
+              />
+            </NuxtLink>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </YAdminPage>
 </template>

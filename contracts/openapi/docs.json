@@ -1023,6 +1023,182 @@
         },
         "type": "object"
       },
+      "platform.products.docs.api.api.v1.ManageDocCountsView": {
+        "properties": {
+          "all": {
+            "format": "int",
+            "type": "integer"
+          },
+          "archived": {
+            "format": "int",
+            "type": "integer"
+          },
+          "draft": {
+            "format": "int",
+            "type": "integer"
+          },
+          "issues": {
+            "format": "int",
+            "type": "integer"
+          },
+          "published": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocView": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "collectionSlug": {
+            "format": "string",
+            "type": "string"
+          },
+          "collectionTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "excerpt": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "slugPath": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionLabel": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocsReq": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "direction": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "q": {
+            "format": "string",
+            "type": "string"
+          },
+          "quality": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "sort": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocsRes": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ManageDocCountsView",
+            "description": ""
+          },
+          "items": {
+            "format": "[]*v1.ManageDocView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ManageDocView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "platform.products.docs.api.api.v1.MeReq": {
         "properties": {},
         "type": "object"
@@ -2460,6 +2636,117 @@
           }
         },
         "summary": "Get collection doc tree (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/docs": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "quality",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collectionId",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "parentId",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ManageDocsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Query docs for the admin workbench",
         "tags": [
           "docs"
         ]

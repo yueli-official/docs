@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PageHeader } from "@yueli/ui/dashboard/pattern";
 import { createCollectionRouteQueryCodec } from "@yueli/ui/collection";
 import { useVueRouterCollectionQuery } from "@yueli/ui/collection/vue-router";
 import {
@@ -398,15 +397,16 @@ async function doDelete() {
 </script>
 
 <template>
-  <div>
-    <PageHeader title="文档集">
-      <template #subtitle>
-        <span>维护公开路径、说明和集合视觉资产。</span>
-      </template>
-      <template #actions>
-        <UButton icon="i-tabler-plus" label="新建文档集" @click="openCreate" />
-      </template>
-    </PageHeader>
+  <YAdminPage
+    id="collections"
+    title="文档集"
+    icon="i-tabler-stack-2"
+    main-id="manage-main"
+    body-class="mx-auto w-full max-w-screen-2xl"
+  >
+    <template #actions>
+      <UButton icon="i-tabler-plus" label="新建文档集" @click="openCreate" />
+    </template>
 
     <div
       v-if="loadError"
@@ -744,5 +744,5 @@ async function doDelete() {
       output-type="image/jpeg"
       @cropped="onCroppedCover"
     />
-  </div>
+  </YAdminPage>
 </template>

@@ -5,7 +5,7 @@
   "manage": {
     "path": "/manage",
     "heading": "控制台",
-    "readySelector": "main h1",
+    "readySelector": "#manage-main",
     "settings": { "path": "/manage/home", "fieldLabel": "首页标题" },
     "views": [
       { "key": "list", "label": "列表" },
@@ -22,6 +22,54 @@
     "status": 404,
     "text": "页面暂时不可用"
   },
-  "visual": { "managePath": "/manage/docs" },
+  "visual": {
+    "managePath": "/manage/docs",
+    "scenarios": [
+      {
+        "key": "manage-dashboard",
+        "path": "/manage",
+        "readySelector": "#manage-main",
+        "authenticated": true
+      },
+      {
+        "key": "manage-collections",
+        "path": "/manage/collections",
+        "readySelector": "#manage-main",
+        "authenticated": true
+      },
+      {
+        "key": "manage-import",
+        "path": "/manage/import",
+        "readySelector": "#manage-main",
+        "authenticated": true
+      },
+      {
+        "key": "manage-settings",
+        "path": "/manage/home",
+        "readySelector": "#manage-main",
+        "authenticated": true
+      },
+      {
+        "key": "manage-assets",
+        "path": "/manage/assets",
+        "readySelector": "#manage-main",
+        "authenticated": true
+      },
+      {
+        "key": "manage-docs-selected",
+        "path": "/manage/docs?view=list",
+        "readySelector": "[aria-label='文档批量操作']",
+        "authenticated": true,
+        "actions": [{ "role": "checkbox", "name": "选择当前页文档" }]
+      },
+      {
+        "key": "manage-doc-quick-edit",
+        "path": "/manage/docs?view=list",
+        "readySelector": "[role='dialog']",
+        "authenticated": true,
+        "actions": [{ "role": "button", "name": "快速编辑：概览" }]
+      }
+    ]
+  },
   "features": { "assetSettings": true }
 }

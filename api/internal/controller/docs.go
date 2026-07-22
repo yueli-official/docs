@@ -27,6 +27,44 @@ func (c *Docs) ListDocs(ctx context.Context, req *v1.ListDocsReq) (*v1.ListDocsR
 	return &v1.ListDocsRes{Items: docViews(items)}, nil
 }
 
+func (c *Docs) ManageDocs(ctx context.Context, req *v1.ManageDocsReq) (*v1.ManageDocsRes, error) {
+	if !isAdmin(ctx) {
+		return nil, docserr.Forbidden()
+	}
+	result, err := c.svc.ManageDocs(ctx, catalog.ManageDocsInput{
+		Q: req.Q, Status: req.Status, Quality: req.Quality,
+		CollectionID: req.CollectionID, Version: req.Version, Locale: req.Locale, ParentID: req.ParentID,
+		Sort: req.Sort, Direction: req.Direction, Page: req.Page, Size: req.Size,
+	})
+	if err != nil {
+		return nil, err
+	}
+	items := make([]*v1.ManageDocView, len(result.Items))
+	for index, item := range result.Items {
+		items[index] = &v1.ManageDocView{
+			ID: item.ID, CollectionID: item.CollectionID, CollectionSlug: item.CollectionSlug, CollectionTitle: item.CollectionTitle,
+			VersionID: item.VersionID, VersionKey: item.VersionKey, VersionLabel: item.VersionLabel,
+			ParentID: item.ParentID, ParentTitle: item.ParentTitle, Slug: item.Slug, SlugPath: item.SlugPath,
+			Title: item.Title, Excerpt: item.Excerpt, Status: item.Status, Locale: item.Locale,
+			SortOrder: item.SortOrder, UpdatedAt: item.UpdatedAt,
+		}
+	}
+	return &v1.ManageDocsRes{
+		Items: items, Total: result.Total, Page: max(req.Page, 1), Size: normalizedManageDocsSize(req.Size),
+		Counts: v1.ManageDocCountsView{
+			All: result.Counts.All, Draft: result.Counts.Draft, Published: result.Counts.Published,
+			Archived: result.Counts.Archived, Issues: result.Counts.Issues,
+		},
+	}, nil
+}
+
+func normalizedManageDocsSize(size int) int {
+	if size == 0 {
+		return 30
+	}
+	return size
+}
+
 func (c *Docs) GetDoc(ctx context.Context, req *v1.GetDocReq) (*v1.GetDocRes, error) {
 	d, err := c.svc.GetDoc(ctx, req.ID)
 	if err != nil {

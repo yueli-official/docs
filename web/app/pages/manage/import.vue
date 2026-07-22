@@ -1,109 +1,163 @@
 <script setup lang="ts">
-import { PageHeader } from '@yueli/ui/dashboard/pattern'
-import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageEmpty } from '@platform/manage/components'
-import type { DocsImportBatch, DocsImportSummary, DocsImportUploadResponse } from '~/types'
+import { createPlatformNotifier } from "@platform/ui/feedback";
+import { ManageEmpty } from "@platform/manage/components";
+import type {
+  DocsImportBatch,
+  DocsImportSummary,
+  DocsImportUploadResponse,
+} from "~/types";
 
-definePageMeta({ layout: 'manage' })
-useSeoMeta({ title: '批量导入 · 控制台' })
+definePageMeta({ layout: "manage" });
+useSeoMeta({ title: "批量导入 · 控制台" });
 
-const { call } = useApi()
-const toast = createPlatformNotifier(useToast())
+const { call } = useApi();
+const toast = createPlatformNotifier(useToast());
 
-const file = ref<File | null>(null)
-const uploading = ref(false)
-const confirming = ref(false)
-const errorMessage = ref('')
-const batch = ref<DocsImportBatch | null>(null)
-const summary = ref<DocsImportSummary | null>(null)
+const file = ref<File | null>(null);
+const uploading = ref(false);
+const confirming = ref(false);
+const errorMessage = ref("");
+const batch = ref<DocsImportBatch | null>(null);
+const summary = ref<DocsImportSummary | null>(null);
 
-const canUpload = computed(() => Boolean(file.value && !uploading.value))
-const canConfirm = computed(() => Boolean(batch.value?.id && batch.value.status === 'checked' && !summary.value?.blocking))
+const canUpload = computed(() => Boolean(file.value && !uploading.value));
+const canConfirm = computed(() =>
+  Boolean(
+    batch.value?.id &&
+    batch.value.status === "checked" &&
+    !summary.value?.blocking,
+  ),
+);
 
 const summaryCards = computed(() => {
-  const s = summary.value
+  const s = summary.value;
   return [
-    { label: '创建', value: s?.creates ?? 0, icon: 'i-tabler-file-plus', tone: 'primary' },
-    { label: '更新', value: s?.updates ?? 0, icon: 'i-tabler-refresh', tone: 'neutral' },
-    { label: '归档', value: s?.archives ?? 0, icon: 'i-tabler-archive', tone: 'warning' },
-    { label: '图片', value: s?.images ?? 0, icon: 'i-tabler-photo', tone: 'success' },
-    { label: '问题', value: (s?.errors ?? 0) + (s?.conflicts ?? 0), icon: 'i-tabler-alert-triangle', tone: s?.blocking ? 'error' : 'neutral' },
-  ]
-})
+    {
+      label: "创建",
+      value: s?.creates ?? 0,
+      icon: "i-tabler-file-plus",
+      tone: "primary",
+    },
+    {
+      label: "更新",
+      value: s?.updates ?? 0,
+      icon: "i-tabler-refresh",
+      tone: "neutral",
+    },
+    {
+      label: "归档",
+      value: s?.archives ?? 0,
+      icon: "i-tabler-archive",
+      tone: "warning",
+    },
+    {
+      label: "图片",
+      value: s?.images ?? 0,
+      icon: "i-tabler-photo",
+      tone: "success",
+    },
+    {
+      label: "问题",
+      value: (s?.errors ?? 0) + (s?.conflicts ?? 0),
+      icon: "i-tabler-alert-triangle",
+      tone: s?.blocking ? "error" : "neutral",
+    },
+  ];
+});
 
 function toneClass(tone: string) {
-  if (tone === 'primary') return 'bg-primary/10 text-primary ring-primary/20'
-  if (tone === 'success') return 'bg-success/10 text-success ring-success/20'
-  if (tone === 'warning') return 'bg-warning/10 text-warning ring-warning/20'
-  if (tone === 'error') return 'bg-error/10 text-error ring-error/20'
-  return 'bg-elevated text-muted ring-default'
+  if (tone === "primary") return "bg-primary/10 text-primary ring-primary/20";
+  if (tone === "success") return "bg-success/10 text-success ring-success/20";
+  if (tone === "warning") return "bg-warning/10 text-warning ring-warning/20";
+  if (tone === "error") return "bg-error/10 text-error ring-error/20";
+  return "bg-elevated text-muted ring-default";
 }
 
 function onFileChange(event: Event) {
-  const target = event.target as HTMLInputElement
-  file.value = target.files?.[0] ?? null
-  batch.value = null
-  summary.value = null
-  errorMessage.value = ''
+  const target = event.target as HTMLInputElement;
+  file.value = target.files?.[0] ?? null;
+  batch.value = null;
+  summary.value = null;
+  errorMessage.value = "";
 }
 
 async function upload() {
-  if (!file.value) return
-  if (!file.value.name.toLowerCase().endsWith('.zip')) {
-    errorMessage.value = '请选择 ZIP 文件'
-    return
+  if (!file.value) return;
+  if (!file.value.name.toLowerCase().endsWith(".zip")) {
+    errorMessage.value = "请选择 ZIP 文件";
+    return;
   }
-  uploading.value = true
-  errorMessage.value = ''
+  uploading.value = true;
+  errorMessage.value = "";
   try {
-    const body = new FormData()
-    body.append('file', file.value)
-    const res = await call<DocsImportUploadResponse>('/api/v1/imports/docs', { method: 'POST', body })
-    batch.value = res.batch
-    summary.value = res.summary
-  }
-  catch (err: any) {
-    errorMessage.value = err?.data?.message || err?.message || '上传失败'
-    toast.add({ title: '上传失败', description: errorMessage.value, color: 'error', icon: 'i-tabler-alert-circle' })
-  }
-  finally {
-    uploading.value = false
+    const body = new FormData();
+    body.append("file", file.value);
+    const res = await call<DocsImportUploadResponse>("/api/v1/imports/docs", {
+      method: "POST",
+      body,
+    });
+    batch.value = res.batch;
+    summary.value = res.summary;
+  } catch (err: any) {
+    errorMessage.value = err?.data?.message || err?.message || "上传失败";
+    toast.add({
+      title: "上传失败",
+      description: errorMessage.value,
+      color: "error",
+      icon: "i-tabler-alert-circle",
+    });
+  } finally {
+    uploading.value = false;
   }
 }
 
 async function confirmImport() {
-  if (!batch.value) return
-  confirming.value = true
+  if (!batch.value) return;
+  confirming.value = true;
   try {
-    const res = await call<DocsImportUploadResponse>(`/api/v1/imports/docs/${batch.value.id}/confirm`, { method: 'POST' })
-    await navigateTo(`/manage/import/${res.batch.id}`)
-  }
-  catch (err: any) {
-    toast.add({ title: '导入失败', description: err?.data?.message || '请检查预检结果后重试', color: 'error' })
-  }
-  finally {
-    confirming.value = false
+    const res = await call<DocsImportUploadResponse>(
+      `/api/v1/imports/docs/${batch.value.id}/confirm`,
+      { method: "POST" },
+    );
+    await navigateTo(`/manage/import/${res.batch.id}`);
+  } catch (err: any) {
+    toast.add({
+      title: "导入失败",
+      description: err?.data?.message || "请检查预检结果后重试",
+      color: "error",
+    });
+  } finally {
+    confirming.value = false;
   }
 }
 </script>
 
 <template>
-  <div>
-    <PageHeader title="批量导入">
-      <template #subtitle>
-        <span>上传 ZIP，先预检再确认写入文档库</span>
-      </template>
-    </PageHeader>
-
+  <YAdminPage
+    id="import"
+    title="批量导入"
+    icon="i-tabler-file-import"
+    main-id="manage-main"
+    body-class="mx-auto w-full max-w-screen-2xl"
+  >
     <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section class="min-w-0 space-y-4">
         <div class="rounded-lg border border-default bg-default p-5">
           <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 class="text-base font-semibold text-highlighted">选择导入包</h2>
-              <p class="mt-1 text-sm text-muted">仅支持标准 ZIP 包，导入前会检查 manifest、Markdown、图片与内部链接。</p>
+              <h2 class="text-base font-semibold text-highlighted">
+                选择导入包
+              </h2>
+              <p class="mt-1 text-sm text-muted">
+                仅支持标准 ZIP 包，导入前会检查
+                manifest、Markdown、图片与内部链接。
+              </p>
             </div>
-            <UBadge label="ZIP only" icon="i-tabler-file-zip" variant="subtle" />
+            <UBadge
+              label="ZIP only"
+              icon="i-tabler-file-zip"
+              variant="subtle"
+            />
           </div>
 
           <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -134,19 +188,32 @@ async function confirmImport() {
           />
         </div>
 
-        <div v-if="summary" class="overflow-hidden rounded-lg border border-default bg-default">
+        <div
+          v-if="summary"
+          class="overflow-hidden rounded-lg border border-default bg-default"
+        >
           <div class="border-b border-default bg-elevated/35 px-5 py-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 class="text-base font-semibold text-highlighted">预检摘要</h2>
+                <h2 class="text-base font-semibold text-highlighted">
+                  预检摘要
+                </h2>
                 <p class="mt-1 text-sm text-muted">
-                  {{ summary.blocking ? '存在阻塞问题，修复 ZIP 后重新上传。' : '没有阻塞问题，可以确认导入。' }}
+                  {{
+                    summary.blocking
+                      ? "存在阻塞问题，修复 ZIP 后重新上传。"
+                      : "没有阻塞问题，可以确认导入。"
+                  }}
                 </p>
               </div>
               <UBadge
                 :label="summary.blocking ? '不可导入' : '可导入'"
                 :color="summary.blocking ? 'warning' : 'success'"
-                :icon="summary.blocking ? 'i-tabler-alert-triangle' : 'i-tabler-shield-check'"
+                :icon="
+                  summary.blocking
+                    ? 'i-tabler-alert-triangle'
+                    : 'i-tabler-shield-check'
+                "
                 variant="subtle"
               />
             </div>
@@ -158,16 +225,24 @@ async function confirmImport() {
               :key="card.label"
               class="border-b border-default p-4 sm:border-r xl:border-b-0"
             >
-              <div class="mb-3 grid size-10 place-items-center rounded-lg ring-1" :class="toneClass(card.tone)">
+              <div
+                class="mb-3 grid size-10 place-items-center rounded-lg ring-1"
+                :class="toneClass(card.tone)"
+              >
                 <UIcon :name="card.icon" class="size-5" />
               </div>
               <p class="text-xs font-medium text-muted">{{ card.label }}</p>
-              <p class="mt-1 text-2xl font-semibold text-highlighted">{{ card.value }}</p>
+              <p class="mt-1 text-2xl font-semibold text-highlighted">
+                {{ card.value }}
+              </p>
             </div>
           </div>
         </div>
 
-        <div v-if="summary?.issues?.length" class="rounded-lg border border-default bg-default">
+        <div
+          v-if="summary?.issues?.length"
+          class="rounded-lg border border-default bg-default"
+        >
           <div class="border-b border-default bg-elevated/35 px-5 py-3">
             <h2 class="text-sm font-semibold text-highlighted">预检问题</h2>
           </div>
@@ -184,10 +259,16 @@ async function confirmImport() {
                 size="sm"
               />
               <div class="min-w-0">
-                <p class="text-sm font-medium text-highlighted">{{ issue.message }}</p>
-                <p class="mt-1 font-mono text-xs text-muted">{{ issue.code }}</p>
+                <p class="text-sm font-medium text-highlighted">
+                  {{ issue.message }}
+                </p>
+                <p class="mt-1 font-mono text-xs text-muted">
+                  {{ issue.code }}
+                </p>
               </div>
-              <p class="truncate font-mono text-xs text-muted">{{ issue.path || '-' }}</p>
+              <p class="truncate font-mono text-xs text-muted">
+                {{ issue.path || "-" }}
+              </p>
             </div>
           </div>
         </div>
@@ -199,29 +280,45 @@ async function confirmImport() {
         />
       </section>
 
-      <aside class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start">
+      <aside
+        class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start"
+      >
         <div class="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs font-medium uppercase tracking-wide text-muted">导入状态</p>
-            <h2 class="mt-1 text-base font-semibold text-highlighted">{{ batch?.status || '等待上传' }}</h2>
+            <p class="text-xs font-medium uppercase tracking-wide text-muted">
+              导入状态
+            </p>
+            <h2 class="mt-1 text-base font-semibold text-highlighted">
+              {{ batch?.status || "等待上传" }}
+            </h2>
           </div>
-          <span class="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
+          <span
+            class="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary"
+          >
             <UIcon name="i-tabler-file-import" class="size-5" />
           </span>
         </div>
 
-        <div class="space-y-3 rounded-lg border border-default bg-elevated/35 p-3 text-sm">
+        <div
+          class="space-y-3 rounded-lg border border-default bg-elevated/35 p-3 text-sm"
+        >
           <div class="flex items-center justify-between gap-3">
             <span class="text-muted">批次</span>
-            <span class="max-w-44 truncate font-mono text-xs text-default">{{ batch?.id || '-' }}</span>
+            <span class="max-w-44 truncate font-mono text-xs text-default">{{
+              batch?.id || "-"
+            }}</span>
           </div>
           <div class="flex items-center justify-between gap-3">
             <span class="text-muted">模式</span>
-            <span class="font-mono text-xs text-default">{{ batch?.mode || '-' }}</span>
+            <span class="font-mono text-xs text-default">{{
+              batch?.mode || "-"
+            }}</span>
           </div>
           <div class="flex items-center justify-between gap-3">
             <span class="text-muted">默认语言</span>
-            <span class="font-mono text-xs text-default">{{ batch?.defaultLocale || '-' }}</span>
+            <span class="font-mono text-xs text-default">{{
+              batch?.defaultLocale || "-"
+            }}</span>
           </div>
         </div>
 
@@ -248,5 +345,5 @@ async function confirmImport() {
         </div>
       </aside>
     </div>
-  </div>
+  </YAdminPage>
 </template>
