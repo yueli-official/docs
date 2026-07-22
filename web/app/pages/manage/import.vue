@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageEmpty, ManageHeader } from '@platform/manage/components'
+import { ManageEmpty } from '@platform/manage/components'
 import type { DocsImportBatch, DocsImportSummary, DocsImportUploadResponse } from '~/types'
 
 definePageMeta({ layout: 'manage' })
@@ -88,11 +89,11 @@ async function confirmImport() {
 
 <template>
   <div>
-    <ManageHeader title="批量导入">
+    <PageHeader title="批量导入">
       <template #subtitle>
         <span>上传 ZIP，先预检再确认写入文档库</span>
       </template>
-    </ManageHeader>
+    </PageHeader>
 
     <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section class="min-w-0 space-y-4">

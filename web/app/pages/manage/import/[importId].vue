@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageEmpty, ManageHeader, SkeletonList } from '@platform/manage/components'
+import { ManageEmpty, SkeletonList } from '@platform/manage/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { DocsImportBatch, DocsImportDetailResponse, DocsImportItem } from '~/types'
 
@@ -86,14 +87,14 @@ async function rollback() {
 
 <template>
   <div>
-    <ManageHeader title="导入详情">
+    <PageHeader title="导入详情">
       <template #subtitle>
         <span class="font-mono">{{ importId }}</span>
       </template>
       <template #actions>
         <UButton icon="i-tabler-file-import" label="继续导入" color="neutral" variant="outline" to="/manage/import" />
       </template>
-    </ManageHeader>
+    </PageHeader>
 
     <SkeletonList v-if="showSkeleton" :rows="8" />
 

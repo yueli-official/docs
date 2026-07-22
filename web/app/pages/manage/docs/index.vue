@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import { createPlatformNotifier } from '@platform/ui/feedback'
 import {
   ManageCollectionDock,
   ManageCollectionToolbar,
   ManageEmpty,
-  ManageHeader,
   ManageLifecycleTabs,
   ManagePageSelection,
   ManagePagination,
@@ -590,14 +590,14 @@ async function onDelete(id: string) {
 
 <template>
   <div>
-    <ManageHeader title="文档">
+    <PageHeader title="文档">
       <template #subtitle>
         <span>搜索、筛选、批量处理与层级调整</span>
       </template>
       <template #actions>
         <UButton icon="i-tabler-plus" label="新建文档" :to="createTarget" />
       </template>
-    </ManageHeader>
+    </PageHeader>
 
     <ClientOnly>
       <ManageLifecycleTabs v-model="statusFilter" :items="statusTabs" class="mb-4" />

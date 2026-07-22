@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import { PlatformImageCropper } from '@platform/ui/components'
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManageHeader, ManagePagination, ManageSortDirectionButton, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
+import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManagePagination, ManageSortDirectionButton, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
 import { useMinLoading } from '@platform/ui/use-min-loading'
@@ -278,14 +279,14 @@ async function doDelete() {
 
 <template>
   <div>
-    <ManageHeader title="文档集">
+    <PageHeader title="文档集">
       <template #subtitle>
         <span>维护公开路径、说明和集合视觉资产。</span>
       </template>
       <template #actions>
         <UButton icon="i-tabler-plus" label="新建文档集" @click="openCreate" />
       </template>
-    </ManageHeader>
+    </PageHeader>
 
     <div v-if="loadError" class="rounded-lg border border-default bg-default p-8">
       <div class="mx-auto max-w-md text-center">

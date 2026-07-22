@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ManageDashboardLayout, SkeletonList } from '@platform/manage/components'
+import { platformDashboardMessages } from '@platform/manage/dashboard'
+import { SkeletonList } from '@platform/manage/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
+import { DashboardLayout } from '@yueli/ui/dashboard/pattern'
 import type { CollectionList, CollectionView } from '~/types'
 
 definePageMeta({ layout: 'manage' })
@@ -40,9 +42,10 @@ const continueCollections = computed(() => [...items.value].sort((a, b) => (b.do
 </script>
 
 <template>
-  <ManageDashboardLayout
+  <DashboardLayout
     title="控制台"
     description="查看文档运营队列，继续内容工作并确认当前站点可用。"
+    :messages="platformDashboardMessages"
     recent-title="继续工作"
     recent-description="按内容量列出常用文档集；进入后继续维护文档。"
   >
@@ -117,5 +120,5 @@ const continueCollections = computed(() => [...items.value].sort((a, b) => (b.do
         <UButton to="/manage/home" icon="i-tabler-settings" label="站点设置" color="neutral" variant="ghost" block />
       </div>
     </template>
-  </ManageDashboardLayout>
+  </DashboardLayout>
 </template>
