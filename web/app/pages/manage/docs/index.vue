@@ -2,19 +2,18 @@
 import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import { createPlatformNotifier } from '@platform/ui/feedback'
 import {
-  ManageCollectionDock,
-  ManageCollectionToolbar,
-  ManageEmpty,
-  ManageLifecycleTabs,
-  ManagePageSelection,
-  ManagePagination,
-  ManageRowShell,
-  ManageViewToggle,
-  SkeletonList
-} from '@platform/manage/components'
-import type { ManageCollectionDefinition } from '@platform/manage/collection'
-import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
-import { useManageSelection } from '@platform/manage/use-manage-selection'
+  createCollectionRouteQueryCodec,
+  createJsonCollectionQueryPolicy,
+  type CollectionControl,
+  type CollectionControlValue,
+  type CollectionPanelMessages,
+  type CollectionPanelState,
+  type CollectionWorkflow,
+} from '@yueli/ui/collection'
+import { useVueCollectionWorkflow } from '@yueli/ui/collection/vue'
+import { createVueRouterCollectionQuerySync } from '@yueli/ui/collection/vue-router'
+import { CollectionPanel } from '@yueli/ui/collection/pattern'
+import { ManageEmpty, ManageViewToggle, SkeletonList } from '@platform/manage/components'
 import type { CollectionManageTree, CollectionVersion, CollectionVersionsResponse, CollectionView, DocDetail } from '~/types'
 import { buildDocTree, docManageRoute, findDocSlugPathById } from '~/utils/docsManageRoutes.mjs'
 
@@ -23,7 +22,6 @@ useSeoMeta({ title: '文档 · 控制台' })
 
 const { call } = useApi()
 const toast = createPlatformNotifier(useToast())
-const route = useRoute()
 const router = useRouter()
 
 type StatusKey = 'all' | 'draft' | 'published' | 'archived' | 'issues'
@@ -49,43 +47,47 @@ interface PatchItem {
   sortOrder: number
 }
 
-const collectionDefinition = {
-  resourceKind: 'doc',
-  statuses: ['all', 'draft', 'published', 'archived', 'issues'],
-  views: ['list', 'tree'],
-  sortKeys: ['sortOrder'],
-  pageSizes: [30, 60, 90],
-  defaultStatus: 'all',
-  defaultView: 'list',
-  defaultSort: 'sortOrder',
-  defaultDirection: 'asc',
-  defaultPageSize: 30,
-  pagination: 'client',
-  selection: 'page',
-  filters: ['collection', 'version', 'locale'],
-  quickEditFields: ['title', 'slug', 'status', 'parent'],
-  bulkActions: ['publish', 'draft', 'archive']
-} as const satisfies ManageCollectionDefinition
-
-const {
-  status: statusFilter,
-  searchInput: search,
-  q: searchQuery,
-  page,
-  size: pageSize,
-  view: viewMode,
-  filterModel
-} = useManageCollectionState({
-  definition: collectionDefinition,
-  routeQuery: computed(() => route.query),
-  replaceQuery: query => router.replace({ query })
+interface DocCollectionQuery {
+  q: string
+  status: StatusKey
+  page: number
+  size: number
+  view: 'list' | 'tree'
+  collection: string
+  version: string
+  locale: string
+}
+const statusKeys = ['all', 'draft', 'published', 'archived', 'issues'] as const
+const viewKeys = ['list', 'tree'] as const
+const pageSizes = [30, 60, 90] as const
+const defaultQuery: DocCollectionQuery = {
+  q: '',
+  status: 'all',
+  page: 1,
+  size: 30,
+  view: 'list',
+  collection: 'all',
+  version: '',
+  locale: 'en',
+}
+const queryPolicy = createJsonCollectionQueryPolicy<DocCollectionQuery>()
+const querySync = createVueRouterCollectionQuerySync({
+  router,
+  codec: createCollectionRouteQueryCodec({
+    q: { kind: 'string', default: defaultQuery.q, maxLength: 200 },
+    status: { kind: 'enum', values: statusKeys, default: defaultQuery.status },
+    page: { kind: 'positive-integer', default: defaultQuery.page },
+    size: { kind: 'positive-integer', values: pageSizes, default: defaultQuery.size },
+    view: { kind: 'enum', values: viewKeys, default: defaultQuery.view },
+    collection: { kind: 'string', default: defaultQuery.collection, maxLength: 200 },
+    version: { kind: 'string', default: defaultQuery.version, maxLength: 100 },
+    locale: { kind: 'string', default: defaultQuery.locale, maxLength: 50 },
+  }),
 })
-const collectionFilter = filterModel('collection', 'all')
-const versionFilter = filterModel('version')
-const localeFilter = filterModel('locale', 'en')
+const search = ref('')
 const bulkAction = ref<BulkDocAction | undefined>()
 const bulkBusy = ref(false)
-const bulkResult = ref<{ changed: number, failedIds: string[], interrupted?: boolean, message?: string }>()
+const bulkResult = ref<{ changed: number; failedIds: string[]; interrupted?: boolean; message?: string }>()
 const quickEditTarget = ref<ManagedDoc>()
 const showQuickEdit = ref(false)
 
@@ -94,7 +96,6 @@ const bulkItems: Array<{ label: string; value: BulkDocAction; icon: string }> = 
   { label: '转草稿', value: 'draft', icon: 'i-tabler-pencil' },
   { label: '归档', value: 'archive', icon: 'i-tabler-archive' },
 ]
-const pageSizeItems = [30, 60, 90].map(value => ({ label: `${value}/页`, value }))
 
 const { data: cols, pending: collectionsPending } = await useAsyncData(
   'manage-doc-workbench-collections',
@@ -102,7 +103,7 @@ const { data: cols, pending: collectionsPending } = await useAsyncData(
   { server: false, default: () => ({ items: [] as CollectionView[] }) },
 )
 const collections = computed(() => cols.value?.items ?? [])
-const collectionById = computed(() => Object.fromEntries(collections.value.map(c => [c.id, c])))
+const collectionById = computed(() => Object.fromEntries(collections.value.map((c) => [c.id, c])))
 
 function selectedValue(value: unknown) {
   if (value && typeof value === 'object' && 'value' in value) {
@@ -112,13 +113,85 @@ function selectedValue(value: unknown) {
   return String(value ?? '')
 }
 
-const activeCollection = computed(() => selectedValue(collectionFilter.value) || 'all')
-const activeVersion = computed(() => selectedValue(versionFilter.value))
-const activeLocale = computed(() => selectedValue(localeFilter.value) || 'en')
-const activeStatus = computed<StatusKey>(() => {
-  const value = selectedValue(statusFilter.value)
-  return value === 'draft' || value === 'published' || value === 'archived' || value === 'issues' ? value : 'all'
+async function loadDocPage(nextQuery: Readonly<DocCollectionQuery>, activeWorkflow: CollectionWorkflow<ManagedDoc, string, DocCollectionQuery>) {
+  const token = activeWorkflow.beginLoad()
+  const matching = filterManagedDocs(nextQuery)
+  const lastPage = Math.max(1, Math.ceil(matching.length / nextQuery.size))
+  if (nextQuery.page > lastPage) {
+    activeWorkflow.setQuery({ ...nextQuery, page: lastPage })
+    return
+  }
+  const start = (nextQuery.page - 1) * nextQuery.size
+  activeWorkflow.resolveLoad(token, {
+    items: matching.slice(start, start + nextQuery.size),
+    total: matching.length,
+  })
+}
+
+const {
+  snapshot: docCollection,
+  workflow: docWorkflow,
+  reload: reloadDocPage,
+} = useVueCollectionWorkflow({
+  initialQuery: defaultQuery,
+  queryPolicy,
+  keyOf: (doc: ManagedDoc) => doc.id,
+  querySync,
+  dataQueryKey: (query) => JSON.stringify(query),
+  load: loadDocPage,
 })
+const collectionQuery = computed(() => docCollection.value.query)
+function updateCollectionQuery(patch: Partial<DocCollectionQuery>, resetPage = true) {
+  docWorkflow.setQuery({ ...collectionQuery.value, ...patch, ...(resetPage ? { page: 1 } : {}) })
+}
+const activeCollection = computed({
+  get: () => collectionQuery.value.collection,
+  set: (value: string) => updateCollectionQuery({ collection: value, version: '' }),
+})
+const activeVersion = computed({
+  get: () => collectionQuery.value.version,
+  set: (value: string) => updateCollectionQuery({ version: value }),
+})
+const activeLocale = computed({
+  get: () => collectionQuery.value.locale,
+  set: (value: string) => updateCollectionQuery({ locale: value || 'en' }),
+})
+const activeStatus = computed<StatusKey>({
+  get: () => collectionQuery.value.status,
+  set: (value) => updateCollectionQuery({ status: value }),
+})
+const page = computed({
+  get: () => collectionQuery.value.page,
+  set: (value: number) => updateCollectionQuery({ page: value }, false),
+})
+const pageSize = computed({
+  get: () => collectionQuery.value.size,
+  set: (value: number) => updateCollectionQuery({ size: value }),
+})
+const viewMode = computed({
+  get: () => collectionQuery.value.view,
+  set: (value: 'list' | 'tree') => updateCollectionQuery({ view: value }, false),
+})
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+search.value = collectionQuery.value.q
+watch(search, (value) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => updateCollectionQuery({ q: value.trim() }), 300)
+})
+watch(
+  () => collectionQuery.value.q,
+  (value) => {
+    if (search.value !== value) search.value = value
+  },
+)
+onScopeDispose(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+})
+function submitSearch(value: string) {
+  if (searchTimer) clearTimeout(searchTimer)
+  search.value = value
+  updateCollectionQuery({ q: value.trim() })
+}
 
 const versionsByCollection = ref<Record<string, CollectionVersion[]>>({})
 const localeItems = [
@@ -126,24 +199,17 @@ const localeItems = [
   { label: '简体中文', value: 'zh-CN' },
 ]
 
-const collectionItems = computed(() => [
-  { label: '全部文档集', value: 'all' },
-  ...collections.value.map(c => ({ label: c.title, value: c.id })),
-])
-const selectedCollectionVersions = computed(() =>
-  activeCollection.value === 'all' ? [] : versionsByCollection.value[activeCollection.value] ?? [],
-)
+const collectionItems = computed(() => [{ label: '全部文档集', value: 'all' }, ...collections.value.map((c) => ({ label: c.title, value: c.id }))])
+const selectedCollectionVersions = computed(() => (activeCollection.value === 'all' ? [] : (versionsByCollection.value[activeCollection.value] ?? [])))
 const versionItems = computed(() => [
   { label: '默认版本', value: '' },
-  ...selectedCollectionVersions.value.map(v => ({
+  ...selectedCollectionVersions.value.map((v) => ({
     label: v.isDefault ? `${v.label}（默认）` : v.label,
     value: v.key,
     description: v.key,
   })),
 ])
-const treeCollectionItems = computed(() =>
-  collections.value.map(c => ({ label: c.title, value: c.slug })),
-)
+const treeCollectionItems = computed(() => collections.value.map((c) => ({ label: c.title, value: c.slug })))
 
 const docsByCollection = ref<Record<string, DocDetail[]>>({})
 const docsPending = ref(false)
@@ -156,10 +222,12 @@ async function loadVersions() {
     versionsByCollection.value = {}
     return
   }
-  const entries = await Promise.all(items.map(async (col) => {
-    const res = await call<CollectionVersionsResponse>(`/api/v1/collections/${col.id}/versions`)
-    return [col.id, res.items] as const
-  }))
+  const entries = await Promise.all(
+    items.map(async (col) => {
+      const res = await call<CollectionVersionsResponse>(`/api/v1/collections/${col.id}/versions`)
+      return [col.id, res.items] as const
+    }),
+  )
   versionsByCollection.value = Object.fromEntries(entries)
 }
 
@@ -174,32 +242,44 @@ async function loadDocs() {
   docsPending.value = true
   docsError.value = ''
   try {
-    const entries = await Promise.all(items.map(async (col) => {
-      const version = activeCollection.value !== 'all' && col.id === activeCollection.value ? activeVersion.value : ''
-      const res = await call<{ items: DocDetail[] }>('/api/v1/docs', {
-        query: {
-          collectionId: col.id,
-          locale: activeLocale.value,
-          ...(version ? { version } : {}),
-        },
-      })
-      return [col.id, res.items] as const
-    }))
+    const entries = await Promise.all(
+      items.map(async (col) => {
+        const version = activeCollection.value !== 'all' && col.id === activeCollection.value ? activeVersion.value : ''
+        const res = await call<{ items: DocDetail[] }>('/api/v1/docs', {
+          query: {
+            collectionId: col.id,
+            locale: activeLocale.value,
+            ...(version ? { version } : {}),
+          },
+        })
+        return [col.id, res.items] as const
+      }),
+    )
     if (seq === loadSeq) docsByCollection.value = Object.fromEntries(entries)
-  }
-  catch (err: any) {
+  } catch (err: any) {
     docsError.value = err?.data?.message || '加载文档失败'
-  }
-  finally {
+  } finally {
     if (seq === loadSeq) docsPending.value = false
   }
 }
 
-watch(collections, () => { loadVersions() }, { immediate: true })
-watch([collections, activeLocale, activeVersion, activeCollection], () => { loadDocs() }, { immediate: true })
+watch(
+  collections,
+  () => {
+    loadVersions()
+  },
+  { immediate: true },
+)
+watch(
+  [collections, activeLocale, activeVersion, activeCollection],
+  () => {
+    loadDocs()
+  },
+  { immediate: true },
+)
 
 function enrichDocs(col: CollectionView, docs: DocDetail[]): ManagedDoc[] {
-  const byId = new Map(docs.map(d => [d.id, d]))
+  const byId = new Map(docs.map((d) => [d.id, d]))
 
   function pathFor(doc: DocDetail) {
     const parts = [doc.title]
@@ -237,7 +317,7 @@ function enrichDocs(col: CollectionView, docs: DocDetail[]): ManagedDoc[] {
     return depth
   }
 
-  return docs.map(doc => ({
+  return docs.map((doc) => ({
     ...doc,
     collectionTitle: col.title,
     collectionSlug: col.slug,
@@ -248,17 +328,15 @@ function enrichDocs(col: CollectionView, docs: DocDetail[]): ManagedDoc[] {
   }))
 }
 
-const allDocs = computed(() =>
-  collections.value.flatMap(col => enrichDocs(col, docsByCollection.value[col.id] ?? [])),
-)
+const allDocs = computed(() => collections.value.flatMap((col) => enrichDocs(col, docsByCollection.value[col.id] ?? [])))
 
-const statusTabs = computed(() => {
+const statusItems = computed(() => {
   return [
-    { key: 'all', label: '全部', count: allDocs.value.length },
-    { key: 'draft', label: '草稿', count: allDocs.value.filter(doc => doc.status === 'draft').length },
-    { key: 'published', label: '已发布', count: allDocs.value.filter(doc => doc.status === 'published').length },
-    { key: 'archived', label: '归档', count: allDocs.value.filter(doc => doc.status === 'archived').length },
-    { key: 'issues', label: '待完善', count: allDocs.value.filter(doc => qualityIssues(doc).length > 0).length },
+    { value: 'all', label: `全部 · ${allDocs.value.length}` },
+    { value: 'draft', label: `草稿 · ${allDocs.value.filter((doc) => doc.status === 'draft').length}` },
+    { value: 'published', label: `已发布 · ${allDocs.value.filter((doc) => doc.status === 'published').length}` },
+    { value: 'archived', label: `归档 · ${allDocs.value.filter((doc) => doc.status === 'archived').length}` },
+    { value: 'issues', label: `待完善 · ${allDocs.value.filter((doc) => qualityIssues(doc).length > 0).length}` },
   ]
 })
 
@@ -270,60 +348,105 @@ function qualityIssues(doc: ManagedDoc) {
   return issues
 }
 
-const filteredDocs = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
+function filterManagedDocs(query: Readonly<DocCollectionQuery>) {
+  const q = query.q.trim().toLowerCase()
   return allDocs.value.filter((doc) => {
-    if (activeCollection.value !== 'all' && doc.collectionId !== activeCollection.value) return false
-    if (activeStatus.value === 'issues' && !qualityIssues(doc).length) return false
-    if (activeStatus.value !== 'all' && activeStatus.value !== 'issues' && doc.status !== activeStatus.value) return false
+    if (query.collection !== 'all' && doc.collectionId !== query.collection) return false
+    if (query.status === 'issues' && !qualityIssues(doc).length) return false
+    if (query.status !== 'all' && query.status !== 'issues' && doc.status !== query.status) return false
     if (!q) return true
-    return [
-      doc.title,
-      doc.slug,
-      doc.path,
-      doc.collectionTitle,
-      doc.excerpt,
-    ].some(v => (v || '').toLowerCase().includes(q))
+    return [doc.title, doc.slug, doc.path, doc.collectionTitle, doc.excerpt].some((v) => (v || '').toLowerCase().includes(q))
   })
-})
+}
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredDocs.value.length / pageSize.value)))
-const pagedDocs = computed(() => {
-  const start = (page.value - 1) * pageSize.value
-  return filteredDocs.value.slice(start, start + pageSize.value)
-})
-const {
-  selectedIds: selectedDocIds,
-  isPageSelected,
-  isPageIndeterminate,
-  toggleOne: toggleDocSelection,
-  togglePage: togglePageSelection,
-  clear: clearDocSelection,
-  keepOnly: keepValidSelection,
-  replace: replaceSelection
-} = useManageSelection({
-  visibleIds: computed(() => pagedDocs.value.map(doc => doc.id)),
-  filteredTotal: computed(() => filteredDocs.value.length),
-  resetKey: computed(() => route.fullPath)
-})
-const selectedDocs = computed(() =>
-  allDocs.value.filter(doc => selectedDocIds.value.includes(doc.id)),
+const pagedDocs = computed(() => docCollection.value.items)
+const selectedDocIds = computed<readonly string[]>(() => (docCollection.value.selection.mode === 'keys' ? docCollection.value.selection.keys : []))
+const isPageSelected = computed(() => docCollection.value.isPageSelected)
+const isPageIndeterminate = computed(() => docCollection.value.isPageIndeterminate)
+function toggleDocSelection(id: string) {
+  docWorkflow.toggleKey(id)
+}
+function togglePageSelection(selected: boolean) {
+  docWorkflow.togglePage(selected)
+}
+function clearDocSelection() {
+  docWorkflow.clearSelection()
+}
+function replaceSelection(ids: readonly string[]) {
+  docWorkflow.clearSelection()
+  for (const id of ids) docWorkflow.toggleKey(id)
+}
+const selectedDocs = computed(() => allDocs.value.filter((doc) => selectedDocIds.value.includes(doc.id)))
+const collectionControls = computed<CollectionControl[]>(() => [
+  { kind: 'select', id: 'status', label: '状态', value: activeStatus.value, options: statusItems.value, class: 'w-32' },
+  {
+    kind: 'select',
+    id: 'collection',
+    label: '文档集',
+    value: activeCollection.value,
+    options: collectionItems.value,
+    searchPlaceholder: '搜索文档集…',
+    class: 'w-40',
+  },
+  { kind: 'select', id: 'locale', label: '语言', value: activeLocale.value, options: localeItems, class: 'w-32' },
+  ...(activeCollection.value === 'all'
+    ? []
+    : [{ kind: 'select' as const, id: 'version', label: '版本', value: activeVersion.value, options: versionItems.value, class: 'w-36' }]),
+])
+const activeFilterCount = computed(
+  () => [activeStatus.value !== 'all', activeCollection.value !== 'all', activeLocale.value !== 'en', Boolean(activeVersion.value)].filter(Boolean).length,
 )
+const collectionMessages: CollectionPanelMessages = {
+  searchPlaceholder: '搜索标题、路径、slug 或文档集…',
+  searchAction: '搜索',
+  filtersAction: '筛选',
+  activeFilters: (count) => `筛选（${count}）`,
+  clearFilters: '清除筛选',
+  selectPage: '选择当前页文档',
+  selectItem: (label) => `选择文档：${label}`,
+  bulkRegion: '文档批量操作',
+  selected: (count) => `已选择 ${count} 篇文档`,
+  selectAllResults: '选择全部结果',
+  clearSelection: '取消选择',
+  emptyTitle: '没有匹配的文档',
+  emptyDescription: '请调整搜索或筛选条件后重试。',
+  errorTitle: '文档加载失败',
+  retry: '重新加载',
+  showing: (first, last, total) => `显示 ${first}–${last}，共 ${total} 篇`,
+  pageSize: '每页',
+  pageSizeControl: '每页文档数量',
+  pageSizeOption: (value) => `${value} 篇`,
+}
+const collectionState = computed<CollectionPanelState>(() => {
+  if (docsError.value) return 'error'
+  if (collectionsPending.value || docsPending.value) return 'loading'
+  return 'ready'
+})
+function changeCollectionControl(id: string, value: CollectionControlValue) {
+  if (typeof value !== 'string') return
+  if (id === 'status' && statusKeys.includes(value as StatusKey)) activeStatus.value = value as StatusKey
+  if (id === 'collection') activeCollection.value = value
+  if (id === 'locale') activeLocale.value = value
+  if (id === 'version') activeVersion.value = value
+}
+function clearCollectionFilters() {
+  updateCollectionQuery({ status: 'all', collection: 'all', version: '', locale: 'en' })
+}
+const docKey = (doc: ManagedDoc) => doc.id
+const docLabel = (doc: ManagedDoc) => doc.title
 
 watch([activeCollection, activeStatus, activeLocale, activeVersion], () => {
-  selectedDocIds.value = []
   bulkAction.value = undefined
   bulkResult.value = undefined
 })
-watch(activeCollection, () => { versionFilter.value = '' })
-watch(totalPages, (n) => { if (page.value > n) page.value = n })
-watch(allDocs, (docs) => {
-  keepValidSelection(docs.map(doc => doc.id))
+watch(activeCollection, (value) => {
+  if (value === 'all' && activeVersion.value) activeVersion.value = ''
+})
+watch(allDocs, () => {
+  reloadDocPage()
 })
 
-const selectedCollection = computed(() =>
-  activeCollection.value === 'all' ? null : collectionById.value[activeCollection.value],
-)
+const selectedCollection = computed(() => (activeCollection.value === 'all' ? null : collectionById.value[activeCollection.value]))
 
 const createTarget = computed(() => {
   const slug = selectedCollection.value?.slug
@@ -331,9 +454,7 @@ const createTarget = computed(() => {
 })
 
 function openDoc(docOrId: ManagedDoc | string) {
-  const doc = typeof docOrId === 'string'
-    ? allDocs.value.find(item => item.id === docOrId)
-    : docOrId
+  const doc = typeof docOrId === 'string' ? allDocs.value.find((item) => item.id === docOrId) : docOrId
   if (!doc && typeof docOrId === 'string') {
     const slugPath = findDocSlugPathById(tree.value?.tree ?? [], docOrId)
     if (slugPath && activeTreeSlug.value) {
@@ -381,37 +502,31 @@ async function updateDocStatus(id: string, status: 'draft' | 'published' | 'arch
 async function applyBulkAction() {
   if (!bulkAction.value || !selectedDocs.value.length) return
 
-  const status = bulkAction.value === 'publish'
-    ? 'published'
-    : bulkAction.value === 'archive'
-      ? 'archived'
-      : 'draft'
+  const status = bulkAction.value === 'publish' ? 'published' : bulkAction.value === 'archive' ? 'archived' : 'draft'
   const docs = [...selectedDocs.value]
-  const requestedIds = docs.map(doc => doc.id)
+  const requestedIds = docs.map((doc) => doc.id)
   bulkBusy.value = true
   bulkResult.value = undefined
   try {
-    const results = await Promise.allSettled(docs.map(doc => updateDocStatus(doc.id, status)))
-    const changed = results.filter(result => result.status === 'fulfilled').length
-    const failedIds = results.flatMap((result, index) => result.status === 'rejected' ? [requestedIds[index]!] : [])
+    const results = await Promise.allSettled(docs.map((doc) => updateDocStatus(doc.id, status)))
+    const changed = results.filter((result) => result.status === 'fulfilled').length
+    const failedIds = results.flatMap((result, index) => (result.status === 'rejected' ? [requestedIds[index]!] : []))
     bulkResult.value = { changed, failedIds }
     if (failedIds.length) replaceSelection(failedIds)
     else clearBulkSelection()
     bulkAction.value = undefined
     await refreshTree()
-  }
-  catch (error) {
+  } catch (error) {
     const apiError = error as { data?: { message?: string } }
     replaceSelection(requestedIds)
     bulkResult.value = {
       changed: 0,
       failedIds: requestedIds,
       interrupted: true,
-      message: apiError.data?.message || '批量请求中断，已保留选择，请核对当前状态后重试。'
+      message: apiError.data?.message || '批量请求中断，已保留选择，请核对当前状态后重试。',
     }
     await refreshTree()
-  }
-  finally {
+  } finally {
     bulkBusy.value = false
   }
 }
@@ -420,27 +535,37 @@ async function applyBulkAction() {
 
 const treeSlug = ref('')
 const activeTreeSlug = computed(() => selectedValue(treeSlug.value))
-watch(collections, (items) => {
-  if (!activeTreeSlug.value && items.length) treeSlug.value = items[0]!.slug
-}, { immediate: true })
+watch(
+  collections,
+  (items) => {
+    if (!activeTreeSlug.value && items.length) treeSlug.value = items[0]!.slug
+  },
+  { immediate: true },
+)
 watch(activeCollection, (id) => {
   if (id !== 'all') treeSlug.value = collectionById.value[id]?.slug ?? treeSlug.value
 })
 
-const activeTreeCollection = computed(() =>
-  collections.value.find(c => c.slug === activeTreeSlug.value) ?? null,
-)
+const activeTreeCollection = computed(() => collections.value.find((c) => c.slug === activeTreeSlug.value) ?? null)
 const treeOverride = ref<CollectionManageTree | null>(null)
 const treePending = computed(() => docsPending.value)
-const tree = computed<CollectionManageTree | null>(() =>
-  treeOverride.value ?? (activeTreeCollection.value
-    ? {
-        collection: activeTreeCollection.value,
-        tree: buildDocTree(docsByCollection.value[activeTreeCollection.value.id] ?? []),
-      }
-    : null),
+const tree = computed<CollectionManageTree | null>(
+  () =>
+    treeOverride.value ??
+    (activeTreeCollection.value
+      ? {
+          collection: activeTreeCollection.value,
+          tree: buildDocTree(docsByCollection.value[activeTreeCollection.value.id] ?? []),
+        }
+      : null),
 )
-watch([activeTreeSlug, docsByCollection], () => { treeOverride.value = null }, { deep: true })
+watch(
+  [activeTreeSlug, docsByCollection],
+  () => {
+    treeOverride.value = null
+  },
+  { deep: true },
+)
 
 async function refreshTree() {
   treeOverride.value = null
@@ -464,7 +589,7 @@ function findInTree(
 }
 
 function isDescendant(node: DocDetail, targetId: string): boolean {
-  return node.children?.some(c => c.id === targetId || isDescendant(c, targetId)) ?? false
+  return node.children?.some((c) => c.id === targetId || isDescendant(c, targetId)) ?? false
 }
 
 function computePatches(treeNodes: DocDetail[], intent: MoveIntent): PatchItem[] | null {
@@ -484,8 +609,7 @@ function computePatches(treeNodes: DocDetail[], intent: MoveIntent): PatchItem[]
     newParentId = intent.targetId
     newSiblings = targetCtx.node.children ?? []
     insertIdx = newSiblings.length
-  }
-  else {
+  } else {
     newParentId = targetCtx.parent?.id ?? ''
     newSiblings = targetCtx.siblings
     insertIdx = intent.position === 'before' ? targetCtx.index : targetCtx.index + 1
@@ -500,20 +624,18 @@ function computePatches(treeNodes: DocDetail[], intent: MoveIntent): PatchItem[]
     const adj = insertIdx > dragIdx ? insertIdx - 1 : insertIdx
     reordered.splice(adj, 0, dragNode)
     reordered.forEach((n, i) => {
-      if (n.sortOrder !== i)
-        patches.push({ id: n.id, parentId: newParentId, sortOrder: i })
+      if (n.sortOrder !== i) patches.push({ id: n.id, parentId: newParentId, sortOrder: i })
     })
-  }
-  else {
-    dragSiblings.filter((_, i) => i !== dragIdx).forEach((n, i) => {
-      if (n.sortOrder !== i)
-        patches.push({ id: n.id, parentId: oldParentId, sortOrder: i })
-    })
+  } else {
+    dragSiblings
+      .filter((_, i) => i !== dragIdx)
+      .forEach((n, i) => {
+        if (n.sortOrder !== i) patches.push({ id: n.id, parentId: oldParentId, sortOrder: i })
+      })
     const newOrder = [...newSiblings]
     newOrder.splice(insertIdx, 0, dragNode)
     newOrder.forEach((n, i) => {
-      if (n.sortOrder !== i || n.id === dragNode.id)
-        patches.push({ id: n.id, parentId: newParentId, sortOrder: i })
+      if (n.sortOrder !== i || n.id === dragNode.id) patches.push({ id: n.id, parentId: newParentId, sortOrder: i })
     })
   }
 
@@ -526,10 +648,12 @@ function applyMoveToTree(nodes: DocDetail[], intent: MoveIntent) {
   const { node: dragNode, siblings: oldSiblings, index: dragIdx } = dragCtx
 
   const targetBefore = findInTree(nodes, intent.targetId)
-  const newParentId = intent.position === 'into' ? intent.targetId : targetBefore?.parent?.id ?? ''
+  const newParentId = intent.position === 'into' ? intent.targetId : (targetBefore?.parent?.id ?? '')
 
   oldSiblings.splice(dragIdx, 1)
-  oldSiblings.forEach((n, i) => { n.sortOrder = i })
+  oldSiblings.forEach((n, i) => {
+    n.sortOrder = i
+  })
   dragNode.parentId = newParentId
 
   const targetAfter = findInTree(nodes, intent.targetId)
@@ -538,13 +662,16 @@ function applyMoveToTree(nodes: DocDetail[], intent: MoveIntent) {
   if (intent.position === 'into') {
     if (!targetAfter.node.children) targetAfter.node.children = []
     targetAfter.node.children.push(dragNode)
-    targetAfter.node.children.forEach((n, i) => { n.sortOrder = i })
-  }
-  else {
+    targetAfter.node.children.forEach((n, i) => {
+      n.sortOrder = i
+    })
+  } else {
     const siblings = targetAfter.parent?.children ?? nodes
     const idx = intent.position === 'before' ? targetAfter.index : targetAfter.index + 1
     siblings.splice(idx, 0, dragNode)
-    siblings.forEach((n, i) => { n.sortOrder = i })
+    siblings.forEach((n, i) => {
+      n.sortOrder = i
+    })
   }
 }
 
@@ -559,18 +686,19 @@ async function onMove(intent: MoveIntent) {
   treeOverride.value = optimistic
 
   try {
-    await Promise.all(patches.map(p =>
-      call(`/api/v1/docs/${p.id}`, {
-        method: 'PATCH',
-        body: {
-          parentId: p.parentId,
-          sortOrder: p.sortOrder,
-        },
-      }),
-    ))
+    await Promise.all(
+      patches.map((p) =>
+        call(`/api/v1/docs/${p.id}`, {
+          method: 'PATCH',
+          body: {
+            parentId: p.parentId,
+            sortOrder: p.sortOrder,
+          },
+        }),
+      ),
+    )
     await loadDocs()
-  }
-  catch {
+  } catch {
     treeOverride.value = snapshot
     toast.add({ title: '移动失败，已还原', color: 'error' })
     await refreshTree()
@@ -581,8 +709,7 @@ async function onDelete(id: string) {
   try {
     await call(`/api/v1/docs/${id}`, { method: 'DELETE' })
     await Promise.all([refreshTree(), loadDocs()])
-  }
-  catch (err: any) {
+  } catch (err: any) {
     toast.add({ title: '删除失败', description: err?.data?.message || '请重试', color: 'error' })
   }
 }
@@ -600,207 +727,186 @@ async function onDelete(id: string) {
     </PageHeader>
 
     <ClientOnly>
-      <ManageLifecycleTabs v-model="statusFilter" :items="statusTabs" class="mb-4" />
-
-      <ManageCollectionToolbar v-model:search="search" search-placeholder="搜索标题、路径、slug 或文档集…" class="mb-4">
-        <template #filters>
-          <USelectMenu
-            :model-value="collectionFilter"
-            :items="collectionItems"
-            value-key="value"
-            placeholder="筛选文档集"
-            :search-input="{ placeholder: '搜索文档集…' }"
-            class="w-full"
-            @update:model-value="collectionFilter = selectedValue($event)"
-          />
-          <USelectMenu
-            :model-value="localeFilter"
-            :items="localeItems"
-            value-key="value"
-            placeholder="语言"
-            class="w-full"
-            @update:model-value="localeFilter = selectedValue($event) || 'en'"
-          />
-          <USelectMenu
-            :model-value="versionFilter"
-            :items="versionItems"
-            value-key="value"
-            placeholder="版本"
-            :disabled="activeCollection === 'all'"
-            class="w-full"
-            @update:model-value="versionFilter = selectedValue($event)"
+      <CollectionPanel
+        v-if="viewMode === 'list'"
+        v-model:search="search"
+        :items="pagedDocs"
+        :item-key="docKey"
+        :item-label="docLabel"
+        :controls="collectionControls"
+        :messages="collectionMessages"
+        :state="collectionState"
+        :error-message="docsError"
+        :total="docCollection.total"
+        :page="page"
+        :page-size="pageSize"
+        :page-sizes="pageSizes"
+        :active-filter-count="activeFilterCount"
+        :selection-count="selectedDocIds.length"
+        :page-selected="isPageSelected"
+        :page-indeterminate="isPageIndeterminate"
+        :is-selected="docWorkflow.isSelected"
+        :is-item-selectable="() => !bulkBusy"
+        :inert="bulkBusy"
+        :aria-busy="bulkBusy"
+        label="文档列表"
+        selectable
+        @search="submitSearch"
+        @control-change="changeCollectionControl"
+        @clear-filters="clearCollectionFilters"
+        @retry="loadDocs"
+        @toggle-page="togglePageSelection"
+        @toggle-item="toggleDocSelection"
+        @clear-selection="clearBulkSelection"
+        @page-change="page = $event"
+        @page-size-change="pageSize = $event"
+      >
+        <template #view>
+          <ManageViewToggle
+            v-model="viewMode"
+            :items="[
+              { key: 'list', label: '列表', icon: 'i-tabler-list' },
+              { key: 'tree', label: '树状', icon: 'i-tabler-sitemap' },
+            ]"
           />
         </template>
-        <template #actions>
-          <ManageViewToggle v-model="viewMode" :items="[
-            { key: 'list', label: '列表', icon: 'i-tabler-list' },
-            { key: 'tree', label: '树状', icon: 'i-tabler-sitemap' }
-          ]" />
-        </template>
-      </ManageCollectionToolbar>
 
-      <UAlert
-        v-if="docsError"
-        color="error"
-        variant="soft"
-        icon="i-tabler-alert-circle"
-        :title="docsError"
-        class="mb-4"
-      />
-
-      <template v-if="viewMode === 'list'">
-        <SkeletonList v-if="collectionsPending || docsPending" :rows="8" />
-
-        <ManageEmpty
-          v-else-if="!collections.length"
-          icon="i-tabler-stack-2"
-          text="还没有文档集"
-        />
-
-        <ManageEmpty
-          v-else-if="!filteredDocs.length"
-          icon="i-tabler-file-search"
-          text="没有匹配的文档"
-        />
-
-        <template v-else>
-          <div class="overflow-hidden rounded-lg border border-default bg-default" :inert="bulkBusy" :aria-busy="bulkBusy">
-            <ManageRowShell
-              v-for="doc in pagedDocs"
-              :key="doc.id"
-              :selected="selectedDocIds.includes(doc.id)"
-              :selection-disabled="bulkBusy"
-              :selection-label="`选择文档：${doc.title}`"
-              @select="toggleDocSelection(doc.id)"
-            >
-              <template #media>
-                <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <UIcon name="i-tabler-file-text" class="size-5" />
-                </span>
-              </template>
-
-              <div class="min-w-0">
-                <button type="button" class="block max-w-full truncate text-left text-sm font-semibold text-highlighted hover:text-primary" @click="openQuickEdit(doc)">
-                  {{ doc.title }}
-                </button>
-                <p class="mt-0.5 truncate font-mono text-xs text-muted">{{ doc.slugPath.join(' / ') }}</p>
-                <p class="mt-1 truncate text-xs text-dimmed">{{ doc.collectionTitle }} · {{ doc.parentTitle || '顶级文档' }}</p>
-                <p v-if="qualityIssues(doc).length" class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-warning">
-                  <UIcon name="i-tabler-alert-circle" class="size-3.5 shrink-0" />
-                  <span class="truncate">{{ qualityIssues(doc).slice(0, 2).join(' · ') }}</span>
-                </p>
-              </div>
-
-              <template #meta>
-                <div class="min-w-0 text-xs md:w-36 md:text-right">
-                  <p class="truncate text-default">{{ doc.locale }}</p>
-                  <p class="mt-0.5 truncate text-muted">{{ doc.parentTitle || '顶级文档' }}</p>
-                </div>
-              </template>
-
-              <template #actions>
-                <UTooltip text="添加子文档">
-                  <UButton icon="i-tabler-file-plus" color="neutral" variant="ghost" size="sm" square :aria-label="`添加子文档：${doc.title}`" @click="addChild(doc)" />
-                </UTooltip>
-                <UTooltip text="快速编辑">
-                  <UButton icon="i-tabler-pencil" color="neutral" variant="ghost" size="sm" square :aria-label="`快速编辑：${doc.title}`" @click="openQuickEdit(doc)" />
-                </UTooltip>
-                <UTooltip text="完整编辑">
-                  <UButton icon="i-tabler-file-pencil" color="neutral" variant="ghost" size="sm" square :aria-label="`完整编辑：${doc.title}`" @click="openDoc(doc)" />
-                </UTooltip>
-              </template>
-            </ManageRowShell>
+        <template #columns>
+          <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <span>文档、路径与文档集</span>
+            <span class="hidden w-40 text-right md:block">语言、父级与操作</span>
           </div>
-
-          <ManageCollectionDock label="文档批量操作与分页">
-            <template #selection>
-              <div class="flex flex-wrap items-center gap-2">
-                <ManagePageSelection
-                  :model-value="isPageSelected"
-                  :indeterminate="isPageIndeterminate"
-                  label="选择当前页文档"
-                  @update:model-value="togglePageSelection"
-                />
-                <div v-if="bulkResult" class="flex min-w-0 flex-wrap items-center gap-2 rounded-lg bg-elevated px-2.5 py-1.5">
-                  <UIcon
-                    :name="bulkResult.interrupted || bulkResult.failedIds.length ? 'i-tabler-alert-triangle' : 'i-tabler-circle-check'"
-                    :class="bulkResult.interrupted || bulkResult.failedIds.length ? 'text-warning' : 'text-success'"
-                  />
-                  <span class="text-xs text-default">
-                    <template v-if="bulkResult.interrupted">{{ bulkResult.message }}</template>
-                    <template v-else>
-                      已处理 {{ bulkResult.changed }} 篇<span v-if="bulkResult.failedIds.length">，{{ bulkResult.failedIds.length }} 篇未完成</span>
-                    </template>
-                  </span>
-                  <UButton
-                    v-if="bulkResult.failedIds[0]"
-                    label="查看首个失败项"
-                    color="warning"
-                    variant="link"
-                    size="xs"
-                    @click="openDoc(bulkResult.failedIds[0])"
-                  />
-                  <UButton icon="i-tabler-x" color="neutral" variant="ghost" size="xs" square aria-label="关闭批量结果" @click="bulkResult = undefined" />
-                </div>
-                <template v-if="selectedDocIds.length">
-                  <span class="text-sm text-default">已选 {{ selectedDocIds.length }}</span>
-                  <USeparator orientation="vertical" class="hidden h-4 sm:block" />
-                  <USelect
-                    v-model="bulkAction"
-                    :items="bulkItems"
-                    value-key="value"
-                    placeholder="批量操作"
-                    size="sm"
-                    class="w-32"
-                  />
-                  <UButton
-                    label="应用"
-                    icon="i-tabler-check"
-                    color="primary"
-                    variant="soft"
-                    size="sm"
-                    :disabled="!bulkAction"
-                    :loading="bulkBusy"
-                    @click="applyBulkAction"
-                  />
-                  <UButton
-                    label="清空"
-                    icon="i-tabler-x"
-                    color="neutral"
-                    variant="ghost"
-                    size="sm"
-                    @click="clearBulkSelection"
-                  />
-                </template>
-                <template v-else>
-                  <span>每页 {{ pageSize }} 篇</span>
-                  <span class="hidden sm:inline">当前 {{ (page - 1) * pageSize + 1 }}-{{ Math.min(page * pageSize, filteredDocs.length) }}</span>
-                </template>
-              </div>
-            </template>
-            <template #pagination>
-              <USelect v-model="pageSize" :items="pageSizeItems" value-key="value" size="sm" class="w-20" :disabled="bulkBusy" />
-              <ManagePagination v-model="page" :total-pages="totalPages" class="!mt-0" />
-            </template>
-          </ManageCollectionDock>
         </template>
-      </template>
 
-      <template v-else>
+        <template #empty>
+          <div class="grid min-h-56 place-items-center px-6 py-12 text-center">
+            <div>
+              <span class="mx-auto grid size-10 place-items-center rounded-full bg-elevated text-muted">
+                <UIcon :name="collections.length ? 'i-tabler-file-search' : 'i-tabler-stack-2'" class="size-5" />
+              </span>
+              <p class="mt-3 text-sm font-medium text-highlighted">{{ collections.length ? '没有匹配的文档' : '还没有文档集' }}</p>
+              <p class="mt-1 text-xs text-muted">{{ collections.length ? '请调整搜索或筛选条件后重试。' : '请先创建文档集，再添加文档。' }}</p>
+            </div>
+          </div>
+        </template>
+
+        <template #bulk-actions>
+          <USelect v-model="bulkAction" :items="bulkItems" value-key="value" placeholder="批量操作" size="xs" class="w-28" />
+          <UButton
+            label="应用"
+            icon="i-tabler-check"
+            color="primary"
+            variant="soft"
+            size="xs"
+            :disabled="!bulkAction"
+            :loading="bulkBusy"
+            @click="applyBulkAction"
+          />
+        </template>
+
+        <template #item="{ item: doc }">
+          <div class="grid min-w-0 gap-3 sm:grid-cols-[2.5rem_minmax(0,1fr)] md:grid-cols-[2.5rem_minmax(0,1fr)_10rem_auto] md:items-center">
+            <span class="hidden size-10 place-items-center rounded-lg bg-primary/10 text-primary sm:grid">
+              <UIcon name="i-tabler-file-text" class="size-5" />
+            </span>
+            <div class="min-w-0">
+              <button
+                type="button"
+                class="block max-w-full truncate text-left text-sm font-semibold text-highlighted hover:text-primary"
+                @click="openQuickEdit(doc)"
+              >
+                {{ doc.title }}
+              </button>
+              <p class="mt-0.5 truncate font-mono text-xs text-muted">{{ doc.slugPath.join(' / ') }}</p>
+              <p class="mt-1 truncate text-xs text-dimmed">{{ doc.collectionTitle }} · {{ doc.parentTitle || '顶级文档' }}</p>
+              <p v-if="qualityIssues(doc).length" class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-warning">
+                <UIcon name="i-tabler-alert-circle" class="size-3.5 shrink-0" />
+                <span class="truncate">{{ qualityIssues(doc).slice(0, 2).join(' · ') }}</span>
+              </p>
+            </div>
+            <div class="min-w-0 text-xs md:text-right">
+              <p class="truncate text-default">{{ doc.locale }}</p>
+              <p class="mt-0.5 truncate text-muted">{{ doc.parentTitle || '顶级文档' }}</p>
+            </div>
+            <div class="flex justify-end gap-1">
+              <UTooltip text="添加子文档"
+                ><UButton
+                  icon="i-tabler-file-plus"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  :aria-label="`添加子文档：${doc.title}`"
+                  @click="addChild(doc)"
+              /></UTooltip>
+              <UTooltip text="快速编辑"
+                ><UButton
+                  icon="i-tabler-pencil"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  :aria-label="`快速编辑：${doc.title}`"
+                  @click="openQuickEdit(doc)"
+              /></UTooltip>
+              <UTooltip text="完整编辑"
+                ><UButton
+                  icon="i-tabler-file-pencil"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  :aria-label="`完整编辑：${doc.title}`"
+                  @click="openDoc(doc)"
+              /></UTooltip>
+            </div>
+          </div>
+        </template>
+      </CollectionPanel>
+
+      <div
+        v-if="viewMode === 'list' && bulkResult"
+        class="mt-3 flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-default bg-elevated px-3 py-2.5"
+        role="status"
+      >
+        <UIcon
+          :name="bulkResult.interrupted || bulkResult.failedIds.length ? 'i-tabler-alert-triangle' : 'i-tabler-circle-check'"
+          :class="bulkResult.interrupted || bulkResult.failedIds.length ? 'text-warning' : 'text-success'"
+        />
+        <span class="min-w-0 flex-1 text-xs text-default">
+          <template v-if="bulkResult.interrupted">{{ bulkResult.message }}</template>
+          <template v-else
+            >已处理 {{ bulkResult.changed }} 篇<span v-if="bulkResult.failedIds.length">，{{ bulkResult.failedIds.length }} 篇未完成</span></template
+          >
+        </span>
+        <UButton v-if="bulkResult.failedIds[0]" label="查看首个失败项" color="warning" variant="link" size="xs" @click="openDoc(bulkResult.failedIds[0])" />
+        <UButton icon="i-tabler-x" color="neutral" variant="ghost" size="xs" square aria-label="关闭批量结果" @click="bulkResult = undefined" />
+      </div>
+
+      <template v-if="viewMode === 'tree'">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-default bg-elevated/35 px-4 py-3">
           <div class="min-w-0">
             <p class="text-sm font-medium text-highlighted">树状结构</p>
             <p class="text-xs text-muted">{{ tree?.tree?.length ?? 0 }} 个根节点 · {{ activeTreeSlug || '未选择文档集' }}</p>
           </div>
-          <USelectMenu
-            :model-value="treeSlug"
-            :items="treeCollectionItems"
-            value-key="value"
-            placeholder="选择文档集"
-            :search-input="{ placeholder: '搜索文档集…' }"
-            class="w-56"
-            @update:model-value="treeSlug = selectedValue($event)"
-          />
+          <div class="flex items-center gap-2">
+            <USelectMenu
+              :model-value="treeSlug"
+              :items="treeCollectionItems"
+              value-key="value"
+              placeholder="选择文档集"
+              :search-input="{ placeholder: '搜索文档集…' }"
+              class="w-56"
+              @update:model-value="treeSlug = selectedValue($event)"
+            />
+            <ManageViewToggle
+              v-model="viewMode"
+              :items="[
+                { key: 'list', label: '列表', icon: 'i-tabler-list' },
+                { key: 'tree', label: '树状', icon: 'i-tabler-sitemap' },
+              ]"
+            />
+          </div>
         </div>
 
         <SkeletonList v-if="treePending" :rows="8" />
