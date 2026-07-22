@@ -2,7 +2,7 @@
 // Shared public site header (logo home-link + account menu). Used by the
 // default layout and the collection (reading) layout so no public page is
 // stranded without top chrome.
-import type { PlatformUserMenuAction } from "@platform/ui/components";
+import type { AccountMenuAction } from "@yueli/ui/account-menu/pattern";
 import type { HomeConfigResponse } from "~/types";
 
 withDefaults(defineProps<{ widthClass?: string }>(), {
@@ -31,7 +31,7 @@ watch(
   { immediate: true },
 );
 
-const contextActions = computed<PlatformUserMenuAction[]>(() => [
+const contextActions = computed<AccountMenuAction[]>(() => [
   ...(isOwner.value
     ? [{ label: "控制台", icon: "i-tabler-layout-dashboard", to: "/manage" }]
     : []),
