@@ -5,7 +5,7 @@ import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ManageCollectionDock, ManageCollectionToolbar, ManageEmpty, ManagePagination, ManageSortDirectionButton, ManageVisualAssetField, SkeletonList } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { CollectionView } from '~/types'
 
 definePageMeta({ layout: 'manage' })
@@ -53,7 +53,7 @@ const isAuthError = computed(() => {
 const loadErrorMessage = computed(() =>
   isAuthError.value ? '登录已失效，请重新登录后继续管理文档集。' : (loadError.value?.data?.message || loadError.value?.message || '加载文档集失败，请稍后重试。'),
 )
-const showSkeleton = useMinLoading(computed(() => !loadError.value && (!mounted.value || pending.value)))
+const showSkeleton = useMinimumLoading(computed(() => !loadError.value && (!mounted.value || pending.value)))
 const { login } = useAuth()
 
 function loginAgain() {

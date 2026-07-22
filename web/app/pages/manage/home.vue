@@ -9,9 +9,8 @@ import {
   platformSettingsSaveMessages,
   usePlatformSettingsProtection,
 } from "@platform/manage/settings";
-import { useActionFeedback } from "@platform/manage/use-action-feedback";
 import { createPlatformNotifier } from "@platform/ui/feedback";
-import { useMinLoading } from "@platform/ui/use-min-loading";
+import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
 import {
   SettingSection,
   SettingsLayout,
@@ -86,7 +85,7 @@ const collectionItems = computed(() =>
 const loading = computed(
   () => !mounted.value || collectionsPending.value || homePending.value,
 );
-const showSkeleton = useMinLoading(loading);
+const showSkeleton = useMinimumLoading(loading);
 const quickLinks = ref<HomeQuickLink[]>([]);
 const featuredCollections = ref<string[]>([]);
 const homeCopy = reactive({

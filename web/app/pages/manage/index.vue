@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { platformDashboardMessages } from '@platform/manage/dashboard'
 import { SkeletonList } from '@platform/manage/components'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import { DashboardLayout } from '@yueli/ui/dashboard/pattern'
 import type { CollectionList, CollectionView } from '~/types'
 
@@ -19,7 +19,7 @@ const { data: collections, pending, error } = await useAsyncData(
 )
 
 const items = computed(() => collections.value?.items ?? [])
-const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
+const showSkeleton = useMinimumLoading(computed(() => !mounted.value || pending.value))
 
 function collectionIssues(collection: CollectionView) {
   const issues: string[] = []

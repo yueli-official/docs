@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ActionFeedbackButton } from '@platform/manage/components'
-import { useActionFeedback } from '@platform/manage/use-action-feedback'
+import { useActionFeedback } from '@yueli/ui/feedback'
+import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
 import type { CollectionVersion, CollectionVersionsResponse, CollectionView, CollectionManageTree, DocDetail, DocDetailResponse } from '~/types'
 import {
   buildDocTree,

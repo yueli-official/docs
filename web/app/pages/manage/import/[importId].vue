@@ -2,7 +2,7 @@
 import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ManageEmpty, SkeletonList } from '@platform/manage/components'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { DocsImportBatch, DocsImportDetailResponse, DocsImportItem } from '~/types'
 
 definePageMeta({ layout: 'manage' })
@@ -27,7 +27,7 @@ const { data, pending, error, refresh } = await useAsyncData(
 const batch = computed(() => data.value?.batch ?? null)
 const items = computed(() => data.value?.items ?? [])
 const summary = computed(() => batch.value?.summary ?? null)
-const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
+const showSkeleton = useMinimumLoading(computed(() => !mounted.value || pending.value))
 const loadError = computed(() => error.value as { data?: { message?: string }, message?: string } | null)
 
 const summaryCards = computed(() => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { CollectionTree, CollectionView, DocTreeNode } from '~/types'
 import {
   searchStatusText,
@@ -56,11 +56,11 @@ const collectionItems = computed(() => [
   ...collections.value.map(item => ({ label: item.title, value: item.slug })),
 ])
 const hasQuery = computed(() => query.value.trim().length >= 2)
-const showSkeleton = useMinLoading(computed(() => shouldShowSearchSkeleton({
+const showSkeleton = useMinimumLoading(computed(() => shouldShowSearchSkeleton({
   pending: pending.value,
   hasQuery: hasQuery.value,
   resultCount: results.value.length,
-})), 450)
+})), { minimumMs: 450 })
 const dimResults = computed(() => shouldDimSearchResults({
   pending: pending.value,
   resultCount: results.value.length,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { SkeletonCards } from '@platform/ui/components'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { CollectionList } from '~/types'
 import { collectionCountLabel, collectionStats, filterCollections, paginateItems } from '~/utils/docsManual.mjs'
 
@@ -25,7 +25,7 @@ const pageSizeItems = [
   { label: '每页 24 个', value: 24 },
 ]
 const failedCovers = ref<Record<string, boolean>>({})
-const showSkeleton = useMinLoading(pending)
+const showSkeleton = useMinimumLoading(pending)
 
 const filteredCollections = computed(() => filterCollections(collections.value, query.value))
 const pageResult = computed(() => paginateItems(filteredCollections.value, page.value, pageSize.value))
