@@ -1,3 +1,4 @@
+import type { DiscoveryProjection } from "@yueli/discovery-nuxt/types";
 export interface Collection {
   id: string;
   slug: string;
@@ -47,6 +48,17 @@ export interface PublicDocDetail {
 }
 export interface DocDetailResponse {
   doc: DocDetail;
+  discovery?: DiscoveryProjection;
+}
+
+export interface URLResolution {
+  kind: 'canonical' | 'alias' | 'redirect' | 'gone' | 'unknown'
+  location?: string
+  statusCode?: number
+}
+
+export interface URLResolutionResponse {
+  resolution: URLResolution
 }
 export interface CollectionList {
   items: Collection[];

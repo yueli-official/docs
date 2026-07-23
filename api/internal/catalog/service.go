@@ -4,6 +4,7 @@ package catalog
 import (
 	"platform/products/docs/api/internal/assetclient"
 	"platform/products/docs/api/internal/dao"
+	"platform/products/docs/api/internal/docsurls"
 )
 
 // Service holds the catalog business logic.
@@ -11,6 +12,7 @@ type Service struct {
 	dao           *dao.PG
 	asset         assetclient.Client
 	coverCategory string
+	urls          *docsurls.Lifecycle
 }
 
 // New returns a new catalog Service backed by the given dao. Asset integration

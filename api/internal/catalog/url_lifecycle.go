@@ -1,0 +1,23 @@
+package catalog
+
+import (
+	"context"
+	"database/sql"
+
+	"platform/products/docs/api/internal/dao"
+	"platform/products/docs/api/internal/docsurls"
+)
+
+func (s *Service) WithURLLifecycle(lifecycle *docsurls.Lifecycle) *Service {
+	s.urls = lifecycle
+	return s
+}
+
+func (s *Service) urlReconcileHook(collectionID, reason string) dao.TransactionHook {
+	if s.urls == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		return s.urls.ReconcileCollection(ctx, tx, collectionID, reason)
+	}
+}

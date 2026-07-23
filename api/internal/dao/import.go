@@ -3,11 +3,110 @@ package dao
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 
 	"platform/products/docs/api/internal/model"
 )
+
+type ImportDocMutation struct {
+	Action                 string
+	Doc                    *model.Doc
+	ItemID                 string
+	AfterDocJSON           string
+	TransformedContentHash string
+}
+
+// ApplyImportDocs commits all document rows, import receipts, and the URL
+// lifecycle delta in one product transaction. Asset uploads happen before this
+// boundary and are referenced only after it commits.
+func (p *PG) ApplyImportDocs(
+	ctx context.Context,
+	mutations []ImportDocMutation,
+	hook TransactionHook,
+) error {
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		for _, mutation := range mutations {
+			if mutation.Doc == nil {
+				continue
+			}
+			switch mutation.Action {
+			case "create":
+				if _, err := tx.Model(tDocs).Ctx(ctx).Data(importDocInsertData(mutation.Doc)).Insert(); err != nil {
+					return err
+				}
+			case "update", "archive":
+				if err := updateImportDoc(ctx, tx, mutation.Doc); err != nil {
+					return err
+				}
+			case "delete":
+				if _, err := tx.Ctx(ctx).Exec(`
+WITH RECURSIVE subtree AS (
+    SELECT id FROM docs WHERE id = ?::uuid AND deleted_at IS NULL
+    UNION ALL
+    SELECT child.id FROM docs child
+    JOIN subtree parent ON child.parent_id = parent.id
+    WHERE child.deleted_at IS NULL
+)
+UPDATE docs SET deleted_at = NOW(), updated_at = NOW()
+WHERE id IN (SELECT id FROM subtree)`, mutation.Doc.ID); err != nil {
+					return err
+				}
+			}
+			if mutation.ItemID != "" {
+				if _, err := tx.Model(tDocImportItems).Ctx(ctx).Where("id", mutation.ItemID).Data(g.Map{
+					"target_doc_id":            nilIfEmpty(mutation.Doc.ID),
+					"after_doc_json":           jsonOrEmptyObject(mutation.AfterDocJSON),
+					"transformed_content_hash": mutation.TransformedContentHash,
+				}).Update(); err != nil {
+					return err
+				}
+			}
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
+}
+
+func importDocInsertData(doc *model.Doc) g.Map {
+	data := g.Map{
+		"id": doc.ID, "collection_id": doc.CollectionID, "version_id": doc.VersionID,
+		"slug": doc.Slug, "title": doc.Title, "content": doc.Content,
+		"excerpt": doc.Excerpt, "seo_title": doc.SEOTitle,
+		"seo_description": doc.SEODescription, "status": nz(doc.Status, "draft"),
+		"locale": nz(doc.Locale, "en"), "translation_key": nz(doc.TranslationKey, doc.ID),
+		"sort_order": doc.SortOrder, "author_sub": doc.AuthorSub,
+	}
+	if doc.ParentID != "" {
+		data["parent_id"] = doc.ParentID
+	}
+	return data
+}
+
+func updateImportDoc(ctx context.Context, tx gdb.TX, doc *model.Doc) error {
+	if _, err := tx.Model(tDocs).Ctx(ctx).Where("id", doc.ID).Data(g.Map{
+		"title": doc.Title, "slug": doc.Slug, "content": doc.Content,
+		"excerpt": doc.Excerpt, "seo_title": doc.SEOTitle,
+		"seo_description": doc.SEODescription, "version_id": doc.VersionID,
+		"status": doc.Status, "locale": doc.Locale,
+		"translation_key": doc.TranslationKey, "sort_order": doc.SortOrder,
+		"parent_id": nilIfEmpty(doc.ParentID), "deleted_at": nil,
+		"updated_at": gtime.Now(),
+	}).Update(); err != nil {
+		return err
+	}
+	_, err := tx.Ctx(ctx).Exec(`
+WITH RECURSIVE descendants AS (
+    SELECT id FROM docs WHERE parent_id = ?::uuid AND deleted_at IS NULL
+    UNION ALL
+    SELECT child.id FROM docs child
+    JOIN descendants parent ON child.parent_id = parent.id
+    WHERE child.deleted_at IS NULL
+)
+UPDATE docs SET version_id = ?::uuid, locale = ?, updated_at = NOW()
+WHERE id IN (SELECT id FROM descendants)`, doc.ID, doc.VersionID, doc.Locale)
+	return err
+}
 
 const (
 	tDocImportBatches   = "doc_import_batches"

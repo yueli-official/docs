@@ -10,17 +10,8 @@ export default defineNuxtConfig({
     "@platform/content",
   ],
   // Public raw SFC utilities are registered by the Tailwind source import in main.css.
-  modules: ["@nuxt/ui", "@yueli/ui"],
+  modules: ["@nuxt/ui", "@yueli/ui", "@yueli/discovery-nuxt"],
   css: ["~/assets/css/main.css"],
-  app: {
-    head: {
-      meta: [
-        { property: "og:site_name", content: siteBrand },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-    },
-  },
   buildDir: process.env.NUXT_BUILD_DIR || ".nuxt",
   devServer: { port: Number(process.env.NUXT_DEV_PORT || "3003") },
   runtimeConfig: {

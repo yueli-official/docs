@@ -8,11 +8,14 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
 	_ "github.com/lib/pq"
 
 	"platform/products/docs/api/internal/assetclient"
+	"platform/products/docs/api/internal/docsdiscovery"
 )
 
 // JWKS is the IdP key/issuer config for the Foundation auth verifier.
@@ -81,10 +84,29 @@ func SiteSlug(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "docs.siteSlug", "docs").String()
 }
 
+func SiteURL(ctx context.Context) string {
+	return strings.TrimRight(g.Cfg().MustGet(ctx, "docs.siteUrl", "http://localhost:3003").String(), "/")
+}
+
+func DefaultLocale(context.Context) string {
+	return "en"
+}
+
 func AssetSpace(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "docs.assetSpace", "default").String()
 }
 
 func CoverCategory(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "docs.coverCategory", "docs-collection-cover").String()
+}
+
+func DiscoveryConfig(ctx context.Context) docsdiscovery.Config {
+	return docsdiscovery.Config{
+		Origin:        SiteURL(ctx),
+		Name:          g.Cfg().MustGet(ctx, "docs.brand", "文档库").String(),
+		Description:   g.Cfg().MustGet(ctx, "docs.siteDescription", "指南、参考与教程").String(),
+		DefaultLocale: DefaultLocale(ctx),
+		TTL:           g.Cfg().MustGet(ctx, "docs.discovery.ttl", 5*time.Minute).Duration(),
+		Clock:         time.Now,
+	}
 }

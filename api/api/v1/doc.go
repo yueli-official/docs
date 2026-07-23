@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/yueli-official/foundation/go/discovery"
 )
 
 // DocView is the public JSON projection of a doc.
@@ -118,7 +119,8 @@ type GetPublicDocByPathReq struct {
 	Version    string `json:"version" in:"query"`
 }
 type GetPublicDocByPathRes struct {
-	Doc *DocView `json:"doc"`
+	Doc       *DocView                  `json:"doc"`
+	Discovery *discovery.PageProjection `json:"discovery,omitempty"`
 }
 
 type SearchDocsReq struct {

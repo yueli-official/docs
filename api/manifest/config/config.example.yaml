@@ -32,6 +32,9 @@ docs:
   brand: "文档库"
   domain: "docs.localhost"
   siteUrl: "http://localhost:3003"
+  siteDescription: "指南、参考与教程"
+  discovery:
+    ttl: "5m"
   assetSpace: "default"
   assetNamespace: "default"
   assetProfile: "docs-default"

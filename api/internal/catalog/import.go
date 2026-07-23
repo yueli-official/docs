@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"platform/products/docs/api/internal/assetclient"
+	"platform/products/docs/api/internal/dao"
 	"platform/products/docs/api/internal/docserr"
 	"platform/products/docs/api/internal/importkit"
 	"platform/products/docs/api/internal/model"
@@ -232,23 +233,32 @@ func (s *Service) RollbackImport(ctx context.Context, batchID, author string) (*
 	sort.SliceStable(items, func(i, j int) bool {
 		return pathDepth(items[i].Path) > pathDepth(items[j].Path)
 	})
+	mutations := make([]dao.ImportDocMutation, 0, len(items))
 	for _, item := range items {
 		switch item.Action {
 		case "create":
 			if item.TargetDocID != "" {
-				if err := s.dao.SoftDeleteDoc(ctx, item.TargetDocID); err != nil {
-					return nil, err
-				}
+				mutations = append(mutations, dao.ImportDocMutation{
+					Action: "delete", Doc: &model.Doc{ID: item.TargetDocID},
+					ItemID: item.ID, AfterDocJSON: "{}",
+				})
 			}
 		case "update", "archive":
 			var before model.Doc
 			if err := json.Unmarshal([]byte(item.BeforeDocJSON), &before); err != nil || before.ID == "" {
 				continue
 			}
-			if err := s.dao.UpdateDoc(ctx, &before); err != nil {
-				return nil, err
-			}
+			mutations = append(mutations, dao.ImportDocMutation{
+				Action: "update", Doc: &before, ItemID: item.ID,
+				AfterDocJSON:           item.BeforeDocJSON,
+				TransformedContentHash: sha256Hex([]byte(before.Content)),
+			})
 		}
+	}
+	if err := s.dao.ApplyImportDocs(
+		ctx, mutations, s.urlReconcileHook(batch.CollectionID, "docs import rolled back"),
+	); err != nil {
+		return nil, err
 	}
 	if err := s.dao.UpdateImportBatchStatus(ctx, batchID, "rolled_back", batch.SummaryJSON, ""); err != nil {
 		return nil, err
@@ -299,20 +309,34 @@ func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, b
 	sort.SliceStable(items, func(i, j int) bool {
 		return pathDepth(items[i].Path) < pathDepth(items[j].Path)
 	})
+	mutations := make([]dao.ImportDocMutation, 0, len(items))
 	for _, item := range items {
 		switch item.Action {
 		case "create", "update":
-			if err := s.applyImportDoc(ctx, item, refsByItem[item.ID], assetURLs, parentIDs); err != nil {
+			mutation, err := s.prepareImportMutation(item, refsByItem[item.ID], assetURLs, parentIDs)
+			if err != nil {
 				return err
 			}
+			mutations = append(mutations, mutation)
 		case "archive":
-			status := "archived"
-			if _, err := s.PatchDoc(ctx, item.TargetDocID, PatchDocInput{Status: &status}); err != nil {
+			doc, err := s.dao.GetDocByID(ctx, item.TargetDocID)
+			if err != nil {
 				return err
 			}
+			if doc == nil {
+				return docserr.NotFound(item.TargetDocID)
+			}
+			doc.Status = "archived"
+			mutations = append(mutations, dao.ImportDocMutation{
+				Action: "archive", Doc: doc, ItemID: item.ID,
+				AfterDocJSON:           mustJSON(doc),
+				TransformedContentHash: sha256Hex([]byte(doc.Content)),
+			})
 		}
 	}
-	return nil
+	return s.dao.ApplyImportDocs(
+		ctx, mutations, s.urlReconcileHook(batch.CollectionID, "docs import applied"),
+	)
 }
 
 func summarizePackage(pkg *importkit.Package) ImportSummary {
@@ -489,63 +513,47 @@ func (s *Service) existingParentIDs(ctx context.Context, collectionID, versionID
 	return out, nil
 }
 
-func (s *Service) applyImportDoc(ctx context.Context, item *model.ImportItem, refs []*model.ImportAssetRef, assetURLs map[string]string, parentIDs map[string]string) error {
+func (s *Service) prepareImportMutation(
+	item *model.ImportItem,
+	refs []*model.ImportAssetRef,
+	assetURLs map[string]string,
+	parentIDs map[string]string,
+) (dao.ImportDocMutation, error) {
 	var planned plannedImportDoc
 	if err := json.Unmarshal([]byte(item.AfterDocJSON), &planned); err != nil {
-		return err
+		return dao.ImportDocMutation{}, err
 	}
 	content := rewriteImageRefs(planned.Content, refs, assetURLs)
 	planned.Content = content
 	planned.ParentID = parentIDs[importDocKey(planned.Locale, planned.ParentPath)]
-
-	var (
-		doc *model.Doc
-		err error
-	)
+	doc := &model.Doc{}
 	if item.Action == "create" {
-		doc, err = s.CreateDoc(ctx, "import", CreateDocInput{
-			CollectionID:   planned.CollectionID,
-			VersionID:      planned.VersionID,
-			ParentID:       planned.ParentID,
-			Slug:           planned.Slug,
-			Title:          planned.Title,
-			Content:        planned.Content,
-			Locale:         planned.Locale,
-			TranslationKey: planned.TranslationKey,
-			SortOrder:      planned.SortOrder,
-		})
-		if err != nil {
-			return err
-		}
-		if planned.Excerpt != "" || planned.Status != "draft" {
-			doc, err = s.PatchDoc(ctx, doc.ID, PatchDocInput{
-				Excerpt: strPtr(planned.Excerpt),
-				Status:  strPtr(planned.Status),
-			})
-			if err != nil {
-				return err
-			}
-		}
+		doc.ID = uuid.NewString()
+		doc.AuthorSub = "import"
 	} else {
-		doc, err = s.PatchDoc(ctx, item.TargetDocID, PatchDocInput{
-			Title:          strPtr(planned.Title),
-			Slug:           strPtr(planned.Slug),
-			Content:        strPtr(planned.Content),
-			Excerpt:        strPtr(planned.Excerpt),
-			Status:         strPtr(planned.Status),
-			Locale:         strPtr(planned.Locale),
-			VersionID:      strPtr(planned.VersionID),
-			TranslationKey: strPtr(planned.TranslationKey),
-			SortOrder:      intPtr(planned.SortOrder),
-			ParentID:       strPtr(planned.ParentID),
-		})
-		if err != nil {
-			return err
+		if err := json.Unmarshal([]byte(item.BeforeDocJSON), doc); err != nil {
+			return dao.ImportDocMutation{}, err
 		}
+		doc.ID = item.TargetDocID
 	}
+	doc.CollectionID = planned.CollectionID
+	doc.VersionID = planned.VersionID
+	doc.ParentID = planned.ParentID
+	doc.Slug = planned.Slug
+	doc.Title = planned.Title
+	doc.Content = planned.Content
+	doc.Excerpt = planned.Excerpt
+	doc.Status = planned.Status
+	doc.Locale = planned.Locale
+	doc.TranslationKey = planned.TranslationKey
+	doc.SortOrder = planned.SortOrder
 	parentIDs[importDocKey(doc.Locale, item.Path)] = doc.ID
 	after := mustJSON(doc)
-	return s.dao.UpdateImportItemResult(ctx, item.ID, doc.ID, after, sha256Hex([]byte(planned.Content)))
+	return dao.ImportDocMutation{
+		Action: item.Action, Doc: doc, ItemID: item.ID,
+		AfterDocJSON:           after,
+		TransformedContentHash: sha256Hex([]byte(planned.Content)),
+	}, nil
 }
 
 func rewriteImageRefs(content string, refs []*model.ImportAssetRef, assetURLs map[string]string) string {

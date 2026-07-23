@@ -16,6 +16,8 @@ import (
 	"platform/products/docs/api/internal/catalog"
 	"platform/products/docs/api/internal/dao"
 	"platform/products/docs/api/internal/docsauthz"
+	"platform/products/docs/api/internal/docsdiscovery"
+	"platform/products/docs/api/internal/docsurls"
 	"platform/products/docs/api/internal/server"
 )
 
@@ -28,8 +30,51 @@ func main() {
 	defer observability.ShutdownWithTimeout(shutdown)
 
 	// ── Catalog logic (DB access) ─────────────────────────────────────────────
-	cat := catalog.New(dao.NewPG(g.DB())).
+	store := dao.NewPG(g.DB())
+	discoveryModule, discoveryCache, err := docsdiscovery.New(store, appconfig.DiscoveryConfig(ctx))
+	if err != nil {
+		panic(err)
+	}
+	cat := catalog.New(store).
 		WithAssets(appconfig.BuildAssetClient(ctx), appconfig.CoverCategory(ctx))
+	if openapiexport.Requested() {
+		urlLifecycle, err := docsurls.NewMemory(appconfig.SiteURL(ctx), appconfig.DefaultLocale(ctx))
+		if err != nil {
+			panic(err)
+		}
+		cat.WithURLLifecycle(urlLifecycle)
+		definition, err := authorization.Compile(docsauthz.Definition())
+		if err != nil {
+			panic(err)
+		}
+		authz, err := authorization.NewMemory(definition, authorization.MemoryOptions{
+			RootScopeID:       docsauthz.RootScopeID,
+			ProtectedSubjects: []authorization.SubjectRef{{Kind: authorization.SubjectUser, ID: "openapi-export-admin"}},
+			Constraints:       docsauthz.ConstraintEvaluators(),
+			Predicates:        docsauthz.PredicateEvaluators(),
+		})
+		if err != nil {
+			panic(err)
+		}
+		jw := appconfig.LoadJWKS(ctx)
+		verifier, err := authsetup.NewRemoteVerifier(authsetup.RemoteVerifierConfig{
+			JWKSURL: jw.URL, Issuer: jw.Issuer, Audience: jw.Audience,
+			AllowLoopbackHTTP: jw.AllowLoopbackHTTP,
+		})
+		if err != nil {
+			panic(err)
+		}
+		s := g.Server()
+		server.Configure(s, server.Deps{
+			Verifier: verifier, Catalog: cat, Authorization: docsauthz.New(authz),
+			Discovery: discoveryModule, DiscoveryCache: discoveryCache,
+			URLResolver: urlLifecycle.Resolver(),
+		})
+		if _, err := openapiexport.ExportIfRequested(s); err != nil {
+			panic(err)
+		}
+		return
+	}
 
 	// ── Instance-local authorization ─────────────────────────────────────────
 	authDB, err := appconfig.OpenAuthorizationDB(ctx)
@@ -68,6 +113,20 @@ func main() {
 			panic(err)
 		}
 	}
+	urlLifecycle, err := docsurls.NewPostgres(
+		ctx,
+		authDB,
+		"docs:"+appconfig.SiteSlug(ctx),
+		appconfig.SiteURL(ctx),
+		appconfig.DefaultLocale(ctx),
+	)
+	if err != nil {
+		panic(err)
+	}
+	if err := urlLifecycle.ReconcileAll(ctx, authDB); err != nil {
+		panic(err)
+	}
+	cat.WithURLLifecycle(urlLifecycle)
 
 	// ── JWT verifier (IdP JWKS, lazy) ────────────────────────────────────────
 	jw := appconfig.LoadJWKS(ctx)
@@ -82,6 +141,8 @@ func main() {
 	s := g.Server()
 	server.Configure(s, server.Deps{
 		Verifier: verifier, Catalog: cat, Authorization: docsauthz.NewWithDB(authz, authDB),
+		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
+		URLResolver: urlLifecycle.Resolver(),
 	})
 	if handled, err := openapiexport.ExportIfRequested(s); handled {
 		if err != nil {

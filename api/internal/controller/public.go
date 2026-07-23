@@ -3,16 +3,26 @@ package controller
 import (
 	"context"
 
+	"github.com/yueli-official/foundation/go/discovery"
+
 	v1 "platform/products/docs/api/api/v1"
 	"platform/products/docs/api/internal/catalog"
+	"platform/products/docs/api/internal/docsdiscovery"
 	"platform/products/docs/api/internal/model"
 )
 
 // PublicCollections handles the public collection browse endpoints (no mandatory auth).
-type PublicCollections struct{ svc *catalog.Service }
+type PublicCollections struct {
+	svc       *catalog.Service
+	discovery *discovery.Module
+}
 
-func NewPublicCollections(svc *catalog.Service) *PublicCollections {
-	return &PublicCollections{svc: svc}
+func NewPublicCollections(svc *catalog.Service, modules ...*discovery.Module) *PublicCollections {
+	controller := &PublicCollections{svc: svc}
+	if len(modules) > 0 {
+		controller.discovery = modules[0]
+	}
+	return controller
 }
 
 func (c *PublicCollections) ListCollections(ctx context.Context, _ *v1.ListCollectionsReq) (*v1.ListCollectionsRes, error) {
@@ -55,7 +65,23 @@ func (c *PublicCollections) GetPublicDocByPath(ctx context.Context, req *v1.GetP
 	if err != nil {
 		return nil, err
 	}
-	return &v1.GetPublicDocByPathRes{Doc: docView(d)}, nil
+	response := &v1.GetPublicDocByPathRes{Doc: docView(d)}
+	if c.discovery != nil {
+		collection, err := c.svc.GetCollectionBySlug(ctx, req.Collection)
+		if err != nil {
+			return nil, err
+		}
+		version, err := c.svc.ResolveVersion(ctx, collection.ID, req.Version, true)
+		if err != nil {
+			return nil, err
+		}
+		projection, err := docsdiscovery.ProjectDoc(c.discovery, d, collection, version, req.Path, "en")
+		if err != nil {
+			return nil, err
+		}
+		response.Discovery = &projection
+	}
+	return response, nil
 }
 
 func (c *PublicCollections) SearchDocs(ctx context.Context, req *v1.SearchDocsReq) (*v1.SearchDocsRes, error) {

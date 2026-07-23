@@ -94,7 +94,12 @@ func (s *Service) CreateDoc(ctx context.Context, authorSub string, in CreateDocI
 		SortOrder:      in.SortOrder,
 		AuthorSub:      authorSub,
 	}
-	if err := s.dao.InsertDoc(ctx, m); err != nil {
+	if err := s.validateDocParent(ctx, m, m.ParentID); err != nil {
+		return nil, err
+	}
+	if err := s.dao.InsertDocWithHook(
+		ctx, m, s.urlReconcileHook(m.CollectionID, "docs document created"),
+	); err != nil {
 		return nil, docserr.SlugTaken(slug)
 	}
 	return s.dao.GetDocByID(ctx, m.ID)
@@ -193,7 +198,12 @@ func (s *Service) UpdateDoc(ctx context.Context, id, title, content, excerpt, st
 	d.Status = status
 	d.SortOrder = sortOrder
 	d.ParentID = parentID
-	if err := s.dao.UpdateDoc(ctx, d); err != nil {
+	if err := s.validateDocParent(ctx, d, d.ParentID); err != nil {
+		return nil, err
+	}
+	if err := s.dao.UpdateDocWithHook(
+		ctx, d, s.urlReconcileHook(d.CollectionID, "docs document updated"),
+	); err != nil {
 		return nil, err
 	}
 	return s.dao.GetDocByID(ctx, id)
@@ -261,7 +271,14 @@ func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*m
 		}
 		d.ParentID = parentID
 	}
-	if err := s.dao.UpdateDoc(ctx, d); err != nil {
+	if (in.VersionID != nil || in.Locale != nil) && d.ParentID != "" {
+		if err := s.validateDocParent(ctx, d, d.ParentID); err != nil {
+			return nil, err
+		}
+	}
+	if err := s.dao.UpdateDocWithHook(
+		ctx, d, s.urlReconcileHook(d.CollectionID, "docs document patched"),
+	); err != nil {
 		if slugStr != "" {
 			return nil, docserr.SlugTaken(slugStr)
 		}
@@ -313,7 +330,16 @@ func (s *Service) ArchiveDoc(ctx context.Context, id string) (*model.Doc, error)
 
 // DeleteDoc soft-deletes the doc with the given id.
 func (s *Service) DeleteDoc(ctx context.Context, id string) error {
-	return s.dao.SoftDeleteDoc(ctx, id)
+	doc, err := s.dao.GetDocByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if doc == nil {
+		return docserr.NotFound(id)
+	}
+	return s.dao.SoftDeleteDocWithHook(
+		ctx, id, s.urlReconcileHook(doc.CollectionID, "docs document subtree deleted"),
+	)
 }
 
 // BuildTree assembles a flat doc list (already ordered) into a parent_id

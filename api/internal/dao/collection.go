@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 
@@ -25,6 +26,33 @@ func (p *PG) InsertCollection(ctx context.Context, m *model.Collection) error {
 		"cover_asset_id": m.CoverAssetID, "cover_url": m.CoverURL, "icon": m.Icon, "sort_order": m.SortOrder, "author_sub": m.AuthorSub,
 	}).Insert()
 	return err
+}
+
+func (p *PG) InsertCollectionWithDefaultVersion(
+	ctx context.Context,
+	collection *model.Collection,
+	version *model.CollectionVersion,
+	hook TransactionHook,
+) error {
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if _, err := tx.Model(tCollections).Ctx(ctx).Data(g.Map{
+			"id": collection.ID, "slug": collection.Slug, "title": collection.Title,
+			"description": collection.Description, "cover_asset_id": collection.CoverAssetID,
+			"cover_url": collection.CoverURL, "icon": collection.Icon,
+			"sort_order": collection.SortOrder, "author_sub": collection.AuthorSub,
+		}).Insert(); err != nil {
+			return err
+		}
+		if _, err := tx.Model(tCollectionVersions).Ctx(ctx).Data(g.Map{
+			"id": version.ID, "collection_id": version.CollectionID, "key": version.Key,
+			"label": version.Label, "status": nz(version.Status, "draft"),
+			"is_default": version.IsDefault, "sort_order": version.SortOrder,
+			"source_version_id": nilIfEmpty(version.SourceVersionID),
+		}).Insert(); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }
 
 func (p *PG) GetCollectionByID(ctx context.Context, id string) (*model.Collection, error) {
@@ -61,15 +89,31 @@ func (p *PG) ListCollections(ctx context.Context) ([]*model.Collection, error) {
 }
 
 func (p *PG) UpdateCollection(ctx context.Context, m *model.Collection) error {
-	_, err := p.db.Model(tCollections).Ctx(ctx).Where("id", m.ID).Data(g.Map{
-		"title": m.Title, "slug": m.Slug, "description": m.Description,
-		"cover_asset_id": m.CoverAssetID, "cover_url": m.CoverURL,
-		"icon": m.Icon, "sort_order": m.SortOrder, "updated_at": gtime.Now(),
-	}).Update()
-	return err
+	return p.UpdateCollectionWithHook(ctx, m, nil)
+}
+
+func (p *PG) UpdateCollectionWithHook(ctx context.Context, m *model.Collection, hook TransactionHook) error {
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if _, err := tx.Model(tCollections).Ctx(ctx).Where("id", m.ID).Data(g.Map{
+			"title": m.Title, "slug": m.Slug, "description": m.Description,
+			"cover_asset_id": m.CoverAssetID, "cover_url": m.CoverURL,
+			"icon": m.Icon, "sort_order": m.SortOrder, "updated_at": gtime.Now(),
+		}).Update(); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }
 
 func (p *PG) DeleteCollection(ctx context.Context, id string) error {
-	_, err := p.db.Model(tCollections).Ctx(ctx).Where("id", id).Delete()
-	return err
+	return p.DeleteCollectionWithHook(ctx, id, nil)
+}
+
+func (p *PG) DeleteCollectionWithHook(ctx context.Context, id string, hook TransactionHook) error {
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if _, err := tx.Model(tCollections).Ctx(ctx).Where("id", id).Delete(); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }

@@ -6,6 +6,8 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
+	"github.com/yueli-official/foundation/go/discovery"
+	"github.com/yueli-official/foundation/go/urllifecycle"
 	"platform/gokit/authhttp"
 	"platform/gokit/ghttpx"
 	"platform/gokit/healthcheck"
@@ -17,9 +19,12 @@ import (
 // Deps are the wiring dependencies. Catalog may be nil for a minimal
 // health-only server.
 type Deps struct {
-	Verifier      *foundationauth.Verifier
-	Catalog       *catalog.Service
-	Authorization *docsauthz.Service
+	Verifier       *foundationauth.Verifier
+	Catalog        *catalog.Service
+	Authorization  *docsauthz.Service
+	Discovery      *discovery.Module
+	DiscoveryCache *discovery.Cache
+	URLResolver    urllifecycle.Resolver
 }
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
@@ -53,7 +58,13 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Public browse: enveloped, no mandatory auth.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
 		grp.Middleware(apiMiddleware)
-		grp.Bind(controller.NewPublicCollections(d.Catalog))
+		grp.Bind(controller.NewPublicCollections(d.Catalog, d.Discovery))
+		if d.DiscoveryCache != nil {
+			grp.Bind(controller.NewPublicDiscovery(d.DiscoveryCache))
+		}
+		if d.URLResolver != nil {
+			grp.Bind(controller.NewPublicURLLifecycle(d.URLResolver))
+		}
 	})
 
 	// Admin API: envelope first, then mandatory JWT.

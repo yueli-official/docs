@@ -36,9 +36,6 @@ func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, 
 		Icon:        icon,
 		AuthorSub:   authorSub,
 	}
-	if err := s.dao.InsertCollection(ctx, m); err != nil {
-		return nil, err
-	}
 	version := &model.CollectionVersion{
 		ID:           uuid.NewString(),
 		CollectionID: m.ID,
@@ -47,7 +44,9 @@ func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, 
 		Status:       "published",
 		IsDefault:    true,
 	}
-	if err := s.dao.InsertCollectionVersion(ctx, version); err != nil {
+	if err := s.dao.InsertCollectionWithDefaultVersion(
+		ctx, m, version, s.urlReconcileHook(m.ID, "docs collection created"),
+	); err != nil {
 		return nil, err
 	}
 	return s.dao.GetCollectionByID(ctx, m.ID)
@@ -102,7 +101,9 @@ func (s *Service) UpdateCollectionWithBearer(ctx context.Context, id, bearer, ti
 	if oldCoverURL != cover {
 		c.CoverAssetID = ""
 	}
-	if err := s.dao.UpdateCollection(ctx, c); err != nil {
+	if err := s.dao.UpdateCollectionWithHook(
+		ctx, c, s.urlReconcileHook(c.ID, "docs collection updated"),
+	); err != nil {
 		return nil, err
 	}
 	if oldAssetID != "" && oldCoverURL != cover && s.asset != nil && bearer != "" {
@@ -185,5 +186,7 @@ func (s *Service) DeleteCollectionWithBearer(ctx context.Context, id, bearer str
 			AssetID: c.CoverAssetID, RefType: "collection-cover", RefID: id,
 		})
 	}
-	return s.dao.DeleteCollection(ctx, id)
+	return s.dao.DeleteCollectionWithHook(
+		ctx, id, s.urlReconcileHook(id, "docs collection deleted"),
+	)
 }
