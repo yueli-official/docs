@@ -12,7 +12,6 @@ import (
 )
 
 const tDocs = "docs"
-const tDocSearchEvents = "doc_search_events"
 
 // InsertDoc inserts a new doc. parent_id is left SQL NULL when m.ParentID is empty.
 func (p *PG) InsertDoc(ctx context.Context, m *model.Doc) error {
@@ -82,151 +81,16 @@ func (p *PG) ListDocsByCollectionStatus(ctx context.Context, collectionID, versi
 	return out, err
 }
 
-// SearchPublishedDocs returns lightweight published doc matches for public search.
-func (p *PG) SearchPublishedDocs(ctx context.Context, collectionID, versionID, locale, query string, limit int) (*model.SearchResult, error) {
-	q := strings.TrimSpace(query)
-	if q == "" {
-		return &model.SearchResult{Items: []*model.Doc{}, CollectionFacets: []*model.SearchCollectionFacet{}}, nil
-	}
-	if limit <= 0 || limit > 100 {
-		limit = 50
-	}
-	result, err := p.searchPublishedDocsFTS(ctx, collectionID, versionID, locale, q, limit)
-	if err == nil {
-		return result, nil
-	}
-	if !isSearchConfigError(err) {
-		return nil, err
-	}
-	return p.searchPublishedDocsLike(ctx, collectionID, versionID, locale, q, limit)
-}
-
-func (p *PG) searchPublishedDocsFTS(ctx context.Context, collectionID, versionID, locale, query string, limit int) (*model.SearchResult, error) {
-	conds := []string{"v.status = ?", "d.locale = ?", "d.status = ?", "d.deleted_at IS NULL", "d.search_vector @@ tsq"}
-	args := []any{query, "published", locale, "published"}
-	if versionID != "" {
-		conds = append(conds, "d.version_id = ?")
-		args = append(args, versionID)
-	}
-	if collectionID != "" {
-		conds = append(conds, "d.collection_id = ?")
-		args = append(args, collectionID)
-	}
-	from := "docs d JOIN collection_versions v ON v.id = d.version_id, websearch_to_tsquery('chinese_zh', ?) tsq"
-	where := strings.Join(conds, " AND ")
-
-	total, err := p.db.GetValue(ctx, "SELECT COUNT(*) FROM "+from+" WHERE "+where, args...)
-	if err != nil {
-		return nil, err
+func (p *PG) PublishedDocsByIDs(ctx context.Context, ids []string) ([]*model.Doc, error) {
+	if len(ids) == 0 {
+		return []*model.Doc{}, nil
 	}
 	var out []*model.Doc
-	rowsSQL := "SELECT d.* FROM " + from + " WHERE " + where +
-		" ORDER BY ts_rank(d.search_vector, tsq) DESC, d.updated_at DESC LIMIT ?"
-	err = p.db.Ctx(ctx).Raw(rowsSQL, append(args, limit)...).Scan(&out)
-	if out == nil {
-		out = []*model.Doc{}
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	var facets []*model.SearchCollectionFacet
-	facetSQL := "SELECT c.id, c.slug, c.title, COUNT(*) AS count " +
-		"FROM docs d JOIN collections c ON c.id = d.collection_id JOIN collection_versions v ON v.id = d.version_id, websearch_to_tsquery('chinese_zh', ?) tsq " +
-		"WHERE " + where + " GROUP BY c.id, c.slug, c.title ORDER BY count DESC, c.title ASC"
-	if err := p.db.Ctx(ctx).Raw(facetSQL, args...).Scan(&facets); err != nil {
-		return nil, err
-	}
-	if facets == nil {
-		facets = []*model.SearchCollectionFacet{}
-	}
-
-	return &model.SearchResult{
-		Items:            out,
-		Total:            total.Int(),
-		CollectionFacets: facets,
-	}, nil
-}
-
-func (p *PG) searchPublishedDocsLike(ctx context.Context, collectionID, versionID, locale, query string, limit int) (*model.SearchResult, error) {
-	pattern := likePattern(query)
-	conds := []string{
-		"v.status = ?",
-		"d.locale = ?",
-		"d.status = ?",
-		"d.deleted_at IS NULL",
-		"(d.title ILIKE ? ESCAPE '\\' OR d.excerpt ILIKE ? ESCAPE '\\' OR d.content ILIKE ? ESCAPE '\\')",
-	}
-	args := []any{"published", locale, "published", pattern, pattern, pattern}
-	if versionID != "" {
-		conds = append(conds, "d.version_id = ?")
-		args = append(args, versionID)
-	}
-	if collectionID != "" {
-		conds = append(conds, "d.collection_id = ?")
-		args = append(args, collectionID)
-	}
-	where := strings.Join(conds, " AND ")
-
-	total, err := p.db.GetValue(ctx, "SELECT COUNT(*) FROM docs d JOIN collection_versions v ON v.id = d.version_id WHERE "+where, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	var out []*model.Doc
-	rowsSQL := "SELECT d.* FROM docs d JOIN collection_versions v ON v.id = d.version_id WHERE " + where +
-		" ORDER BY CASE WHEN d.title ILIKE ? ESCAPE '\\' THEN 0 WHEN d.excerpt ILIKE ? ESCAPE '\\' THEN 1 ELSE 2 END, d.updated_at DESC LIMIT ?"
-	rowArgs := append(append([]any{}, args...), pattern, pattern, limit)
-	err = p.db.Ctx(ctx).Raw(rowsSQL, rowArgs...).Scan(&out)
-	if out == nil {
-		out = []*model.Doc{}
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	var facets []*model.SearchCollectionFacet
-	facetSQL := "SELECT c.id, c.slug, c.title, COUNT(*) AS count " +
-		"FROM docs d JOIN collections c ON c.id = d.collection_id JOIN collection_versions v ON v.id = d.version_id " +
-		"WHERE " + where + " GROUP BY c.id, c.slug, c.title ORDER BY count DESC, c.title ASC"
-	if err := p.db.Ctx(ctx).Raw(facetSQL, args...).Scan(&facets); err != nil {
-		return nil, err
-	}
-	if facets == nil {
-		facets = []*model.SearchCollectionFacet{}
-	}
-
-	return &model.SearchResult{
-		Items:            out,
-		Total:            total.Int(),
-		CollectionFacets: facets,
-	}, nil
-}
-
-func isSearchConfigError(err error) bool {
-	if err == nil {
-		return false
-	}
-	msg := err.Error()
-	return strings.Contains(msg, "text search configuration") ||
-		strings.Contains(msg, "search_vector")
-}
-
-func likePattern(q string) string {
-	q = strings.ReplaceAll(q, `\`, `\\`)
-	q = strings.ReplaceAll(q, `%`, `\%`)
-	q = strings.ReplaceAll(q, `_`, `\_`)
-	return "%" + q + "%"
-}
-
-func (p *PG) InsertSearchEvent(ctx context.Context, query, collectionSlug, locale string, resultCount int) error {
-	_, err := p.db.Model(tDocSearchEvents).Ctx(ctx).Data(g.Map{
-		"query":           query,
-		"collection_slug": collectionSlug,
-		"locale":          locale,
-		"result_count":    resultCount,
-	}).Insert()
-	return err
+	err := p.db.Model(tDocs+" d").Ctx(ctx).
+		InnerJoin("collection_versions v", "v.id=d.version_id").
+		WhereIn("d.id", ids).Where("d.status", "published").Where("v.status", "published").
+		Where("d.deleted_at IS NULL").Fields("d.*").Scan(&out)
+	return out, err
 }
 
 // GetDocByID returns the doc with the given id (excluding soft-deleted rows).

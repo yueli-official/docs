@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/yueli-official/foundation/go/abuse"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
+	"platform/products/docs/api/internal/docsabuse"
 )
 
 type Runtime interface {
@@ -28,6 +30,7 @@ type Runtime interface {
 type Service struct {
 	runtime Runtime
 	db      *sql.DB
+	abuse   docsabuse.Actions
 }
 
 func New(runtime Runtime) *Service {
@@ -36,6 +39,22 @@ func New(runtime Runtime) *Service {
 
 func NewWithDB(runtime Runtime, db *sql.DB) *Service {
 	return &Service{runtime: runtime, db: db}
+}
+
+func (service *Service) SetAbuse(module abuse.Module) error {
+	actions, err := docsabuse.Bind(module)
+	if err != nil {
+		return err
+	}
+	service.abuse = actions
+	return nil
+}
+
+func (service *Service) AuthorApplicationAction() abuse.Action {
+	if service == nil {
+		return nil
+	}
+	return service.abuse.AuthorApplication
 }
 
 func (service *Service) Runtime() Runtime {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from "@platform/ui/feedback";
+
 definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "权限与申请 · 控制台" });
 
@@ -25,7 +27,7 @@ interface PolicySnapshot {
 }
 
 const { call } = useApi();
-const toast = useToast();
+const toast = createPlatformNotifier(useToast());
 const busy = ref(false);
 const editableCapabilities = [
   ["docs.document.create", "新建文档"],
@@ -70,7 +72,9 @@ watch(
 watch(
   policiesData,
   async () => {
-    const active = policiesData.value?.items.find((policy) => policy.state === "active");
+    const active = policiesData.value?.items.find(
+      (policy) => policy.state === "active",
+    );
     if (!active) return;
     const snapshot = await call<PolicySnapshot>(
       `/api/v1/authorization/manage/policies/${active.number}`,
@@ -90,7 +94,9 @@ function toggleCapability(capability: string, enabled: boolean) {
 }
 
 async function saveAuthorCapabilities() {
-  const active = policiesData.value?.items.find((policy) => policy.state === "active");
+  const active = policiesData.value?.items.find(
+    (policy) => policy.state === "active",
+  );
   if (!active) return;
   busy.value = true;
   try {
@@ -113,6 +119,7 @@ async function saveAuthorCapabilities() {
       { method: "POST", body: { expectedActiveRevision: active.number } },
     );
     await Promise.all([refreshRoles(), refreshPolicies()]);
+    // feedback-contract: policy activation changes authorization across later requests
     toast.add({ title: "作者能力已更新", color: "success" });
   } catch (error) {
     toast.add({
@@ -125,7 +132,10 @@ async function saveAuthorCapabilities() {
   }
 }
 
-async function review(application: Application, decision: "approve" | "reject") {
+async function review(
+  application: Application,
+  decision: "approve" | "reject",
+) {
   busy.value = true;
   try {
     await call(
@@ -133,14 +143,20 @@ async function review(application: Application, decision: "approve" | "reject") 
       { method: "POST", body: { decision } },
     );
     await refreshApplications();
-    toast.add({ title: decision === "approve" ? "已批准" : "已拒绝", color: "success" });
+    // feedback-contract: review changes another user's authorization outside this list
+    toast.add({
+      title: decision === "approve" ? "已批准" : "已拒绝",
+      color: "success",
+    });
   } finally {
     busy.value = false;
   }
 }
 
 async function setAutomaticAuthor(enabled: boolean) {
-  const active = policiesData.value?.items.find((policy) => policy.state === "active");
+  const active = policiesData.value?.items.find(
+    (policy) => policy.state === "active",
+  );
   if (!active) return;
   busy.value = true;
   try {
@@ -158,7 +174,11 @@ async function setAutomaticAuthor(enabled: boolean) {
     );
     autoAuthorEnabled.value = enabled;
     await refreshPolicies();
-    toast.add({ title: enabled ? "已开启注册自动作者" : "已关闭注册自动作者", color: "success" });
+    // feedback-contract: automatic grants apply to future registration events
+    toast.add({
+      title: enabled ? "已开启注册自动作者" : "已关闭注册自动作者",
+      color: "success",
+    });
   } catch (error) {
     toast.add({
       title: "自动授权设置失败",
@@ -184,7 +204,9 @@ async function setAutomaticAuthor(enabled: boolean) {
       <template #header>
         <div>
           <h2 class="font-semibold">作者能力</h2>
-          <p class="text-sm text-muted">所有者约束不可关闭，作者始终只能操作自己的文档。</p>
+          <p class="text-sm text-muted">
+            所有者约束不可关闭，作者始终只能操作自己的文档。
+          </p>
         </div>
       </template>
       <div class="grid gap-3 sm:grid-cols-2">
@@ -197,7 +219,11 @@ async function setAutomaticAuthor(enabled: boolean) {
         />
       </div>
       <template #footer>
-        <UButton label="发布新策略" :loading="busy" @click="saveAuthorCapabilities" />
+        <UButton
+          label="发布新策略"
+          :loading="busy"
+          @click="saveAuthorCapabilities"
+        />
       </template>
     </UCard>
 
@@ -205,7 +231,9 @@ async function setAutomaticAuthor(enabled: boolean) {
       <template #header>
         <div>
           <h2 class="font-semibold">注册自动授权</h2>
-          <p class="text-sm text-muted">仅影响以后收到的注册事件；关闭不会撤销已有作者授权。</p>
+          <p class="text-sm text-muted">
+            仅影响以后收到的注册事件；关闭不会撤销已有作者授权。
+          </p>
         </div>
       </template>
       <USwitch
@@ -220,7 +248,10 @@ async function setAutomaticAuthor(enabled: boolean) {
       <template #header>
         <h2 class="font-semibold">待审批申请</h2>
       </template>
-      <div v-if="applicationsData?.items.length" class="divide-y divide-default">
+      <div
+        v-if="applicationsData?.items.length"
+        class="divide-y divide-default"
+      >
         <div
           v-for="application in applicationsData.items"
           :key="application.id"
@@ -228,11 +259,25 @@ async function setAutomaticAuthor(enabled: boolean) {
         >
           <div>
             <p class="font-medium">{{ application.subject }}</p>
-            <p class="text-sm text-muted">{{ application.reason || "未填写申请理由" }}</p>
+            <p class="text-sm text-muted">
+              {{ application.reason || "未填写申请理由" }}
+            </p>
           </div>
           <div class="flex gap-2">
-            <UButton size="sm" label="批准" :loading="busy" @click="review(application, 'approve')" />
-            <UButton size="sm" label="拒绝" color="neutral" variant="soft" :loading="busy" @click="review(application, 'reject')" />
+            <UButton
+              size="sm"
+              label="批准"
+              :loading="busy"
+              @click="review(application, 'approve')"
+            />
+            <UButton
+              size="sm"
+              label="拒绝"
+              color="neutral"
+              variant="soft"
+              :loading="busy"
+              @click="review(application, 'reject')"
+            />
           </div>
         </div>
       </div>

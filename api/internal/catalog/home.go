@@ -2,11 +2,17 @@ package catalog
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"strings"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/google/uuid"
+	"github.com/yueli-official/foundation/go/audit"
 
+	"platform/products/docs/api/internal/dao"
+	"platform/products/docs/api/internal/docsaudit"
 	"platform/products/docs/api/internal/model"
 )
 
@@ -33,7 +39,17 @@ func (s *Service) UpdateHomeConfig(ctx context.Context, cfg *model.HomeConfig) (
 	if clean.HomeEyebrow == "" || clean.HomeTitle == "" || clean.HomeSubtitle == "" || clean.SiteTitle == "" || clean.SiteDescription == "" || clean.FooterTagline == "" || clean.FooterCopyright == "" {
 		return nil, gerror.New("docs homepage, site, and footer content must be configured")
 	}
-	if err := s.dao.UpsertHomeConfig(ctx, clean); err != nil {
+	var auditHook dao.TransactionHook
+	if s.audit != nil {
+		raw, _ := json.Marshal(clean)
+		sum := sha256.Sum256(raw)
+		auditHook = s.audit.Hook(
+			ctx, docsaudit.ActionSiteProfilePublished, uuid.NewString(),
+			audit.Target{Type: "docs.site_profile", ID: "default"},
+			docsaudit.Evidence{Digest: hex.EncodeToString(sum[:])}, "",
+		)
+	}
+	if err := s.dao.UpsertHomeConfigWithHook(ctx, clean, auditHook); err != nil {
 		return nil, err
 	}
 	return s.dao.GetHomeConfig(ctx)

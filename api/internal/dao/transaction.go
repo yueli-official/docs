@@ -11,6 +11,19 @@ import (
 // caller-owned product transaction.
 type TransactionHook func(context.Context, *sql.Tx) error
 
+func ComposeTransactionHooks(hooks ...TransactionHook) TransactionHook {
+	return func(ctx context.Context, tx *sql.Tx) error {
+		for _, hook := range hooks {
+			if hook != nil {
+				if err := hook(ctx, tx); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+}
+
 func runTransactionHook(ctx context.Context, tx gdb.TX, hook TransactionHook) error {
 	if hook == nil {
 		return nil

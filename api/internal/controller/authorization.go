@@ -2,11 +2,17 @@ package controller
 
 import (
 	"context"
+	"strings"
 
+	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/google/uuid"
+	"github.com/yueli-official/foundation/go/abuse"
 	"github.com/yueli-official/foundation/go/authorization"
 
 	v1 "platform/products/docs/api/api/v1"
+	"platform/products/docs/api/internal/docsabuse"
 	"platform/products/docs/api/internal/docsauthz"
+	"platform/products/docs/api/internal/docserr"
 )
 
 type Authorization struct{}
@@ -36,6 +42,50 @@ func (controller *Authorization) ApplyForRole(
 	req *v1.ApplyForRoleReq,
 ) (*v1.ApplyForRoleRes, error) {
 	service := authorizationService(ctx)
+	attemptID := strings.TrimSpace(req.AbuseAttemptID)
+	if attemptID == "" {
+		attemptID = strings.TrimSpace(idempotencyKeyOf(ctx))
+	}
+	if attemptID == "" {
+		attemptID = uuid.NewString()
+	}
+	if action := service.AuthorApplicationAction(); action != nil {
+		request := ghttp.RequestFromCtx(ctx)
+		if request == nil {
+			return nil, docserr.AbuseUnavailable()
+		}
+		network, err := docsabuse.NetworkPrefix(request.GetClientIp())
+		if err != nil {
+			return nil, docserr.AbuseUnavailable()
+		}
+		input := abuse.Input{
+			ID: abuse.AttemptID(attemptID),
+			Signals: abuse.Signals{
+				Network: network,
+				Actor:   service.Subject(ctx).ID,
+			},
+		}
+		if proof := strings.TrimSpace(req.ChallengeProof); proof != "" {
+			input.Proof = &abuse.Proof{Kind: "turnstile", Token: proof}
+		}
+		admission, err := action.Admit(ctx, input)
+		if err != nil {
+			if abuse.IsKind(err, abuse.ErrorConflict) {
+				return nil, docserr.AbuseAttemptReplayed()
+			}
+			return nil, docserr.AbuseUnavailable()
+		}
+		switch admission.Disposition {
+		case abuse.DispositionAllow:
+			if admission.Replay {
+				return nil, docserr.AbuseAttemptReplayed()
+			}
+		case abuse.DispositionChallenge:
+			return nil, docserr.ChallengeRequired(attemptID)
+		default:
+			return nil, docserr.RateLimited()
+		}
+	}
 	application, err := service.Runtime().Apply(ctx, authorization.ApplyCommand{
 		Actor: service.Subject(ctx), Role: authorization.RoleKey(req.Role),
 		ScopeID: docsauthz.RootScopeID, Reason: req.Reason,

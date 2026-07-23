@@ -2,10 +2,13 @@ package catalog
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/google/uuid"
 
+	"platform/products/docs/api/internal/dao"
+	"platform/products/docs/api/internal/docsaudit"
 	"platform/products/docs/api/internal/docserr"
 	"platform/products/docs/api/internal/model"
 )
@@ -164,14 +167,46 @@ func (s *Service) SearchPublishedDocs(ctx context.Context, collectionSlug, versi
 		}
 		versionID = version.ID
 	}
-	result, err := s.dao.SearchPublishedDocs(ctx, collectionID, versionID, locale, q, 50)
+	if s.search == nil {
+		return nil, errors.New("docs search module is not configured")
+	}
+	page, err := s.search.Search(ctx, q, collectionID, versionID, locale, 50)
 	if err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(q) != "" {
-		_ = s.dao.InsertSearchEvent(ctx, strings.TrimSpace(q), collectionSlug, locale, result.Total)
+	ids := make([]string, 0, len(page.Hits))
+	for _, hit := range page.Hits {
+		ids = append(ids, string(hit.Key.ID))
 	}
-	return result, nil
+	rows, err := s.dao.PublishedDocsByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	byID := make(map[string]*model.Doc, len(rows))
+	for _, row := range rows {
+		byID[row.ID] = row
+	}
+	items := make([]*model.Doc, 0, len(ids))
+	for _, id := range ids {
+		if row := byID[id]; row != nil {
+			items = append(items, row)
+		}
+	}
+	facets := []*model.SearchCollectionFacet{}
+	if len(page.Facets) > 0 {
+		for _, bucket := range page.Facets[0].Buckets {
+			collection, err := s.dao.GetCollectionByID(ctx, bucket.Value)
+			if err != nil {
+				return nil, err
+			}
+			if collection != nil {
+				facets = append(facets, &model.SearchCollectionFacet{
+					ID: collection.ID, Slug: collection.Slug, Title: collection.Title, Count: int(bucket.Count),
+				})
+			}
+		}
+	}
+	return &model.SearchResult{Items: items, Total: int(page.Total), CollectionFacets: facets}, nil
 }
 
 // ListDocs returns all non-deleted docs in the given collection + locale.
@@ -202,7 +237,10 @@ func (s *Service) UpdateDoc(ctx context.Context, id, title, content, excerpt, st
 		return nil, err
 	}
 	if err := s.dao.UpdateDocWithHook(
-		ctx, d, s.urlReconcileHook(d.CollectionID, "docs document updated"),
+		ctx, d, dao.ComposeTransactionHooks(
+			s.urlReconcileHook(d.CollectionID, "docs document updated"),
+			s.searchHook(d.ID),
+		),
 	); err != nil {
 		return nil, err
 	}
@@ -211,6 +249,15 @@ func (s *Service) UpdateDoc(ctx context.Context, id, title, content, excerpt, st
 
 // PatchDoc updates only the fields explicitly supplied by the caller.
 func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*model.Doc, error) {
+	return s.patchDoc(ctx, id, in, "")
+}
+
+func (s *Service) patchDoc(
+	ctx context.Context,
+	id string,
+	in PatchDocInput,
+	auditAction docsaudit.Action,
+) (*model.Doc, error) {
 	d, err := s.dao.GetDocByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -277,7 +324,7 @@ func (s *Service) PatchDoc(ctx context.Context, id string, in PatchDocInput) (*m
 		}
 	}
 	if err := s.dao.UpdateDocWithHook(
-		ctx, d, s.urlReconcileHook(d.CollectionID, "docs document patched"),
+		ctx, d, s.documentMutationHook(ctx, auditAction, d, "docs document patched"),
 	); err != nil {
 		if slugStr != "" {
 			return nil, docserr.SlugTaken(slugStr)
@@ -319,13 +366,13 @@ func (s *Service) validateDocParent(ctx context.Context, doc *model.Doc, parentI
 // PublishDoc marks a doc as visible to public readers.
 func (s *Service) PublishDoc(ctx context.Context, id string) (*model.Doc, error) {
 	status := "published"
-	return s.PatchDoc(ctx, id, PatchDocInput{Status: &status})
+	return s.patchDoc(ctx, id, PatchDocInput{Status: &status}, docsaudit.ActionDocumentPublished)
 }
 
 // ArchiveDoc removes a doc from public reader surfaces without deleting it.
 func (s *Service) ArchiveDoc(ctx context.Context, id string) (*model.Doc, error) {
 	status := "archived"
-	return s.PatchDoc(ctx, id, PatchDocInput{Status: &status})
+	return s.patchDoc(ctx, id, PatchDocInput{Status: &status}, docsaudit.ActionDocumentArchived)
 }
 
 // DeleteDoc soft-deletes the doc with the given id.
@@ -338,7 +385,7 @@ func (s *Service) DeleteDoc(ctx context.Context, id string) error {
 		return docserr.NotFound(id)
 	}
 	return s.dao.SoftDeleteDocWithHook(
-		ctx, id, s.urlReconcileHook(doc.CollectionID, "docs document subtree deleted"),
+		ctx, id, s.documentMutationHook(ctx, docsaudit.ActionDocumentDeleted, doc, "docs document subtree deleted"),
 	)
 }
 

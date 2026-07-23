@@ -110,10 +110,25 @@ func (p *PG) DeleteCollection(ctx context.Context, id string) error {
 }
 
 func (p *PG) DeleteCollectionWithHook(ctx context.Context, id string, hook TransactionHook) error {
+	return p.DeleteCollectionWithHooks(ctx, id, nil, hook)
+}
+
+// DeleteCollectionWithHooks runs beforeDelete while the collection's
+// cascade-owned rows still exist, then runs afterDelete after the collection
+// has been removed. Both hooks share the deletion transaction.
+func (p *PG) DeleteCollectionWithHooks(
+	ctx context.Context,
+	id string,
+	beforeDelete TransactionHook,
+	afterDelete TransactionHook,
+) error {
 	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if err := runTransactionHook(ctx, tx, beforeDelete); err != nil {
+			return err
+		}
 		if _, err := tx.Model(tCollections).Ctx(ctx).Where("id", id).Delete(); err != nil {
 			return err
 		}
-		return runTransactionHook(ctx, tx, hook)
+		return runTransactionHook(ctx, tx, afterDelete)
 	})
 }

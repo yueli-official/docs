@@ -13,6 +13,7 @@ import (
 
 	"platform/products/docs/api/internal/assetclient"
 	"platform/products/docs/api/internal/dao"
+	"platform/products/docs/api/internal/docsaudit"
 	"platform/products/docs/api/internal/docserr"
 	"platform/products/docs/api/internal/importkit"
 	"platform/products/docs/api/internal/model"
@@ -204,7 +205,7 @@ func (s *Service) ConfirmImport(ctx context.Context, batchID, bearer, author str
 	if err := s.dao.UpdateImportBatchStatus(ctx, batchID, "running", batch.SummaryJSON, ""); err != nil {
 		return nil, summary, err
 	}
-	if err := s.executeImport(ctx, batch, bearer); err != nil {
+	if err := s.executeImport(ctx, batch, bearer, author); err != nil {
 		_ = s.dao.UpdateImportBatchStatus(ctx, batchID, "failed", batch.SummaryJSON, err.Error())
 		return nil, summary, err
 	}
@@ -256,7 +257,10 @@ func (s *Service) RollbackImport(ctx context.Context, batchID, author string) (*
 		}
 	}
 	if err := s.dao.ApplyImportDocs(
-		ctx, mutations, s.urlReconcileHook(batch.CollectionID, "docs import rolled back"),
+		ctx, mutations, s.importMutationHook(
+			ctx, docsaudit.ActionImportRolledBack, batch, len(mutations), author,
+			"docs import rolled back",
+		),
 	); err != nil {
 		return nil, err
 	}
@@ -281,7 +285,7 @@ func (s *Service) GetImport(ctx context.Context, batchID string) (*model.ImportB
 	return batch, items, nil
 }
 
-func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, bearer string) error {
+func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, bearer, author string) error {
 	items, err := s.dao.ListImportItems(ctx, batch.ID)
 	if err != nil {
 		return err
@@ -335,7 +339,10 @@ func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, b
 		}
 	}
 	return s.dao.ApplyImportDocs(
-		ctx, mutations, s.urlReconcileHook(batch.CollectionID, "docs import applied"),
+		ctx, mutations, s.importMutationHook(
+			ctx, docsaudit.ActionImportConfirmed, batch, len(mutations), author,
+			"docs import applied",
+		),
 	)
 }
 

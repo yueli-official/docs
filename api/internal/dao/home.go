@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 
 	"platform/products/docs/api/internal/model"
@@ -52,6 +53,14 @@ func (p *PG) GetHomeConfig(ctx context.Context) (*model.HomeConfig, error) {
 }
 
 func (p *PG) UpsertHomeConfig(ctx context.Context, cfg *model.HomeConfig) error {
+	return p.UpsertHomeConfigWithHook(ctx, cfg, nil)
+}
+
+func (p *PG) UpsertHomeConfigWithHook(
+	ctx context.Context,
+	cfg *model.HomeConfig,
+	hook TransactionHook,
+) error {
 	quickLinks, err := json.Marshal(cfg.QuickLinks)
 	if err != nil {
 		return err
@@ -60,7 +69,8 @@ func (p *PG) UpsertHomeConfig(ctx context.Context, cfg *model.HomeConfig) error 
 	if err != nil {
 		return err
 	}
-	_, err = p.db.Exec(ctx, `INSERT INTO home_config (key, quick_links, featured_collections, home_eyebrow, home_title, home_subtitle, site_title, site_description, support_email, footer_tagline, footer_copyright, updated_at)
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		_, err = tx.Ctx(ctx).Exec(`INSERT INTO home_config (key, quick_links, featured_collections, home_eyebrow, home_title, home_subtitle, site_title, site_description, support_email, footer_tagline, footer_copyright, updated_at)
 		VALUES ('default', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
 		ON CONFLICT (key) DO UPDATE SET
 			quick_links = EXCLUDED.quick_links,
@@ -74,6 +84,10 @@ func (p *PG) UpsertHomeConfig(ctx context.Context, cfg *model.HomeConfig) error 
 			footer_tagline = EXCLUDED.footer_tagline,
 			footer_copyright = EXCLUDED.footer_copyright,
 			updated_at = now()`,
-		string(quickLinks), string(featured), cfg.HomeEyebrow, cfg.HomeTitle, cfg.HomeSubtitle, cfg.SiteTitle, cfg.SiteDescription, cfg.SupportEmail, cfg.FooterTagline, cfg.FooterCopyright)
-	return err
+			string(quickLinks), string(featured), cfg.HomeEyebrow, cfg.HomeTitle, cfg.HomeSubtitle, cfg.SiteTitle, cfg.SiteDescription, cfg.SupportEmail, cfg.FooterTagline, cfg.FooterCopyright)
+		if err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }

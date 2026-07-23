@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"platform/products/docs/api/internal/assetclient"
+	"platform/products/docs/api/internal/dao"
 	"platform/products/docs/api/internal/docserr"
 	"platform/products/docs/api/internal/model"
 )
@@ -186,7 +187,11 @@ func (s *Service) DeleteCollectionWithBearer(ctx context.Context, id, bearer str
 			AssetID: c.CoverAssetID, RefType: "collection-cover", RefID: id,
 		})
 	}
-	return s.dao.DeleteCollectionWithHook(
-		ctx, id, s.urlReconcileHook(id, "docs collection deleted"),
+	var searchHook dao.TransactionHook
+	if s.search != nil {
+		searchHook = s.search.DeleteCollectionHook(id)
+	}
+	return s.dao.DeleteCollectionWithHooks(
+		ctx, id, searchHook, s.urlReconcileHook(id, "docs collection deleted"),
 	)
 }

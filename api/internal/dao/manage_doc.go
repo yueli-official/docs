@@ -85,6 +85,13 @@ func manageDocsConditions(query model.ManageDocsQuery, includeLifecycle bool) (s
 	return strings.Join(conditions, " AND "), args
 }
 
+func likePattern(q string) string {
+	q = strings.ReplaceAll(q, `\`, `\\`)
+	q = strings.ReplaceAll(q, `%`, `\%`)
+	q = strings.ReplaceAll(q, `_`, `\_`)
+	return "%" + q + "%"
+}
+
 // ManageDocs applies the allowlisted admin workbench query in PostgreSQL. It
 // returns lifecycle counts under the non-lifecycle filters so tabs stay stable
 // while the selected status or quality view changes.

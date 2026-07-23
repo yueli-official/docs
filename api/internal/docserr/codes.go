@@ -9,13 +9,17 @@ import (
 )
 
 var (
-	CodeNotFound      = errs.Register("docs.not_found", http.StatusNotFound)
-	CodeForbidden     = errs.Register("docs.forbidden", http.StatusForbidden)
-	CodeSlugTaken     = errs.Register("docs.slug_taken", http.StatusConflict)
-	CodeInvalidInput  = errs.Register("docs.invalid_input", http.StatusBadRequest)
-	CodeUpstream      = errs.Register("docs.upstream_failed", http.StatusBadGateway)
-	CodeImportBlocked = errs.Register("docs.import_blocked", http.StatusBadRequest)
-	CodeUnavailable   = errs.Register("docs.authorization_unavailable", http.StatusServiceUnavailable)
+	CodeNotFound          = errs.Register("docs.not_found", http.StatusNotFound)
+	CodeForbidden         = errs.Register("docs.forbidden", http.StatusForbidden)
+	CodeSlugTaken         = errs.Register("docs.slug_taken", http.StatusConflict)
+	CodeInvalidInput      = errs.Register("docs.invalid_input", http.StatusBadRequest)
+	CodeUpstream          = errs.Register("docs.upstream_failed", http.StatusBadGateway)
+	CodeImportBlocked     = errs.Register("docs.import_blocked", http.StatusBadRequest)
+	CodeUnavailable       = errs.Register("docs.authorization_unavailable", http.StatusServiceUnavailable)
+	CodeRateLimited       = errs.Register("docs.rate_limited", http.StatusTooManyRequests)
+	CodeChallengeRequired = errs.Register("docs.challenge_required", http.StatusForbidden)
+	CodeAbuseUnavailable  = errs.Register("docs.abuse_unavailable", http.StatusServiceUnavailable)
+	CodeAbuseReplay       = errs.Register("docs.abuse_attempt_replayed", http.StatusConflict)
 )
 
 // NotFound is returned when a collection or doc id/slug does not exist.
@@ -30,6 +34,24 @@ func Forbidden() *errs.Coded { return errs.New(CodeForbidden, "forbidden", nil) 
 // outage as a permissions decision.
 func AuthorizationUnavailable() *errs.Coded {
 	return errs.New(CodeUnavailable, "authorization unavailable", nil)
+}
+
+func RateLimited() *errs.Coded {
+	return errs.New(CodeRateLimited, "too many role applications — please try again later", nil)
+}
+
+func ChallengeRequired(attemptID string) *errs.Coded {
+	return errs.New(CodeChallengeRequired, "additional verification required", map[string]any{
+		"attemptId": attemptID, "challenge": "turnstile",
+	})
+}
+
+func AbuseUnavailable() *errs.Coded {
+	return errs.New(CodeAbuseUnavailable, "role application admission is temporarily unavailable", nil)
+}
+
+func AbuseAttemptReplayed() *errs.Coded {
+	return errs.New(CodeAbuseReplay, "role application attempt was already admitted", nil)
 }
 
 // SlugTaken is returned when a generated slug collides with an existing one.

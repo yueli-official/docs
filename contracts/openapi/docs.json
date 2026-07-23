@@ -367,6 +367,16 @@
       },
       "platform.products.docs.api.api.v1.ApplyForRoleReq": {
         "properties": {
+          "abuseAttemptId": {
+            "format": "string",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "challengeProof": {
+            "format": "string",
+            "maxLength": 4096,
+            "type": "string"
+          },
           "reason": {
             "format": "string",
             "maxLength": 2000,

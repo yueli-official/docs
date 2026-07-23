@@ -45,6 +45,8 @@ type ApplyForRoleReq struct {
 	Role           string `json:"role" v:"required"`
 	Reason         string `json:"reason" v:"length:0,2000"`
 	RequestGroupID string `json:"requestGroupId" v:"length:0,128"`
+	AbuseAttemptID string `json:"abuseAttemptId" v:"length:0,128"`
+	ChallengeProof string `json:"challengeProof" v:"length:0,4096"`
 }
 type ApplyForRoleRes struct {
 	Application AuthorizationApplicationView `json:"application"`

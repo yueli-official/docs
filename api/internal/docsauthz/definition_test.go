@@ -23,13 +23,13 @@ func TestDefinitionEnforcesVisitorAuthorOwnerAndAdministratorContract(t *testing
 	}
 	ctx := context.Background()
 	if _, err := module.RegisterScope(ctx, authorization.RegisterScopeCommand{
-		ID: docsauthz.CollectionScopeID("collection-1"),
+		ID:   docsauthz.CollectionScopeID("collection-1"),
 		Type: docsauthz.ScopeCollection, ParentID: docsauthz.RootScopeID,
 	}); err != nil {
 		t.Fatalf("CreateScope() collection error = %v", err)
 	}
 	if _, err := module.RegisterScope(ctx, authorization.RegisterScopeCommand{
-		ID: docsauthz.DocumentScopeID("doc-1"),
+		ID:   docsauthz.DocumentScopeID("doc-1"),
 		Type: docsauthz.ScopeDocument, ParentID: docsauthz.CollectionScopeID("collection-1"),
 	}); err != nil {
 		t.Fatalf("CreateScope() document error = %v", err)

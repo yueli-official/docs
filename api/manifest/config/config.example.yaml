@@ -43,6 +43,11 @@ docs:
     # changes are persisted in this Docs database through the management API.
     bootstrapAdministratorSubs:
       - "ac73d232-ce55-487d-bb39-fd336f1a9806"   # test@example.com
+  abuse:
+    turnstile:
+      secret: ""            # optional; enable challenge escalation when configured
+      endpoint: ""          # empty uses Cloudflare Siteverify
+      hostnames: []         # trusted public hosts; never infer from request Host
   # IdP JWKS for user access-token verification (Foundation auth). Lazy-fetched.
   jwks:
     url: "http://localhost:8081/oauth2/jwks.json"

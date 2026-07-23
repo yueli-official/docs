@@ -17,5 +17,6 @@ type Doc struct {
 	TranslationKey string `json:"translationKey" orm:"translation_key"`
 	SortOrder      int    `json:"sortOrder" orm:"sort_order"`
 	AuthorSub      string `json:"authorSub" orm:"author_sub"`
+	SearchRevision uint64 `json:"-" orm:"search_revision"`
 	Children       []*Doc `json:"children,omitempty" orm:"-"`
 }
