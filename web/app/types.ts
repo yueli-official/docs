@@ -54,7 +54,9 @@ export interface CollectionList {
 export interface MeView {
   sub: string;
   authenticated: boolean;
-  isOwner: boolean;
+  isAdministrator: boolean;
+  roles: string[];
+  capabilities: string[];
 }
 export interface HomeQuickLink {
   id: string;

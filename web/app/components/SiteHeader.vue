@@ -9,7 +9,7 @@ withDefaults(defineProps<{ widthClass?: string }>(), {
   widthClass: "max-w-screen-xl",
 });
 const { loggedIn } = useAuth();
-const { isOwner, refresh: refreshMe } = useMe();
+const { canManage, refresh: refreshMe } = useMe();
 const searchOpen = ref(false);
 const { call } = useApi();
 const { data: siteConfigData } = await useAsyncData(
@@ -32,9 +32,11 @@ watch(
 );
 
 const contextActions = computed<AccountMenuAction[]>(() => [
-  ...(isOwner.value
+  ...(canManage.value
     ? [{ label: "控制台", icon: "i-tabler-layout-dashboard", to: "/manage" }]
-    : []),
+    : loggedIn.value
+      ? [{ label: "申请成为作者", icon: "i-tabler-pencil-plus", to: "/author/apply" }]
+      : []),
 ]);
 </script>
 

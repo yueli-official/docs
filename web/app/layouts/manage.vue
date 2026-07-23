@@ -9,6 +9,7 @@ import type {
 const route = useRoute();
 const { brand: siteBrand } = useSiteRuntime();
 const sidebarOpen = ref(false);
+const { can, isAdministrator } = useMe();
 
 const messages: AdminShellMessages = {
   skipToContent: "跳到主要内容",
@@ -32,28 +33,28 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
     active: isActive("/manage", true),
     onSelect: closeSidebar,
   },
-  {
+  ...(can("docs.document.read") ? [{
     label: "文档",
     icon: "i-tabler-file-text",
     to: "/manage/docs",
     active: isActive("/manage/docs"),
     onSelect: closeSidebar,
-  },
-  {
+  }] : []),
+  ...(can("docs.collection.manage") ? [{
     label: "文档集",
     icon: "i-tabler-stack-2",
     to: "/manage/collections",
     active: isActive("/manage/collections"),
     onSelect: closeSidebar,
-  },
-  {
+  }] : []),
+  ...(can("docs.import.manage") ? [{
     label: "批量导入",
     icon: "i-tabler-file-import",
     to: "/manage/import",
     active: isActive("/manage/import"),
     onSelect: closeSidebar,
-  },
-  {
+  }] : []),
+  ...(can("docs.site_settings.manage") ? [{
     label: "站点设置",
     icon: "i-tabler-settings",
     to: "/manage/home",
@@ -86,14 +87,21 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
           isActive("/manage/home", true) && route.query.section === "site",
       },
     ],
-  },
-  {
+  }] : []),
+  ...(can("docs.asset_settings.manage") ? [{
     label: "资源配置",
     icon: "i-tabler-database-cog",
     to: "/manage/assets",
     active: isActive("/manage/assets"),
     onSelect: closeSidebar,
-  },
+  }] : []),
+  ...(isAdministrator.value ? [{
+    label: "权限与申请",
+    icon: "i-tabler-shield-lock",
+    to: "/manage/authorization",
+    active: isActive("/manage/authorization"),
+    onSelect: closeSidebar,
+  }] : []),
 ]);
 
 const workspaceMenuItems = computed<DropdownMenuItem[][]>(() => [

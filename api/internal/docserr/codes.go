@@ -15,6 +15,7 @@ var (
 	CodeInvalidInput  = errs.Register("docs.invalid_input", http.StatusBadRequest)
 	CodeUpstream      = errs.Register("docs.upstream_failed", http.StatusBadGateway)
 	CodeImportBlocked = errs.Register("docs.import_blocked", http.StatusBadRequest)
+	CodeUnavailable   = errs.Register("docs.authorization_unavailable", http.StatusServiceUnavailable)
 )
 
 // NotFound is returned when a collection or doc id/slug does not exist.
@@ -24,6 +25,12 @@ func NotFound(id string) *errs.Coded {
 
 // Forbidden is returned when the caller lacks the required permission.
 func Forbidden() *errs.Coded { return errs.New(CodeForbidden, "forbidden", nil) }
+
+// AuthorizationUnavailable fails closed without disguising an infrastructure
+// outage as a permissions decision.
+func AuthorizationUnavailable() *errs.Coded {
+	return errs.New(CodeUnavailable, "authorization unavailable", nil)
+}
 
 // SlugTaken is returned when a generated slug collides with an existing one.
 func SlugTaken(slug string) *errs.Coded {

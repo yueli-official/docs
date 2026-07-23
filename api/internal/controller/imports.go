@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/yueli-official/foundation/go/authorization"
+
 	v1 "platform/products/docs/api/api/v1"
 	"platform/products/docs/api/internal/catalog"
+	"platform/products/docs/api/internal/docsauthz"
 	"platform/products/docs/api/internal/docserr"
 	"platform/products/docs/api/internal/importkit"
 	"platform/products/docs/api/internal/model"
@@ -17,8 +20,8 @@ type Imports struct{ svc *catalog.Service }
 func NewImports(svc *catalog.Service) *Imports { return &Imports{svc: svc} }
 
 func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImportReq) (*v1.UploadDocsImportRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
 	}
 	author, err := subject(ctx)
 	if err != nil {
@@ -52,8 +55,8 @@ func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImport
 }
 
 func (c *Imports) GetDocsImport(ctx context.Context, req *v1.GetDocsImportReq) (*v1.GetDocsImportRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
 	}
 	batch, items, err := c.svc.GetImport(ctx, req.ID)
 	if err != nil {
@@ -63,8 +66,8 @@ func (c *Imports) GetDocsImport(ctx context.Context, req *v1.GetDocsImportReq) (
 }
 
 func (c *Imports) ConfirmDocsImport(ctx context.Context, req *v1.ConfirmDocsImportReq) (*v1.ConfirmDocsImportRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
 	}
 	author, err := subject(ctx)
 	if err != nil {
@@ -74,12 +77,15 @@ func (c *Imports) ConfirmDocsImport(ctx context.Context, req *v1.ConfirmDocsImpo
 	if err != nil {
 		return nil, err
 	}
+	if err := authorizationService(ctx).SyncCatalogScopes(ctx); err != nil {
+		return nil, docserr.AuthorizationUnavailable()
+	}
 	return &v1.ConfirmDocsImportRes{Batch: importBatchView(batch), Summary: importSummaryView(summary)}, nil
 }
 
 func (c *Imports) RollbackDocsImport(ctx context.Context, req *v1.RollbackDocsImportReq) (*v1.RollbackDocsImportRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
 	}
 	author, err := subject(ctx)
 	if err != nil {

@@ -50,6 +50,10 @@ func manageDocsConditions(query model.ManageDocsQuery, includeLifecycle bool) (s
 		conditions = append(conditions, "d.collection_id = ?")
 		args = append(args, query.CollectionID)
 	}
+	if query.OwnerSub != "" {
+		conditions = append(conditions, "d.author_sub = ?")
+		args = append(args, query.OwnerSub)
+	}
 	if query.Version != "" {
 		conditions = append(conditions, "v.key = ?")
 		args = append(args, query.Version)

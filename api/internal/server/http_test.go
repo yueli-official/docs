@@ -27,7 +27,6 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/gclient"
-	"github.com/gogf/gf/v2/os/gcfg"
 	"github.com/gogf/gf/v2/test/gtest"
 	_ "github.com/lib/pq"
 
@@ -88,7 +87,7 @@ func TestHealthz(t *testing.T) {
 }
 
 // TestMe_AnonymousIsUnauthenticated calls GET /api/v1/me without a bearer token
-// and expects HTTP 200 with authenticated=false, isOwner=false. No database is
+// and expects HTTP 200 with authenticated=false. No database is
 // needed — the me endpoint is catalog-independent.
 func TestMe_AnonymousIsUnauthenticated(t *testing.T) {
 	gtest.C(t, func(t *gtest.T) {
@@ -96,7 +95,9 @@ func TestMe_AnonymousIsUnauthenticated(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv)})
+		server.Configure(s, server.Deps{
+			Verifier: mustVerifier(t, priv), Authorization: mustAuthorization(t, "identity-probe-admin"),
+		})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -110,7 +111,74 @@ func TestMe_AnonymousIsUnauthenticated(t *testing.T) {
 		t.Assert(resp.StatusCode, 200)
 		j := gjson.New(resp.ReadAllString())
 		t.Assert(j.Get("me.authenticated").Bool(), false)
-		t.Assert(j.Get("me.isOwner").Bool(), false)
+		t.Assert(j.Get("me.isAdministrator").Bool(), false)
+	})
+}
+
+func TestAuthorizationApplicationFlow(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		priv, err := rsa.GenerateKey(rand.Reader, 2048)
+		t.AssertNil(err)
+		authz := mustAuthorization(t, testSub)
+		s := g.Server(t.Name())
+		s.SetAddr("127.0.0.1:0")
+		server.Configure(s, server.Deps{
+			Verifier: mustVerifier(t, priv), Authorization: authz,
+		})
+		s.SetDumpRouterMap(false)
+		s.Start()
+		defer s.Shutdown()
+
+		userSub := "22222222-2222-4222-8222-222222222222"
+		token := func(sub string) string {
+			return signToken(t, priv, sub, time.Now().Add(time.Hour))
+		}
+		client := func(sub string) *gclient.Client {
+			c := g.Client()
+			c.SetPrefix(prefix(s))
+			c.SetHeader("Authorization", "Bearer "+token(sub))
+			return c
+		}
+		ctx := context.Background()
+
+		requestable, err := client(userSub).Get(ctx, "/api/v1/authorization/requestable-roles")
+		t.AssertNil(err)
+		defer requestable.Close()
+		t.Assert(requestable.StatusCode, http.StatusOK)
+		t.Assert(gjson.New(requestable.ReadAllString()).Get("items.0.key").String(), "author")
+
+		applicantClient := client(userSub)
+		applicantClient.SetHeader("Idempotency-Key", "apply-author-1")
+		applied, err := applicantClient.Post(ctx, "/api/v1/authorization/applications", g.Map{
+			"role": "author", "reason": "I maintain this guide",
+		})
+		t.AssertNil(err)
+		defer applied.Close()
+		t.Assert(applied.StatusCode, http.StatusOK)
+		applicationID := gjson.New(applied.ReadAllString()).Get("application.id").String()
+		t.AssertNE(applicationID, "")
+		replayed, err := applicantClient.Post(ctx, "/api/v1/authorization/applications", g.Map{
+			"role": "author", "reason": "I maintain this guide",
+		})
+		t.AssertNil(err)
+		defer replayed.Close()
+		t.Assert(replayed.StatusCode, http.StatusOK)
+		t.Assert(gjson.New(replayed.ReadAllString()).Get("application.id").String(), applicationID)
+
+		reviewed, err := client(testSub).Post(
+			ctx, "/api/v1/authorization/manage/applications/"+applicationID+"/review",
+			g.Map{"decision": "approve", "reason": "accepted"},
+		)
+		t.AssertNil(err)
+		defer reviewed.Close()
+		t.Assert(reviewed.StatusCode, http.StatusOK)
+		t.Assert(gjson.New(reviewed.ReadAllString()).Get("application.state").String(), "approved")
+
+		me, err := client(userSub).Get(ctx, "/api/v1/me")
+		t.AssertNil(err)
+		defer me.Close()
+		t.Assert(me.StatusCode, http.StatusOK)
+		t.Assert(gjson.New(me.ReadAllString()).Get("me.roles.0").String(), "author")
 	})
 }
 
@@ -127,15 +195,6 @@ func TestDocsRoundTrip(t *testing.T) {
 		port := envOr("DOCS_PG_PORT", "5432")
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
-
-		// Inject docs.operatorSubs BEFORE booting the server so isAdmin(testSub) == true.
-		// There is no config.yaml on disk; the in-memory adapter satisfies the check.
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-		// Verify the injection is visible to the same g.Cfg() instance the
-		// controller uses — guards against silent mis-wiring before we send requests.
-		t.Assert(g.Cfg().MustGet(ctx, "docs.operatorSubs").Strings(), []string{testSub})
 
 		// Apply migration 0001 via database/sql so the schema is clean for this run.
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
@@ -158,7 +217,7 @@ func TestDocsRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -249,10 +308,6 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -284,7 +339,7 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -368,10 +423,6 @@ func TestCollectionDocCount(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -391,7 +442,7 @@ func TestCollectionDocCount(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -466,10 +517,6 @@ func TestUpdateHomeConfig(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -501,7 +548,7 @@ func TestUpdateHomeConfig(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -575,10 +622,6 @@ func TestPublicTreeOnlyPublishedAndLightweight(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -598,7 +641,7 @@ func TestPublicTreeOnlyPublishedAndLightweight(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -677,9 +720,6 @@ func TestManageTreeIncludesDraftDocs(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -698,7 +738,7 @@ func TestManageTreeIncludesDraftDocs(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -760,10 +800,6 @@ func TestPublicDocByPathReturnsOnlyPublishedBody(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -782,7 +818,7 @@ func TestPublicDocByPathReturnsOnlyPublishedBody(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -871,9 +907,6 @@ func TestPatchDocIsPartialSafe(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -892,7 +925,7 @@ func TestPatchDocIsPartialSafe(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -971,9 +1004,6 @@ func TestDocSEOFieldsArePartialSafe(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -992,7 +1022,7 @@ func TestDocSEOFieldsArePartialSafe(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -1051,9 +1081,6 @@ func TestPublicSearchPublishedDocs(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -1072,7 +1099,7 @@ func TestPublicSearchPublishedDocs(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -1164,9 +1191,6 @@ func TestPublicSearchRanksTitleMatchesFirst(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -1185,7 +1209,7 @@ func TestPublicSearchRanksTitleMatchesFirst(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -1260,9 +1284,6 @@ func TestPublicSearchReturnsTotalsAndCollectionFacets(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -1281,7 +1302,7 @@ func TestPublicSearchReturnsTotalsAndCollectionFacets(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -1360,9 +1381,6 @@ func TestPublicSearchRecordsQueryEvent(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -1381,7 +1399,7 @@ func TestPublicSearchRecordsQueryEvent(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -1467,9 +1485,6 @@ func TestPublishArchiveEndpointsPreserveContent(t *testing.T) {
 		port := envOr("DOCS_PG_PORT", "5432")
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -1488,7 +1503,7 @@ func TestPublishArchiveEndpointsPreserveContent(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()
@@ -1602,10 +1617,6 @@ func TestPublicTreeUsesRequestedVersion(t *testing.T) {
 		user := envOr("DOCS_PG_USER", "postgres")
 		pass := os.Getenv("DOCS_PG_PASS")
 
-		adapter, err := gcfg.NewAdapterContent(fmt.Sprintf("docs:\n  operatorSubs:\n    - \"%s\"\n", testSub))
-		t.AssertNil(err)
-		g.Cfg().SetAdapter(adapter)
-
 		dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=docs sslmode=disable", host, port, user, pass)
 		sdb, err := sql.Open("postgres", dsn)
 		t.AssertNil(err)
@@ -1630,7 +1641,7 @@ func TestPublicTreeUsesRequestedVersion(t *testing.T) {
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat, Authorization: mustAuthorization(t, testSub)})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()

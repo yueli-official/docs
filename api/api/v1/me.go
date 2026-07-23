@@ -4,9 +4,11 @@ import "github.com/gogf/gf/v2/frame/g"
 
 // MeView is the caller's identity as seen by the docs site.
 type MeView struct {
-	Sub           string `json:"sub"`
-	Authenticated bool   `json:"authenticated"`
-	IsOwner       bool   `json:"isOwner"`
+	Sub             string   `json:"sub"`
+	Authenticated   bool     `json:"authenticated"`
+	IsAdministrator bool     `json:"isAdministrator"`
+	Roles           []string `json:"roles"`
+	Capabilities    []string `json:"capabilities"`
 }
 
 type MeReq struct {

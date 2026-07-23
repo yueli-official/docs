@@ -11,13 +11,15 @@ import (
 	"platform/gokit/healthcheck"
 	"platform/products/docs/api/internal/catalog"
 	"platform/products/docs/api/internal/controller"
+	"platform/products/docs/api/internal/docsauthz"
 )
 
 // Deps are the wiring dependencies. Catalog may be nil for a minimal
 // health-only server.
 type Deps struct {
-	Verifier *foundationauth.Verifier
-	Catalog  *catalog.Service
+	Verifier      *foundationauth.Verifier
+	Catalog       *catalog.Service
+	Authorization *docsauthz.Service
 }
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
@@ -33,9 +35,16 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Identity probe: JWT parsed-if-present, never 401. Available regardless of
 	// whether a Catalog is configured so health + auth probes work standalone.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware, authhttp.Optional(d.Verifier))
+		grp.Middleware(apiMiddleware, authhttp.Optional(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
 		grp.Bind(controller.NewMe())
 	})
+
+	if d.Authorization != nil {
+		s.Group("/", func(grp *ghttp.RouterGroup) {
+			grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+			grp.Bind(controller.NewAuthorization())
+		})
+	}
 
 	if d.Catalog == nil {
 		return
@@ -49,7 +58,7 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Admin API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier))
+		grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
 		grp.Bind(controller.NewCollections(d.Catalog))
 		grp.Bind(controller.NewVersions(d.Catalog))
 		grp.Bind(controller.NewDocs(d.Catalog))

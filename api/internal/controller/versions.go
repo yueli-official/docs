@@ -3,9 +3,11 @@ package controller
 import (
 	"context"
 
+	"github.com/yueli-official/foundation/go/authorization"
+
 	v1 "platform/products/docs/api/api/v1"
 	"platform/products/docs/api/internal/catalog"
-	"platform/products/docs/api/internal/docserr"
+	"platform/products/docs/api/internal/docsauthz"
 	"platform/products/docs/api/internal/model"
 )
 
@@ -26,8 +28,8 @@ func (c *Versions) ListCollectionVersions(ctx context.Context, req *v1.ListColle
 }
 
 func (c *Versions) CreateCollectionVersion(ctx context.Context, req *v1.CreateCollectionVersionReq) (*v1.CreateCollectionVersionRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
 	}
 	v, err := c.svc.CreateVersion(ctx, catalog.CreateVersionInput{
 		CollectionID:    req.CollectionID,

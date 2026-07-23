@@ -13,7 +13,9 @@ import (
 	"github.com/gogf/gf/v2/test/gtest"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
+	"github.com/yueli-official/foundation/go/authorization"
 	"platform/gokit/authsetup"
+	"platform/products/docs/api/internal/docsauthz"
 )
 
 const (
@@ -36,6 +38,21 @@ func mustVerifier(t *gtest.T, priv *rsa.PrivateKey) *foundationauth.Verifier {
 	})
 	t.AssertNil(err)
 	return v
+}
+
+func mustAuthorization(t *gtest.T, administrators ...string) *docsauthz.Service {
+	t.Helper()
+	subjects := make([]authorization.SubjectRef, 0, len(administrators))
+	for _, subject := range administrators {
+		subjects = append(subjects, authorization.SubjectRef{Kind: authorization.SubjectUser, ID: subject})
+	}
+	module, err := authorization.NewMemory(authorization.MustCompile(docsauthz.Definition()), authorization.MemoryOptions{
+		RootScopeID: docsauthz.RootScopeID, ProtectedSubjects: subjects,
+		Constraints: docsauthz.ConstraintEvaluators(),
+		Predicates:  docsauthz.PredicateEvaluators(),
+	})
+	t.AssertNil(err)
+	return docsauthz.New(module)
 }
 
 func signToken(t *gtest.T, priv *rsa.PrivateKey, sub string, exp time.Time) string {

@@ -3,8 +3,11 @@ package controller
 import (
 	"context"
 
+	"github.com/yueli-official/foundation/go/authorization"
+
 	v1 "platform/products/docs/api/api/v1"
 	"platform/products/docs/api/internal/catalog"
+	"platform/products/docs/api/internal/docsauthz"
 	"platform/products/docs/api/internal/docserr"
 	"platform/products/docs/api/internal/model"
 )
@@ -24,17 +27,50 @@ func (c *Docs) ListDocs(ctx context.Context, req *v1.ListDocsReq) (*v1.ListDocsR
 	if err != nil {
 		return nil, err
 	}
-	return &v1.ListDocsRes{Items: docViews(items)}, nil
+	visible := make([]*model.Doc, 0, len(items))
+	for _, item := range items {
+		if err := ensureDocumentScope(ctx, item.ID, item.CollectionID); err != nil {
+			return nil, err
+		}
+		if err := requireCapability(
+			ctx, docsauthz.CapabilityDocumentRead, docsauthz.DocumentScopeID(item.ID),
+			docsauthz.DocumentResource(item.ID, item.AuthorSub),
+		); err == nil {
+			visible = append(visible, item)
+		}
+	}
+	return &v1.ListDocsRes{Items: docViews(visible)}, nil
 }
 
 func (c *Docs) ManageDocs(ctx context.Context, req *v1.ManageDocsReq) (*v1.ManageDocsRes, error) {
-	if !isAdmin(ctx) {
+	scopeID := docsauthz.RootScopeID
+	if req.CollectionID != "" {
+		if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
+			return nil, err
+		}
+		scopeID = docsauthz.CollectionScopeID(req.CollectionID)
+	}
+	constraint, err := authorizationService(ctx).Runtime().Plan(ctx, authorization.QueryRequest{
+		Subject:    authorizationService(ctx).Subject(ctx),
+		Capability: docsauthz.CapabilityDocumentRead,
+		ScopeID:    scopeID,
+	})
+	if err != nil {
+		return nil, docserr.AuthorizationUnavailable()
+	}
+	if constraint.Kind == authorization.QueryNone {
 		return nil, docserr.Forbidden()
+	}
+	ownerSub := ""
+	if constraint.Kind == authorization.QueryRelation && constraint.Relation == docsauthz.RelationOwner {
+		ownerSub = constraint.Subject.ID
+	} else if constraint.Kind != authorization.QueryAll {
+		return nil, docserr.AuthorizationUnavailable()
 	}
 	result, err := c.svc.ManageDocs(ctx, catalog.ManageDocsInput{
 		Q: req.Q, Status: req.Status, Quality: req.Quality,
 		CollectionID: req.CollectionID, Version: req.Version, Locale: req.Locale, ParentID: req.ParentID,
-		Sort: req.Sort, Direction: req.Direction, Page: req.Page, Size: req.Size,
+		Sort: req.Sort, Direction: req.Direction, Page: req.Page, Size: req.Size, OwnerSub: ownerSub,
 	})
 	if err != nil {
 		return nil, err
@@ -70,12 +106,24 @@ func (c *Docs) GetDoc(ctx context.Context, req *v1.GetDocReq) (*v1.GetDocRes, er
 	if err != nil {
 		return nil, err
 	}
+	if err := ensureDocumentScope(ctx, d.ID, d.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(
+		ctx, docsauthz.CapabilityDocumentRead, docsauthz.DocumentScopeID(d.ID),
+		docsauthz.DocumentResource(d.ID, d.AuthorSub),
+	); err != nil {
+		return nil, err
+	}
 	return &v1.GetDocRes{Doc: docView(d)}, nil
 }
 
 func (c *Docs) CreateDoc(ctx context.Context, req *v1.CreateDocReq) (*v1.CreateDocRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(ctx, docsauthz.CapabilityDocumentCreate, docsauthz.CollectionScopeID(req.CollectionID), authorization.ResourceFacts{}); err != nil {
+		return nil, err
 	}
 	author, err := subject(ctx)
 	if err != nil {
@@ -97,12 +145,25 @@ func (c *Docs) CreateDoc(ctx context.Context, req *v1.CreateDocReq) (*v1.CreateD
 	if err != nil {
 		return nil, err
 	}
+	if err := ensureDocumentScope(ctx, d.ID, d.CollectionID); err != nil {
+		return nil, err
+	}
 	return &v1.CreateDocRes{Doc: docView(d)}, nil
 }
 
 func (c *Docs) UpdateDoc(ctx context.Context, req *v1.UpdateDocReq) (*v1.UpdateDocRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	current, err := c.svc.GetDoc(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(
+		ctx, docsauthz.CapabilityDocumentUpdate, docsauthz.DocumentScopeID(current.ID),
+		docsauthz.DocumentResource(current.ID, current.AuthorSub),
+	); err != nil {
+		return nil, err
 	}
 	d, err := c.svc.PatchDoc(ctx, req.ID, catalog.PatchDocInput{
 		Title:          req.Title,
@@ -125,8 +186,18 @@ func (c *Docs) UpdateDoc(ctx context.Context, req *v1.UpdateDocReq) (*v1.UpdateD
 }
 
 func (c *Docs) PublishDoc(ctx context.Context, req *v1.PublishDocReq) (*v1.PublishDocRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	current, err := c.svc.GetDoc(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(
+		ctx, docsauthz.CapabilityDocumentPublish, docsauthz.DocumentScopeID(current.ID),
+		docsauthz.DocumentResource(current.ID, current.AuthorSub),
+	); err != nil {
+		return nil, err
 	}
 	d, err := c.svc.PublishDoc(ctx, req.ID)
 	if err != nil {
@@ -136,8 +207,18 @@ func (c *Docs) PublishDoc(ctx context.Context, req *v1.PublishDocReq) (*v1.Publi
 }
 
 func (c *Docs) ArchiveDoc(ctx context.Context, req *v1.ArchiveDocReq) (*v1.ArchiveDocRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	current, err := c.svc.GetDoc(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(
+		ctx, docsauthz.CapabilityDocumentArchive, docsauthz.DocumentScopeID(current.ID),
+		docsauthz.DocumentResource(current.ID, current.AuthorSub),
+	); err != nil {
+		return nil, err
 	}
 	d, err := c.svc.ArchiveDoc(ctx, req.ID)
 	if err != nil {
@@ -147,8 +228,18 @@ func (c *Docs) ArchiveDoc(ctx context.Context, req *v1.ArchiveDocReq) (*v1.Archi
 }
 
 func (c *Docs) DeleteDoc(ctx context.Context, req *v1.DeleteDocReq) (*v1.DeleteDocRes, error) {
-	if !isAdmin(ctx) {
-		return nil, docserr.Forbidden()
+	current, err := c.svc.GetDoc(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(
+		ctx, docsauthz.CapabilityDocumentDeletePermanently, docsauthz.DocumentScopeID(current.ID),
+		docsauthz.DocumentResource(current.ID, current.AuthorSub),
+	); err != nil {
+		return nil, err
 	}
 	if err := c.svc.DeleteDoc(ctx, req.ID); err != nil {
 		return nil, err

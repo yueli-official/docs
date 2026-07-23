@@ -35,13 +35,11 @@ docs:
   assetSpace: "default"
   assetNamespace: "default"
   assetProfile: "docs-default"
-  # Docs-local RBAC (authz is per-site, not the IdP's global role). The owner(s)
-  # = the site operator: full admin powers, scoped to THIS docs hub. Listed by
-  # their identity `sub` (UUID). Authentication still comes from the IdP;
-  # authorization is the docs service's own — being an owner here says nothing
-  # about other sites.
-  operatorSubs:
-    - "ac73d232-ce55-487d-bb39-fd336f1a9806"   # test@example.com (devkit PG+Redis identity stack)
+  authorization:
+    # Used only if this consumer-local instance does not exist. Later role
+    # changes are persisted in this Docs database through the management API.
+    bootstrapAdministratorSubs:
+      - "ac73d232-ce55-487d-bb39-fd336f1a9806"   # test@example.com
   # IdP JWKS for user access-token verification (Foundation auth). Lazy-fetched.
   jwks:
     url: "http://localhost:8081/oauth2/jwks.json"

@@ -16,6 +16,7 @@ type ManageDocsQuery struct {
 	Direction    string
 	Page         int
 	Size         int
+	OwnerSub     string
 }
 
 // ManageDoc is the denormalized row required by the admin list. Tree editing

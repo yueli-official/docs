@@ -34,6 +34,7 @@ type ManageDocsInput struct {
 	Direction    string
 	Page         int
 	Size         int
+	OwnerSub     string
 }
 
 func normalizeManageDocsQuery(input ManageDocsInput) (model.ManageDocsQuery, error) {
@@ -49,6 +50,7 @@ func normalizeManageDocsQuery(input ManageDocsInput) (model.ManageDocsQuery, err
 		Direction:    input.Direction,
 		Page:         input.Page,
 		Size:         input.Size,
+		OwnerSub:     strings.TrimSpace(input.OwnerSub),
 	}
 	if query.Status == "" {
 		query.Status = "all"
