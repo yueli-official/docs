@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"time"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
@@ -34,6 +36,9 @@ type ImportBatchView struct {
 	Status        string            `json:"status"`
 	ErrorMessage  string            `json:"errorMessage"`
 	Summary       ImportSummaryView `json:"summary"`
+	CreatedAt     time.Time         `json:"createdAt"`
+	UpdatedAt     time.Time         `json:"updatedAt"`
+	CompletedAt   *time.Time        `json:"completedAt,omitempty"`
 }
 
 type ImportItemView struct {
@@ -57,6 +62,15 @@ type UploadDocsImportReq struct {
 type UploadDocsImportRes struct {
 	Batch   *ImportBatchView  `json:"batch"`
 	Summary ImportSummaryView `json:"summary"`
+}
+
+type ListDocsImportsReq struct {
+	g.Meta       `path:"/api/v1/imports/docs" method:"get" tags:"docs" summary:"List recent docs import batches"`
+	CollectionID string `json:"collectionId" in:"query"`
+	Limit        int    `json:"limit" in:"query" d:"20" v:"min:1|max:100"`
+}
+type ListDocsImportsRes struct {
+	Items []*ImportBatchView `json:"items"`
 }
 
 type GetDocsImportReq struct {

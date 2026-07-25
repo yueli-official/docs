@@ -4,9 +4,55 @@ import (
 	"context"
 	"testing"
 
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
 	"platform/products/docs/api/internal/docsauthz"
 )
+
+func TestServiceReconcilesEnabledAutomaticAuthorOnFirstAuthenticatedAccess(t *testing.T) {
+	admin := authorization.SubjectRef{Kind: authorization.SubjectUser, ID: "admin"}
+	module, err := authorization.NewMemory(
+		authorization.MustCompile(docsauthz.Definition()),
+		authorization.MemoryOptions{
+			RootScopeID: docsauthz.RootScopeID, ProtectedSubjects: []authorization.SubjectRef{admin},
+			Constraints: docsauthz.ConstraintEvaluators(), Predicates: docsauthz.PredicateEvaluators(),
+		},
+	)
+	if err != nil {
+		t.Fatalf("NewMemory() error = %v", err)
+	}
+	ctx := context.Background()
+	draft, err := module.CreatePolicyDraft(ctx, authorization.CreatePolicyDraftCommand{
+		Actor: admin, ScopeID: docsauthz.RootScopeID, ExpectedActiveRevision: 1,
+	})
+	if err != nil {
+		t.Fatalf("CreatePolicyDraft() error = %v", err)
+	}
+	if _, err := module.SetAutomaticRuleEnabled(ctx, authorization.SetAutomaticRuleEnabledCommand{
+		Actor: admin, Revision: draft.Number,
+		Rule: docsauthz.AutomaticRegistrationAuthorKey, Enabled: true,
+	}); err != nil {
+		t.Fatalf("SetAutomaticRuleEnabled() error = %v", err)
+	}
+	if _, err := module.ActivatePolicy(ctx, authorization.ActivatePolicyCommand{
+		Actor: admin, Revision: draft.Number, ExpectedActiveRevision: 1,
+	}); err != nil {
+		t.Fatalf("ActivatePolicy() error = %v", err)
+	}
+	service := docsauthz.New(module)
+	userContext := foundationauth.NewContext(ctx, &foundationauth.Principal{Subject: "registered-user"})
+	access, err := service.EffectiveAccess(userContext)
+	if err != nil {
+		t.Fatalf("EffectiveAccess() error = %v", err)
+	}
+	found := false
+	for _, grant := range access.Grants {
+		found = found || grant.Role == docsauthz.RoleAuthor && grant.Source == authorization.GrantSourceAutomatic
+	}
+	if !found {
+		t.Fatalf("EffectiveAccess() grants = %#v, want automatic author", access.Grants)
+	}
+}
 
 func TestDefinitionEnforcesVisitorAuthorOwnerAndAdministratorContract(t *testing.T) {
 	catalog := authorization.MustCompile(docsauthz.Definition())

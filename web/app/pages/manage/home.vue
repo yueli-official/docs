@@ -27,6 +27,8 @@ definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "设置 · 控制台" });
 
 const { call } = useApi();
+const { can } = useMe();
+const canManageSiteSettings = computed(() => can("docs.site_settings.manage"));
 const toast = createPlatformNotifier(useToast());
 const route = useRoute();
 const router = useRouter();
@@ -64,7 +66,10 @@ onMounted(() => {
 const { data: collectionsData, pending: collectionsPending } =
   await useAsyncData(
     "manage-home-collections",
-    () => call<CollectionList>("/api/v1/collections"),
+    () =>
+      canManageSiteSettings.value
+        ? call<CollectionList>("/api/v1/collections")
+        : Promise.resolve({ items: [] }),
     { server: false, default: () => ({ items: [] }) },
   );
 const {
@@ -74,7 +79,10 @@ const {
   refresh,
 } = await useAsyncData(
   "manage-home-config",
-  () => call<HomeConfigResponse>("/api/v1/home"),
+  () =>
+    canManageSiteSettings.value
+      ? call<HomeConfigResponse>("/api/v1/home")
+      : Promise.resolve(null as unknown as HomeConfigResponse),
   { server: false },
 );
 
@@ -260,6 +268,7 @@ function quickLinkTarget(link: HomeQuickLink) {
 }
 
 async function save() {
+  if (!canManageSiteSettings.value) return;
   markSaving();
   saveError.value = "";
   try {
@@ -309,7 +318,27 @@ function discardChanges() {
     main-id="manage-main"
     body-class="mx-auto w-full max-w-screen-2xl"
   >
+    <div
+      v-if="!canManageSiteSettings"
+      class="rounded-lg border border-default bg-default p-8"
+    >
+      <div class="mx-auto max-w-md text-center">
+        <span
+          class="mx-auto grid size-12 place-items-center rounded-lg bg-warning/10 text-warning"
+        >
+          <UIcon name="i-tabler-lock" class="size-6" />
+        </span>
+        <h2 class="mt-4 text-lg font-semibold text-highlighted">
+          没有站点设置权限
+        </h2>
+        <p class="mt-2 text-sm leading-6 text-muted">
+          当前角色不能修改首页、页脚或站点基础资料。请联系管理员调整角色能力。
+        </p>
+      </div>
+    </div>
+
     <SettingsLayout
+      v-else
       v-model:active-section="section"
       :title="activeSection.label"
       :description="activeSection.description"

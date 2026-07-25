@@ -1476,6 +1476,14 @@
             "format": "string",
             "type": "string"
           },
+          "completedAt": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
           "defaultLocale": {
             "format": "string",
             "type": "string"
@@ -1499,6 +1507,10 @@
           "summary": {
             "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportSummaryView",
             "description": ""
+          },
+          "updatedAt": {
+            "format": "time.Time",
+            "type": "string"
           },
           "versionId": {
             "format": "string",
@@ -1712,6 +1724,35 @@
             "format": "[]*v1.CollectionView",
             "items": {
               "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListDocsImportsReq": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "format": "int",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListDocsImportsRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.ImportBatchView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportBatchView",
               "description": ""
             },
             "type": "array"
@@ -4262,6 +4303,44 @@
       }
     },
     "/api/v1/imports/docs": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "collectionId",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListDocsImportsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List recent docs import batches",
+        "tags": [
+          "docs"
+        ]
+      },
       "post": {
         "requestBody": {
           "content": {

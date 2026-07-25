@@ -389,6 +389,14 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		t.Assert(uploadJSON.Get("summary.creates").Int(), 1)
 		t.Assert(uploadJSON.Get("summary.images").Int(), 1)
 
+		historyResp, err := admin().Get(ctx, "/api/v1/imports/docs?limit=10")
+		t.AssertNil(err)
+		historyJSON := gjson.New(historyResp.ReadAllString())
+		historyResp.Close()
+		t.Assert(historyResp.StatusCode, 200)
+		t.Assert(historyJSON.Get("items.0.id").String(), batchID)
+		t.AssertNE(historyJSON.Get("items.0.createdAt").String(), "")
+
 		confirmResp, err := admin().Post(ctx, "/api/v1/imports/docs/"+batchID+"/confirm", nil)
 		t.AssertNil(err)
 		confirmJSON := gjson.New(confirmResp.ReadAllString())

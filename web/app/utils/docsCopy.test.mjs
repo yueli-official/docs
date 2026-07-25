@@ -47,6 +47,25 @@ test("manage sidebar owns one context menu and one account footer", () => {
   assert.doesNotMatch(layout, /:collapsible="false"/);
 });
 
+test("manage dashboard and search only expose capability-backed work", () => {
+  const layout = readApp("layouts/manage.vue");
+  const page = readApp("pages/manage/index.vue");
+
+  assert.match(layout, /const searchGroups = computed/);
+  assert.match(layout, /can\("docs\.document\.create"\)/);
+  assert.match(layout, /can\("docs\.import\.manage"\)/);
+  assert.match(layout, /isAdministrator\.value/);
+  assert.match(page, /const quickActions = computed/);
+  assert.match(page, /v-if="canCreateDocs"/);
+  assert.match(page, /loadOptional/);
+  assert.match(page, /documentDataUnavailable/);
+  assert.match(page, /collectionDataUnavailable/);
+  assert.match(page, /工作区状态/);
+  assert.match(page, /部分不可用/);
+  assert.doesNotMatch(page, /aria-label="关键指标"/);
+  assert.doesNotMatch(page, /服务状态/);
+});
+
 test("manage homepage layout uses the shared icon picker without preview chrome", () => {
   const page = readApp("pages/manage/home.vue");
   assert.doesNotMatch(page, /首页预览|页脚预览|公开首页预览/);
@@ -115,6 +134,67 @@ test("document management uses Nuxt UI Table and keeps bulk actions in the toolb
   assert.doesNotMatch(page, /<template #context>/);
   assert.doesNotMatch(page, /row-layout-class=/);
   assert.doesNotMatch(page, /data-collection-modebar/);
+});
+
+test("document and tree actions follow effective capabilities", () => {
+  const page = readApp("pages/manage/docs/index.vue");
+  const tree = readApp("components/DocTreeAdmin.vue");
+  const collections = readApp("pages/manage/collections.vue");
+
+  assert.match(page, /can\("docs\.document\.read"\)/);
+  assert.match(page, /can\("docs\.document\.create"\)/);
+  assert.match(page, /can\("docs\.document\.update"\)/);
+  assert.match(page, /can\("docs\.document\.publish"\)/);
+  assert.match(page, /can\("docs\.document\.archive"\)/);
+  assert.match(page, /can\("docs\.document\.delete_permanently"\)/);
+  assert.match(page, /const bulkItems = computed/);
+  assert.match(page, /const docColumns = computed/);
+  assert.match(page, /没有文档读取权限/);
+  assert.match(tree, /canEdit\?: boolean/);
+  assert.match(tree, /:draggable="canMove"/);
+  assert.match(tree, /v-if="canMove \|\| canDelete"/);
+  assert.match(collections, /can\("docs\.collection\.manage"\)/);
+  assert.match(collections, /没有文档集管理权限/);
+});
+
+test("docs import is a recoverable capability-backed workflow", () => {
+  const start = readApp("pages/manage/import.vue");
+  const detail = readApp("pages/manage/import/[importId].vue");
+
+  assert.match(start, /can\("docs\.import\.manage"\)/);
+  assert.match(start, /DocsImportListResponse/);
+  assert.match(start, /\/api\/v1\/imports\/docs/);
+  assert.match(start, /最近导入/);
+  assert.match(start, /confirmError/);
+  assert.match(start, /importStatusMeta/);
+  assert.match(start, /importModeLabel/);
+  assert.doesNotMatch(start, /ZIP only/);
+  assert.match(detail, /can\("docs\.import\.manage"\)/);
+  assert.match(detail, /batch\.errorMessage/);
+  assert.match(detail, /importStatusMeta/);
+  assert.match(detail, /importModeLabel/);
+  assert.doesNotMatch(detail, /"yes"\s*:\s*"no"/);
+});
+
+test("docs settings and authorization consume effective capabilities", () => {
+  const home = readApp("pages/manage/home.vue");
+  const assets = readApp("pages/manage/assets.vue");
+  const authorization = readApp("pages/manage/authorization.vue");
+
+  assert.match(home, /can\("docs\.site_settings\.manage"\)/);
+  assert.match(home, /没有站点设置权限/);
+  assert.match(assets, /can\("docs\.asset_settings\.manage"\)/);
+  assert.match(assets, /:can-manage="canManageAssets"/);
+  assert.match(authorization, /<YAdminPage/);
+  assert.match(authorization, /isAdministrator/);
+  assert.match(authorization, /自定义角色/);
+  assert.match(authorization, /create-role/);
+  assert.match(authorization, /retire-role/);
+  assert.match(authorization, /\/preview/);
+  assert.match(authorization, /确认后才会创建服务端 draft/);
+  assert.match(authorization, /没有超级管理员/);
+  assert.match(authorization, /拒绝申请时请填写原因/);
+  assert.doesNotMatch(authorization, /<main class=/);
 });
 
 test("docs compiles Tailwind utilities from the public UI package", () => {

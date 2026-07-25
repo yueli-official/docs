@@ -52,13 +52,13 @@ export interface DocDetailResponse {
 }
 
 export interface URLResolution {
-  kind: 'canonical' | 'alias' | 'redirect' | 'gone' | 'unknown'
-  location?: string
-  statusCode?: number
+  kind: "canonical" | "alias" | "redirect" | "gone" | "unknown";
+  location?: string;
+  statusCode?: number;
 }
 
 export interface URLResolutionResponse {
-  resolution: URLResolution
+  resolution: URLResolution;
 }
 export interface CollectionList {
   items: Collection[];
@@ -165,6 +165,9 @@ export interface DocsImportBatch {
   status: string;
   errorMessage: string;
   summary: DocsImportSummary;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
 }
 export interface DocsImportItem {
   id: string;
@@ -186,4 +189,7 @@ export interface DocsImportUploadResponse {
 export interface DocsImportDetailResponse {
   batch: DocsImportBatch;
   items: DocsImportItem[];
+}
+export interface DocsImportListResponse {
+  items: DocsImportBatch[];
 }

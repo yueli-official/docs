@@ -1,15 +1,20 @@
 package model
 
+import "time"
+
 type ImportBatch struct {
-	ID            string `json:"id" orm:"id"`
-	CollectionID  string `json:"collectionId" orm:"collection_id"`
-	VersionID     string `json:"versionId" orm:"version_id"`
-	DefaultLocale string `json:"defaultLocale" orm:"default_locale"`
-	Mode          string `json:"mode" orm:"mode"`
-	Status        string `json:"status" orm:"status"`
-	SummaryJSON   string `json:"summaryJson" orm:"summary_json"`
-	ErrorMessage  string `json:"errorMessage" orm:"error_message"`
-	CreatedBy     string `json:"createdBy" orm:"created_by"`
+	ID            string     `json:"id" orm:"id"`
+	CollectionID  string     `json:"collectionId" orm:"collection_id"`
+	VersionID     string     `json:"versionId" orm:"version_id"`
+	DefaultLocale string     `json:"defaultLocale" orm:"default_locale"`
+	Mode          string     `json:"mode" orm:"mode"`
+	Status        string     `json:"status" orm:"status"`
+	SummaryJSON   string     `json:"summaryJson" orm:"summary_json"`
+	ErrorMessage  string     `json:"errorMessage" orm:"error_message"`
+	CreatedBy     string     `json:"createdBy" orm:"created_by"`
+	CreatedAt     time.Time  `json:"createdAt" orm:"created_at"`
+	UpdatedAt     time.Time  `json:"updatedAt" orm:"updated_at"`
+	CompletedAt   *time.Time `json:"completedAt,omitempty" orm:"completed_at"`
 }
 
 type ImportItem struct {

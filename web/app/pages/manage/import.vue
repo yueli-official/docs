@@ -3,31 +3,69 @@ import { createPlatformNotifier } from "@platform/ui/feedback";
 import { ManageEmpty } from "@platform/manage/components";
 import type {
   DocsImportBatch,
+  DocsImportListResponse,
   DocsImportSummary,
   DocsImportUploadResponse,
 } from "~/types";
+import {
+  formatImportDate,
+  importModeLabel,
+  importStatusMeta,
+} from "~/utils/docsImportPresentation.mjs";
 
 definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "批量导入 · 控制台" });
 
 const { call } = useApi();
+const { can } = useMe();
+const canManageImports = computed(() => can("docs.import.manage"));
 const toast = createPlatformNotifier(useToast());
 
 const file = ref<File | null>(null);
 const uploading = ref(false);
 const confirming = ref(false);
 const errorMessage = ref("");
+const confirmError = ref("");
 const batch = ref<DocsImportBatch | null>(null);
 const summary = ref<DocsImportSummary | null>(null);
 
-const canUpload = computed(() => Boolean(file.value && !uploading.value));
-const canConfirm = computed(() =>
+const canUpload = computed(() =>
   Boolean(
-    batch.value?.id &&
-    batch.value.status === "checked" &&
-    !summary.value?.blocking,
+    canManageImports.value &&
+    file.value &&
+    !uploading.value &&
+    !confirming.value,
   ),
 );
+const canConfirm = computed(() =>
+  Boolean(
+    canManageImports.value &&
+    batch.value?.id &&
+    batch.value.status === "checked" &&
+    !summary.value?.blocking &&
+    !confirming.value,
+  ),
+);
+
+const {
+  data: historyData,
+  pending: historyPending,
+  error: historyError,
+  refresh: refreshHistory,
+} = await useAsyncData(
+  "docs-import-history",
+  () =>
+    canManageImports.value
+      ? call<DocsImportListResponse>("/api/v1/imports/docs", {
+          query: { limit: 12 },
+        })
+      : Promise.resolve({ items: [] }),
+  {
+    server: false,
+    default: () => ({ items: [] as DocsImportBatch[] }),
+  },
+);
+const recentImports = computed(() => historyData.value?.items ?? []);
 
 const summaryCards = computed(() => {
   const s = summary.value;
@@ -79,10 +117,11 @@ function onFileChange(event: Event) {
   batch.value = null;
   summary.value = null;
   errorMessage.value = "";
+  confirmError.value = "";
 }
 
 async function upload() {
-  if (!file.value) return;
+  if (!canManageImports.value || !file.value) return;
   if (!file.value.name.toLowerCase().endsWith(".zip")) {
     errorMessage.value = "请选择 ZIP 文件";
     return;
@@ -98,6 +137,7 @@ async function upload() {
     });
     batch.value = res.batch;
     summary.value = res.summary;
+    await refreshHistory();
   } catch (err: any) {
     errorMessage.value = err?.data?.message || err?.message || "上传失败";
     toast.add({
@@ -112,8 +152,9 @@ async function upload() {
 }
 
 async function confirmImport() {
-  if (!batch.value) return;
+  if (!canManageImports.value || !batch.value) return;
   confirming.value = true;
+  confirmError.value = "";
   try {
     const res = await call<DocsImportUploadResponse>(
       `/api/v1/imports/docs/${batch.value.id}/confirm`,
@@ -121,9 +162,10 @@ async function confirmImport() {
     );
     await navigateTo(`/manage/import/${res.batch.id}`);
   } catch (err: any) {
+    confirmError.value = err?.data?.message || "请检查预检结果后重试";
     toast.add({
       title: "导入失败",
-      description: err?.data?.message || "请检查预检结果后重试",
+      description: confirmError.value,
       color: "error",
     });
   } finally {
@@ -140,7 +182,26 @@ async function confirmImport() {
     main-id="manage-main"
     body-class="mx-auto w-full max-w-screen-2xl"
   >
-    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div
+      v-if="!canManageImports"
+      class="rounded-lg border border-default bg-default p-8"
+    >
+      <div class="mx-auto max-w-md text-center">
+        <span
+          class="mx-auto grid size-12 place-items-center rounded-lg bg-warning/10 text-warning"
+        >
+          <UIcon name="i-tabler-lock" class="size-6" />
+        </span>
+        <h2 class="mt-4 text-lg font-semibold text-highlighted">
+          没有批量导入权限
+        </h2>
+        <p class="mt-2 text-sm leading-6 text-muted">
+          当前角色不能上传、确认或回滚导入批次。请联系管理员调整角色能力。
+        </p>
+      </div>
+    </div>
+
+    <div v-else class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section class="min-w-0 space-y-4">
         <div class="rounded-lg border border-default bg-default p-5">
           <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -154,7 +215,7 @@ async function confirmImport() {
               </p>
             </div>
             <UBadge
-              label="ZIP only"
+              label="ZIP 格式"
               icon="i-tabler-file-zip"
               variant="subtle"
             />
@@ -278,6 +339,77 @@ async function confirmImport() {
           icon="i-tabler-file-import"
           text="选择 ZIP 后开始预检"
         />
+
+        <section
+          aria-labelledby="import-history-title"
+          class="overflow-hidden rounded-lg border border-default bg-default"
+        >
+          <div
+            class="flex items-center justify-between gap-3 border-b border-default bg-elevated/35 px-5 py-3"
+          >
+            <div>
+              <h2
+                id="import-history-title"
+                class="text-sm font-semibold text-highlighted"
+              >
+                最近导入
+              </h2>
+              <p class="mt-0.5 text-xs text-muted">
+                查看预检、执行、失败与回滚记录。
+              </p>
+            </div>
+            <UButton
+              v-if="historyError"
+              label="重试"
+              icon="i-tabler-refresh"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              @click="() => refreshHistory()"
+            />
+          </div>
+          <div v-if="historyPending" class="grid gap-2 p-4">
+            <USkeleton v-for="item in 4" :key="item" class="h-14 rounded-lg" />
+          </div>
+          <div
+            v-else-if="historyError"
+            class="px-5 py-8 text-center text-sm text-error"
+          >
+            导入历史暂时无法加载
+          </div>
+          <div v-else-if="recentImports.length" class="divide-y divide-default">
+            <NuxtLink
+              v-for="item in recentImports"
+              :key="item.id"
+              :to="`/manage/import/${item.id}`"
+              class="group grid gap-2 px-5 py-3 transition hover:bg-elevated/40 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center"
+            >
+              <span class="min-w-0">
+                <span class="block truncate font-mono text-xs text-highlighted">
+                  {{ item.id }}
+                </span>
+                <span class="mt-1 block text-xs text-muted">
+                  {{ importModeLabel(item.mode) }} ·
+                  {{ item.summary.creates + item.summary.updates }} 篇变更
+                </span>
+              </span>
+              <UBadge
+                :label="importStatusMeta(item.status).label"
+                :color="importStatusMeta(item.status).color"
+                :icon="importStatusMeta(item.status).icon"
+                variant="subtle"
+                size="sm"
+              />
+              <time
+                class="text-xs tabular-nums text-muted"
+                :datetime="item.createdAt"
+              >
+                {{ formatImportDate(item.createdAt) }}
+              </time>
+            </NuxtLink>
+          </div>
+          <ManageEmpty v-else icon="i-tabler-history" text="还没有导入记录" />
+        </section>
       </section>
 
       <aside
@@ -289,7 +421,7 @@ async function confirmImport() {
               导入状态
             </p>
             <h2 class="mt-1 text-base font-semibold text-highlighted">
-              {{ batch?.status || "等待上传" }}
+              {{ batch ? importStatusMeta(batch.status).label : "等待上传" }}
             </h2>
           </div>
           <span
@@ -311,7 +443,7 @@ async function confirmImport() {
           <div class="flex items-center justify-between gap-3">
             <span class="text-muted">模式</span>
             <span class="font-mono text-xs text-default">{{
-              batch?.mode || "-"
+              batch ? importModeLabel(batch.mode) : "-"
             }}</span>
           </div>
           <div class="flex items-center justify-between gap-3">
@@ -323,6 +455,16 @@ async function confirmImport() {
         </div>
 
         <USeparator class="my-4" />
+
+        <UAlert
+          v-if="confirmError"
+          class="mb-3"
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-circle"
+          title="确认导入失败"
+          :description="confirmError"
+        />
 
         <div class="grid gap-2">
           <UButton

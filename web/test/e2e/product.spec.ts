@@ -1,10 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { productSites } from "../../../../../tests/e2e/contracts";
 import { registerProductSuite } from "../../../../../tests/e2e/product-suite";
-import {
-  loginE2E,
-  settleNuxt,
-} from "../../../../../tests/e2e/runtime";
+import { loginE2E, settleNuxt } from "../../../../../tests/e2e/runtime";
 
 registerProductSuite("docs");
 
@@ -28,7 +25,7 @@ test("管理控制台在桌面宽度保持稳定双栏", async ({ browser }) => 
         has: page.getByRole("heading", { name, exact: true }),
       });
     const pending = await sectionFor("待完善文档").boundingBox();
-    const health = await sectionFor("内容服务").boundingBox();
+    const health = await sectionFor("工作区状态").boundingBox();
     const recent = await sectionFor("最近更新").boundingBox();
     const actions = await sectionFor("快捷操作").boundingBox();
     expect(pending).not.toBeNull();

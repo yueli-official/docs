@@ -17,7 +17,11 @@ func NewMe() *Me { return &Me{} }
 
 func (c *Me) Me(ctx context.Context, _ *v1.MeReq) (*v1.MeRes, error) {
 	sub, _ := subject(ctx) // empty when anonymous; subject() returns Forbidden err we ignore
-	access, err := authorizationService(ctx).EffectiveAccess(ctx)
+	service := authorizationService(ctx)
+	if service == nil {
+		return nil, docserr.AuthorizationUnavailable()
+	}
+	access, err := service.EffectiveAccess(ctx)
 	if err != nil {
 		return nil, docserr.AuthorizationUnavailable()
 	}

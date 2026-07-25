@@ -19,6 +19,17 @@ type Imports struct{ svc *catalog.Service }
 
 func NewImports(svc *catalog.Service) *Imports { return &Imports{svc: svc} }
 
+func (c *Imports) ListDocsImports(ctx context.Context, req *v1.ListDocsImportsReq) (*v1.ListDocsImportsRes, error) {
+	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
+	}
+	items, err := c.svc.ListImports(ctx, req.CollectionID, req.Limit)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ListDocsImportsRes{Items: importBatchViews(items)}, nil
+}
+
 func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImportReq) (*v1.UploadDocsImportRes, error) {
 	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
 		return nil, err
@@ -111,7 +122,18 @@ func importBatchView(m *model.ImportBatch) *v1.ImportBatchView {
 		Status:        m.Status,
 		ErrorMessage:  m.ErrorMessage,
 		Summary:       importSummaryFromJSON(m.SummaryJSON),
+		CreatedAt:     m.CreatedAt,
+		UpdatedAt:     m.UpdatedAt,
+		CompletedAt:   m.CompletedAt,
 	}
+}
+
+func importBatchViews(items []*model.ImportBatch) []*v1.ImportBatchView {
+	out := make([]*v1.ImportBatchView, len(items))
+	for i, item := range items {
+		out[i] = importBatchView(item)
+	}
+	return out
 }
 
 func importItemView(m *model.ImportItem) *v1.ImportItemView {

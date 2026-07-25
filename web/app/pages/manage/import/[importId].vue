@@ -7,12 +7,18 @@ import type {
   DocsImportDetailResponse,
   DocsImportItem,
 } from "~/types";
+import {
+  importModeLabel,
+  importStatusMeta,
+} from "~/utils/docsImportPresentation.mjs";
 
 definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "导入详情 · 控制台" });
 
 const route = useRoute("/manage/import/[importId]");
 const { call } = useApi();
+const { can } = useMe();
+const canManageImports = computed(() => can("docs.import.manage"));
 const toast = createPlatformNotifier(useToast());
 
 const importId = computed(() => String(route.params.importId || ""));
@@ -26,7 +32,12 @@ onMounted(() => {
 const { data, pending, error, refresh } = await useAsyncData(
   () => `docs-import-${importId.value}`,
   () =>
-    call<DocsImportDetailResponse>(`/api/v1/imports/docs/${importId.value}`),
+    canManageImports.value
+      ? call<DocsImportDetailResponse>(`/api/v1/imports/docs/${importId.value}`)
+      : Promise.resolve({
+          batch: null as unknown as DocsImportBatch,
+          items: [] as DocsImportItem[],
+        }),
   {
     server: false,
     default: () => ({
@@ -83,44 +94,6 @@ function toneClass(tone: string) {
   return "bg-elevated text-muted ring-default";
 }
 
-function statusMeta(status?: string) {
-  if (status === "completed")
-    return {
-      label: "已完成",
-      color: "success" as const,
-      icon: "i-tabler-circle-check",
-    };
-  if (status === "rolled_back")
-    return {
-      label: "已回滚",
-      color: "neutral" as const,
-      icon: "i-tabler-history",
-    };
-  if (status === "failed")
-    return {
-      label: "失败",
-      color: "error" as const,
-      icon: "i-tabler-alert-circle",
-    };
-  if (status === "checked")
-    return {
-      label: "已预检",
-      color: "warning" as const,
-      icon: "i-tabler-clipboard-check",
-    };
-  if (status === "running")
-    return {
-      label: "执行中",
-      color: "primary" as const,
-      icon: "i-tabler-loader-2",
-    };
-  return {
-    label: status || "未知",
-    color: "neutral" as const,
-    icon: "i-tabler-file-import",
-  };
-}
-
 function actionMeta(action: string) {
   const map: Record<
     string,
@@ -151,7 +124,7 @@ function actionMeta(action: string) {
 }
 
 async function rollback() {
-  if (!batch.value?.id) return;
+  if (!canManageImports.value || !batch.value?.id) return;
   rollbackBusy.value = true;
   try {
     await call(`/api/v1/imports/docs/${batch.value.id}/rollback`, {
@@ -184,6 +157,7 @@ async function rollback() {
     </template>
     <template #actions>
       <UButton
+        v-if="canManageImports"
         icon="i-tabler-file-import"
         label="继续导入"
         color="neutral"
@@ -192,7 +166,26 @@ async function rollback() {
       />
     </template>
 
-    <SkeletonList v-if="showSkeleton" :rows="8" />
+    <div
+      v-if="!canManageImports"
+      class="rounded-lg border border-default bg-default p-8"
+    >
+      <div class="mx-auto max-w-md text-center">
+        <span
+          class="mx-auto grid size-12 place-items-center rounded-lg bg-warning/10 text-warning"
+        >
+          <UIcon name="i-tabler-lock" class="size-6" />
+        </span>
+        <h2 class="mt-4 text-lg font-semibold text-highlighted">
+          没有批量导入权限
+        </h2>
+        <p class="mt-2 text-sm leading-6 text-muted">
+          当前角色不能查看或回滚导入批次。请联系管理员调整角色能力。
+        </p>
+      </div>
+    </div>
+
+    <SkeletonList v-else-if="showSkeleton" :rows="8" />
 
     <div
       v-else-if="loadError"
@@ -230,13 +223,14 @@ async function rollback() {
             <div>
               <h2 class="text-base font-semibold text-highlighted">批次状态</h2>
               <p class="mt-1 text-sm text-muted">
-                模式 {{ batch.mode }} · 默认语言 {{ batch.defaultLocale }}
+                模式 {{ importModeLabel(batch.mode) }} · 默认语言
+                {{ batch.defaultLocale }}
               </p>
             </div>
             <UBadge
-              :label="statusMeta(batch.status).label"
-              :color="statusMeta(batch.status).color"
-              :icon="statusMeta(batch.status).icon"
+              :label="importStatusMeta(batch.status).label"
+              :color="importStatusMeta(batch.status).color"
+              :icon="importStatusMeta(batch.status).icon"
               variant="subtle"
             />
           </div>
@@ -330,7 +324,7 @@ async function rollback() {
                 批次操作
               </p>
               <h2 class="mt-1 text-base font-semibold text-highlighted">
-                {{ statusMeta(batch.status).label }}
+                {{ importStatusMeta(batch.status).label }}
               </h2>
             </div>
             <span
@@ -352,7 +346,7 @@ async function rollback() {
             <div class="flex items-center justify-between gap-3">
               <span class="text-muted">阻塞</span>
               <span class="font-mono text-xs text-default">{{
-                summary?.blocking ? "yes" : "no"
+                summary?.blocking ? "是" : "否"
               }}</span>
             </div>
             <div class="flex items-center justify-between gap-3">
@@ -364,6 +358,16 @@ async function rollback() {
           </div>
 
           <USeparator class="my-4" />
+
+          <UAlert
+            v-if="batch.status === 'failed' && batch.errorMessage"
+            class="mb-4"
+            color="error"
+            variant="soft"
+            icon="i-tabler-alert-circle"
+            title="导入执行失败"
+            :description="batch.errorMessage"
+          />
 
           <div
             v-if="batch.status === 'completed'"

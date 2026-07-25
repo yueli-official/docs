@@ -32,6 +32,13 @@ definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "文档 · 控制台" });
 
 const { call } = useApi();
+const { can } = useMe();
+const canReadDocs = computed(() => can("docs.document.read"));
+const canCreateDocs = computed(() => can("docs.document.create"));
+const canUpdateDocs = computed(() => can("docs.document.update"));
+const canPublishDocs = computed(() => can("docs.document.publish"));
+const canArchiveDocs = computed(() => can("docs.document.archive"));
+const canDeleteDocs = computed(() => can("docs.document.delete_permanently"));
 const toast = createPlatformNotifier(useToast());
 const router = useRouter();
 const UCheckbox = resolveComponent("UCheckbox");
@@ -149,12 +156,19 @@ const statusCounts = ref<Record<StatusKey, number>>({
   issues: 0,
 });
 
-const bulkItems: Array<{ label: string; value: BulkDocAction; icon: string }> =
-  [
-    { label: "发布", value: "publish", icon: "i-tabler-rocket" },
-    { label: "转草稿", value: "draft", icon: "i-tabler-pencil" },
-    { label: "归档", value: "archive", icon: "i-tabler-archive" },
-  ];
+const bulkItems = computed<
+  Array<{ label: string; value: BulkDocAction; icon: string }>
+>(() => [
+  ...(canPublishDocs.value
+    ? [{ label: "发布", value: "publish" as const, icon: "i-tabler-rocket" }]
+    : []),
+  ...(canUpdateDocs.value
+    ? [{ label: "转草稿", value: "draft" as const, icon: "i-tabler-pencil" }]
+    : []),
+  ...(canArchiveDocs.value
+    ? [{ label: "归档", value: "archive" as const, icon: "i-tabler-archive" }]
+    : []),
+]);
 
 const { data: cols, pending: collectionsPending } = await useAsyncData(
   "manage-doc-workbench-collections",
@@ -179,6 +193,10 @@ async function loadDocPage(
   activeWorkflow: CollectionWorkflow<ManagedDoc, string, DocCollectionQuery>,
 ) {
   const token = activeWorkflow.beginLoad();
+  if (!canReadDocs.value) {
+    activeWorkflow.resolveLoad(token, { items: [], total: 0 });
+    return;
+  }
   docsPending.value = true;
   docsError.value = "";
   try {
@@ -642,12 +660,14 @@ function openDoc(docOrId: ManagedDoc | string) {
 }
 
 function addChild(doc: ManagedDoc) {
+  if (!canCreateDocs.value) return;
   navigateTo(
     `/manage/docs/new?collection=${encodeURIComponent(doc.collectionSlug)}&parent=${encodeURIComponent(doc.id)}`,
   );
 }
 
 async function openQuickEdit(doc: ManagedDoc) {
+  if (!canUpdateDocs.value) return;
   const seq = ++quickEditRequestSeq;
   quickEditTarget.value = doc;
   quickEditDocs.value = [doc];
@@ -679,6 +699,9 @@ async function updateDocStatus(
   id: string,
   status: "draft" | "published" | "archived",
 ) {
+  if (status === "published" && !canPublishDocs.value) return;
+  if (status === "archived" && !canArchiveDocs.value) return;
+  if (status === "draft" && !canUpdateDocs.value) return;
   if (status === "published") {
     await call(`/api/v1/docs/${id}/publish`, { method: "POST" });
     return;
@@ -975,7 +998,7 @@ function applyMoveToTree(nodes: DocDetail[], intent: MoveIntent) {
 }
 
 async function onMove(intent: MoveIntent) {
-  if (!tree.value) return;
+  if (!canUpdateDocs.value || !tree.value) return;
   const patches = computePatches(tree.value.tree, intent);
   if (!patches?.length) return;
 
@@ -1009,6 +1032,7 @@ async function onMove(intent: MoveIntent) {
 }
 
 async function onDelete(id: string) {
+  if (!canDeleteDocs.value) return;
   try {
     await call(`/api/v1/docs/${id}`, { method: "DELETE" });
     await Promise.all([refreshTree(), reloadDocPage()]);
@@ -1022,7 +1046,7 @@ async function onDelete(id: string) {
 }
 
 function formatUpdatedAt(value: string) {
-  if (!value) return "—";
+  if (!value) return "未记录";
   return new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
     month: "2-digit",
@@ -1070,7 +1094,7 @@ function sortableHeader(label: string, key: SortKey) {
   };
 }
 
-const docColumns: TableColumn<ManagedDoc>[] = [
+const allDocColumns: TableColumn<ManagedDoc>[] = [
   {
     id: "select",
     header: ({ table }) =>
@@ -1165,6 +1189,14 @@ const docColumns: TableColumn<ManagedDoc>[] = [
     },
   },
 ];
+const docColumns = computed(() =>
+  allDocColumns.filter((column) => {
+    if (column.id === "select") return bulkItems.value.length > 0;
+    if (column.id === "actions")
+      return canCreateDocs.value || canUpdateDocs.value;
+    return true;
+  }),
+);
 </script>
 
 <template>
@@ -1176,10 +1208,34 @@ const docColumns: TableColumn<ManagedDoc>[] = [
     body-class="mx-auto w-full max-w-screen-2xl"
   >
     <template #actions>
-      <UButton icon="i-tabler-plus" label="新建文档" :to="createTarget" />
+      <UButton
+        v-if="canCreateDocs"
+        icon="i-tabler-plus"
+        label="新建文档"
+        :to="createTarget"
+      />
     </template>
 
-    <ClientOnly>
+    <div
+      v-if="!canReadDocs"
+      class="rounded-lg border border-default bg-default p-8"
+    >
+      <div class="mx-auto max-w-md text-center">
+        <span
+          class="mx-auto grid size-12 place-items-center rounded-lg bg-warning/10 text-warning"
+        >
+          <UIcon name="i-tabler-lock" class="size-6" />
+        </span>
+        <h2 class="mt-4 text-lg font-semibold text-highlighted">
+          没有文档读取权限
+        </h2>
+        <p class="mt-2 text-sm leading-6 text-muted">
+          当前角色不能查看文档列表。请联系管理员调整角色能力。
+        </p>
+      </div>
+    </div>
+
+    <ClientOnly v-else>
       <section
         v-if="viewMode === 'list'"
         class="overflow-hidden rounded-xl border border-default bg-default shadow-sm"
@@ -1385,12 +1441,19 @@ const docColumns: TableColumn<ManagedDoc>[] = [
           <template #title-cell="{ row }">
             <div class="min-w-0">
               <button
+                v-if="canUpdateDocs"
                 type="button"
                 class="block max-w-full truncate text-left text-sm font-medium text-highlighted hover:text-primary"
                 @click="openQuickEdit(row.original)"
               >
                 {{ row.original.title }}
               </button>
+              <p
+                v-else
+                class="max-w-full truncate text-sm font-medium text-highlighted"
+              >
+                {{ row.original.title }}
+              </p>
               <p class="mt-1 truncate text-xs text-muted">
                 {{ row.original.excerpt || "暂无摘要" }}
               </p>
@@ -1455,7 +1518,7 @@ const docColumns: TableColumn<ManagedDoc>[] = [
 
           <template #actions-cell="{ row }">
             <div class="flex justify-end gap-1">
-              <UTooltip text="添加子文档">
+              <UTooltip v-if="canCreateDocs" text="添加子文档">
                 <UButton
                   icon="i-tabler-file-plus"
                   color="neutral"
@@ -1466,7 +1529,7 @@ const docColumns: TableColumn<ManagedDoc>[] = [
                   @click="addChild(row.original)"
                 />
               </UTooltip>
-              <UTooltip text="快速编辑">
+              <UTooltip v-if="canUpdateDocs" text="快速编辑">
                 <UButton
                   icon="i-tabler-pencil"
                   color="neutral"
@@ -1477,7 +1540,7 @@ const docColumns: TableColumn<ManagedDoc>[] = [
                   @click="openQuickEdit(row.original)"
                 />
               </UTooltip>
-              <UTooltip text="完整编辑">
+              <UTooltip v-if="canUpdateDocs" text="完整编辑">
                 <UButton
                   icon="i-tabler-file-pencil"
                   color="neutral"
@@ -1647,6 +1710,10 @@ const docColumns: TableColumn<ManagedDoc>[] = [
           <DocTreeAdmin
             :nodes="tree.tree"
             :collection-slug="activeTreeSlug"
+            :can-edit="canUpdateDocs"
+            :can-create="canCreateDocs"
+            :can-delete="canDeleteDocs"
+            :can-move="canUpdateDocs"
             @edit="openDoc"
             @add-child="
               (parentId) =>
@@ -1662,6 +1729,7 @@ const docColumns: TableColumn<ManagedDoc>[] = [
     </ClientOnly>
 
     <ManageDocQuickEditModal
+      v-if="canUpdateDocs"
       v-model:open="showQuickEdit"
       :doc="quickEditTarget"
       :docs="quickEditDocs"

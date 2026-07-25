@@ -89,6 +89,9 @@ func (service *Service) Decide(
 			Kind: authorization.ErrorUnavailable, Field: "runtime", Message: "is not configured",
 		}
 	}
+	if err := service.ReconcileSubject(ctx); err != nil {
+		return authorization.Decision{}, err
+	}
 	return service.runtime.Decide(ctx, authorization.DecisionRequest{
 		Subject: service.Subject(ctx), Capability: capability, ScopeID: scopeID, Resource: resource,
 	})
@@ -152,7 +155,32 @@ func (service *Service) EffectiveAccess(ctx context.Context) (authorization.Effe
 			Kind: authorization.ErrorUnavailable, Field: "runtime", Message: "is not configured",
 		}
 	}
+	if err := service.ReconcileSubject(ctx); err != nil {
+		return authorization.EffectiveAccess{}, err
+	}
 	return service.runtime.EffectiveAccess(ctx, authorization.EffectiveAccessQuery{
 		Subject: service.Subject(ctx), ScopeID: RootScopeID,
 	})
+}
+
+func (service *Service) ReconcileSubject(ctx context.Context) error {
+	if service == nil || service.runtime == nil {
+		return &authorization.Error{
+			Kind: authorization.ErrorUnavailable, Field: "runtime", Message: "is not configured",
+		}
+	}
+	subject := service.Subject(ctx)
+	if subject.Kind != authorization.SubjectUser || subject.ID == "" {
+		return nil
+	}
+	preview, err := service.runtime.PreviewReconcileSubject(ctx, authorization.ReconcileSubjectCommand{
+		Subject: subject,
+	})
+	if err != nil || preview.Created == 0 {
+		return err
+	}
+	_, err = service.runtime.ReconcileSubject(ctx, authorization.ReconcileSubjectCommand{
+		Subject: subject,
+	})
+	return err
 }

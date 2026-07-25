@@ -12,129 +12,162 @@ definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "控制台" });
 
 interface DashboardData {
-  collections: CollectionList;
-  recent: ManageDocsResponse;
-  issues: ManageDocsResponse;
+  collections: CollectionList | null;
+  recent: ManageDocsResponse | null;
+  issues: ManageDocsResponse | null;
 }
 
 const { call } = useApi();
+const { can, isAdministrator } = useMe();
+const canReadDocs = computed(() => can("docs.document.read"));
+const canCreateDocs = computed(() => can("docs.document.create"));
+const canManageCollections = computed(() => can("docs.collection.manage"));
+const canManageImports = computed(() => can("docs.import.manage"));
+const canManageSiteSettings = computed(() => can("docs.site_settings.manage"));
+const canManageAssetSettings = computed(() =>
+  can("docs.asset_settings.manage"),
+);
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
 });
 
-const { data, pending, error, refresh } = await useAsyncData(
+async function loadOptional<T>(request: Promise<T>): Promise<T | null> {
+  try {
+    return await request;
+  } catch {
+    return null;
+  }
+}
+
+const { data, pending, refresh } = await useAsyncData(
   "manage-overview",
   async (): Promise<DashboardData> => {
     const [collections, recent, issues] = await Promise.all([
-      call<CollectionList>("/api/v1/collections"),
-      call<ManageDocsResponse>("/api/v1/manage/docs", {
-        query: {
-          status: "all",
-          quality: "all",
-          sort: "updatedAt",
-          direction: "desc",
-          page: 1,
-          size: 6,
-        },
-      }),
-      call<ManageDocsResponse>("/api/v1/manage/docs", {
-        query: {
-          status: "all",
-          quality: "issues",
-          sort: "updatedAt",
-          direction: "desc",
-          page: 1,
-          size: 5,
-        },
-      }),
+      canManageCollections.value
+        ? loadOptional(call<CollectionList>("/api/v1/collections"))
+        : null,
+      canReadDocs.value
+        ? loadOptional(
+            call<ManageDocsResponse>("/api/v1/manage/docs", {
+              query: {
+                status: "all",
+                quality: "all",
+                sort: "updatedAt",
+                direction: "desc",
+                page: 1,
+                size: 6,
+              },
+            }),
+          )
+        : null,
+      canReadDocs.value
+        ? loadOptional(
+            call<ManageDocsResponse>("/api/v1/manage/docs", {
+              query: {
+                status: "all",
+                quality: "issues",
+                sort: "updatedAt",
+                direction: "desc",
+                page: 1,
+                size: 5,
+              },
+            }),
+          )
+        : null,
     ]);
     return { collections, recent, issues };
   },
   {
     server: false,
     default: () => ({
-      collections: { items: [] },
-      recent: emptyDocsResponse(),
-      issues: emptyDocsResponse(),
+      collections: null,
+      recent: null,
+      issues: null,
     }),
   },
 );
 
-function emptyDocsResponse(): ManageDocsResponse {
-  return {
-    items: [],
-    total: 0,
-    page: 1,
-    size: 0,
-    counts: { all: 0, draft: 0, published: 0, archived: 0, issues: 0 },
-  };
-}
-
 const showSkeleton = useMinimumLoading(
   computed(() => !mounted.value || pending.value),
 );
-const counts = computed(
-  () => data.value?.recent.counts ?? emptyDocsResponse().counts,
-);
-const metrics = computed(() => [
-  {
-    label: "文档总数",
-    value: counts.value.all,
-    icon: "i-tabler-files",
-    to: "/manage/docs",
-  },
-  {
-    label: "已发布",
-    value: counts.value.published,
-    icon: "i-tabler-world-check",
-    to: { path: "/manage/docs", query: { status: "published" } },
-  },
-  {
-    label: "草稿",
-    value: counts.value.draft,
-    icon: "i-tabler-pencil",
-    to: { path: "/manage/docs", query: { status: "draft" } },
-  },
-  {
-    label: "待完善",
-    value: counts.value.issues,
-    icon: "i-tabler-alert-circle",
-    to: { path: "/manage/docs", query: { status: "issues" } },
-  },
-]);
 
-const recentDocs = computed(() => data.value?.recent.items ?? []);
-const issueDocs = computed(() => data.value?.issues.items ?? []);
+const recentDocs = computed(() => data.value?.recent?.items ?? []);
+const issueDocs = computed(() => data.value?.issues?.items ?? []);
 const collectionCount = computed(
-  () => data.value?.collections.items.length ?? 0,
+  () => data.value?.collections?.items.length ?? null,
 );
-const quickActions = [
-  {
-    label: "管理文档",
-    description: "查找、筛选与维护内容",
-    icon: "i-tabler-files",
-    to: "/manage/docs",
-  },
-  {
-    label: "管理文档集",
-    description: "调整内容结构与分组",
-    icon: "i-tabler-stack-2",
-    to: "/manage/collections",
-  },
-  {
-    label: "批量导入",
-    description: "一次导入多篇文档",
-    icon: "i-tabler-file-import",
-    to: "/manage/import",
-  },
-  {
-    label: "站点设置",
-    description: "维护站点展示信息",
-    icon: "i-tabler-settings",
-    to: "/manage/home",
-  },
-] as const;
+const documentDataUnavailable = computed(
+  () => canReadDocs.value && (!data.value?.recent || !data.value?.issues),
+);
+const collectionDataUnavailable = computed(
+  () => canManageCollections.value && !data.value?.collections,
+);
+const workspaceDegraded = computed(
+  () => documentDataUnavailable.value || collectionDataUnavailable.value,
+);
+const quickActions = computed(() => [
+  ...(canReadDocs.value
+    ? [
+        {
+          label: "管理文档",
+          description: "查找、筛选与维护内容",
+          icon: "i-tabler-files",
+          to: "/manage/docs",
+        },
+      ]
+    : []),
+  ...(canManageCollections.value
+    ? [
+        {
+          label: "管理文档集",
+          description: "调整内容结构与分组",
+          icon: "i-tabler-stack-2",
+          to: "/manage/collections",
+        },
+      ]
+    : []),
+  ...(canManageImports.value
+    ? [
+        {
+          label: "批量导入",
+          description: "一次导入多篇文档",
+          icon: "i-tabler-file-import",
+          to: "/manage/import",
+        },
+      ]
+    : []),
+  ...(canManageSiteSettings.value
+    ? [
+        {
+          label: "站点设置",
+          description: "维护站点展示信息",
+          icon: "i-tabler-settings",
+          to: "/manage/home",
+        },
+      ]
+    : []),
+  ...(canManageAssetSettings.value
+    ? [
+        {
+          label: "资源配置",
+          description: "检查存储与用途规则",
+          icon: "i-tabler-database-cog",
+          to: "/manage/assets",
+        },
+      ]
+    : []),
+  ...(isAdministrator.value
+    ? [
+        {
+          label: "权限与申请",
+          description: "管理作者能力与申请",
+          icon: "i-tabler-shield-lock",
+          to: "/manage/authorization",
+        },
+      ]
+    : []),
+]);
 
 function docLink(doc: ManageDocListItem) {
   return docManageRoute(
@@ -158,7 +191,7 @@ function statusLabel(status: string) {
 }
 
 function formatUpdatedAt(value: string) {
-  if (!value) return "—";
+  if (!value) return "未记录";
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
     day: "2-digit",
@@ -177,37 +210,21 @@ function formatUpdatedAt(value: string) {
     body-class="mx-auto w-full max-w-screen-2xl space-y-4"
   >
     <template #actions>
-      <UButton to="/manage/docs/new" icon="i-tabler-plus" label="新建文档" />
+      <UButton
+        v-if="canCreateDocs"
+        to="/manage/docs/new"
+        icon="i-tabler-plus"
+        label="新建文档"
+      />
     </template>
 
-    <section aria-label="关键指标">
-      <div v-if="showSkeleton" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <USkeleton v-for="item in 4" :key="item" class="h-20 rounded-xl" />
-      </div>
-      <div v-else class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <NuxtLink
-          v-for="metric in metrics"
-          :key="metric.label"
-          :to="metric.to"
-          class="group flex min-h-20 items-center gap-3 rounded-xl border border-default bg-default px-4 py-3 shadow-sm transition hover:border-primary/35 hover:bg-elevated/30"
-        >
-          <span
-            class="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
-          >
-            <UIcon :name="metric.icon" class="size-4" />
-          </span>
-          <div class="min-w-0">
-            <p class="text-xl font-semibold tabular-nums text-highlighted">
-              {{ metric.value }}
-            </p>
-            <p class="truncate text-xs text-muted">{{ metric.label }}</p>
-          </div>
-        </NuxtLink>
-      </div>
-    </section>
-
-    <div class="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
-      <div class="min-w-0 space-y-4">
+    <div
+      :class="[
+        'grid min-w-0 gap-4',
+        canReadDocs && 'lg:grid-cols-[minmax(0,1fr)_20rem]',
+      ]"
+    >
+      <div v-if="canReadDocs" class="min-w-0 space-y-4">
         <section
           aria-labelledby="pending-docs-title"
           class="overflow-hidden rounded-xl border border-default bg-default"
@@ -229,6 +246,23 @@ function formatUpdatedAt(value: string) {
                 v-for="item in 3"
                 :key="item"
                 class="h-14 rounded-lg"
+              />
+            </div>
+            <div
+              v-else-if="!data?.issues"
+              class="flex flex-col items-start gap-3 rounded-lg bg-error/10 px-3 py-3 text-sm text-error sm:flex-row sm:items-center sm:justify-between"
+            >
+              <span class="inline-flex items-center gap-2">
+                <UIcon name="i-tabler-alert-circle" class="size-4" />
+                待完善文档暂时无法加载
+              </span>
+              <UButton
+                label="重试"
+                icon="i-tabler-refresh"
+                color="error"
+                variant="soft"
+                size="xs"
+                @click="() => refresh()"
               />
             </div>
             <div v-else-if="issueDocs.length" class="divide-y divide-default">
@@ -281,6 +315,23 @@ function formatUpdatedAt(value: string) {
             <p class="mt-0.5 text-xs text-muted">继续处理近期有变更的文档。</p>
           </div>
           <SkeletonList v-if="showSkeleton" :rows="5" class="p-4" />
+          <div
+            v-else-if="!data?.recent"
+            class="flex flex-col items-start gap-3 p-4 text-sm text-error sm:flex-row sm:items-center sm:justify-between sm:px-5"
+          >
+            <span class="inline-flex items-center gap-2">
+              <UIcon name="i-tabler-alert-circle" class="size-4" />
+              最近更新暂时无法加载
+            </span>
+            <UButton
+              label="重试"
+              icon="i-tabler-refresh"
+              color="error"
+              variant="soft"
+              size="xs"
+              @click="() => refresh()"
+            />
+          </div>
           <div v-else-if="recentDocs.length" class="divide-y divide-default">
             <NuxtLink
               v-for="doc in recentDocs"
@@ -316,56 +367,83 @@ function formatUpdatedAt(value: string) {
 
       <aside class="min-w-0 space-y-4">
         <section
-          aria-labelledby="content-service-title"
+          aria-labelledby="workspace-status-title"
           class="rounded-xl border border-default bg-default p-4"
         >
-          <div class="mb-4">
-            <h2
-              id="content-service-title"
-              class="text-sm font-semibold text-highlighted"
-            >
-              内容服务
-            </h2>
-            <p class="mt-0.5 text-xs text-muted">
-              当前站点的管理接口与内容概况。
-            </p>
-          </div>
-          <div v-if="error" class="space-y-3">
-            <div
-              class="flex items-center gap-2 rounded-lg bg-error/10 px-3 py-2.5 text-sm text-error"
-            >
-              <UIcon name="i-tabler-alert-circle" class="size-4" />
-              文档管理接口暂时不可用
+          <div class="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2
+                id="workspace-status-title"
+                class="text-sm font-semibold text-highlighted"
+              >
+                工作区状态
+              </h2>
+              <p class="mt-0.5 text-xs text-muted">
+                仅反映当前账号可访问的管理数据。
+              </p>
             </div>
-            <UButton
-              label="重新加载"
-              icon="i-tabler-refresh"
-              color="neutral"
-              variant="outline"
-              size="xs"
-              @click="() => refresh()"
+            <UBadge
+              v-if="!showSkeleton"
+              :color="workspaceDegraded ? 'warning' : 'success'"
+              variant="soft"
+              :label="workspaceDegraded ? '部分不可用' : '可工作'"
             />
           </div>
+          <div v-if="showSkeleton" class="grid gap-3">
+            <USkeleton v-for="item in 3" :key="item" class="h-5 rounded-md" />
+          </div>
           <dl v-else class="grid gap-3 text-sm">
-            <div class="flex items-center justify-between gap-3">
-              <dt class="text-muted">服务状态</dt>
-              <dd class="inline-flex items-center gap-1.5 text-success">
-                <span class="size-1.5 rounded-full bg-success" />正常
+            <div
+              v-if="canReadDocs"
+              class="flex items-center justify-between gap-3"
+            >
+              <dt class="text-muted">文档管理</dt>
+              <dd
+                class="inline-flex items-center gap-1.5"
+                :class="
+                  documentDataUnavailable ? 'text-warning' : 'text-success'
+                "
+              >
+                <span
+                  class="size-1.5 rounded-full"
+                  :class="documentDataUnavailable ? 'bg-warning' : 'bg-success'"
+                />
+                {{ documentDataUnavailable ? "不可用" : "正常" }}
               </dd>
             </div>
-            <div class="flex items-center justify-between gap-3">
+            <div
+              v-if="canManageCollections"
+              class="flex items-center justify-between gap-3"
+            >
               <dt class="text-muted">文档集</dt>
-              <dd class="font-medium tabular-nums text-highlighted">
-                {{ collectionCount }}
+              <dd
+                class="font-medium tabular-nums"
+                :class="
+                  collectionDataUnavailable
+                    ? 'text-warning'
+                    : 'text-highlighted'
+                "
+              >
+                {{ collectionDataUnavailable ? "不可用" : collectionCount }}
               </dd>
             </div>
             <div class="flex items-center justify-between gap-3">
-              <dt class="text-muted">归档文档</dt>
+              <dt class="text-muted">可用操作</dt>
               <dd class="font-medium tabular-nums text-highlighted">
-                {{ counts.archived }}
+                {{ quickActions.length }}
               </dd>
             </div>
           </dl>
+          <UButton
+            v-if="!showSkeleton && workspaceDegraded"
+            label="重新检查"
+            icon="i-tabler-refresh"
+            color="neutral"
+            variant="outline"
+            size="xs"
+            class="mt-4"
+            @click="() => refresh()"
+          />
         </section>
 
         <section

@@ -21,6 +21,8 @@ definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "文档集 · 控制台" });
 
 const { call } = useApi();
+const { can } = useMe();
+const canManageCollections = computed(() => can("docs.collection.manage"));
 const toast = createPlatformNotifier(useToast());
 const route = useRoute();
 const router = useRouter();
@@ -405,11 +407,35 @@ async function doDelete() {
     body-class="mx-auto w-full max-w-screen-2xl"
   >
     <template #actions>
-      <UButton icon="i-tabler-plus" label="新建文档集" @click="openCreate" />
+      <UButton
+        v-if="canManageCollections"
+        icon="i-tabler-plus"
+        label="新建文档集"
+        @click="openCreate"
+      />
     </template>
 
     <div
-      v-if="loadError"
+      v-if="!canManageCollections"
+      class="rounded-lg border border-default bg-default p-8"
+    >
+      <div class="mx-auto max-w-md text-center">
+        <span
+          class="mx-auto grid size-12 place-items-center rounded-lg bg-warning/10 text-warning"
+        >
+          <UIcon name="i-tabler-lock" class="size-6" />
+        </span>
+        <h2 class="mt-4 text-lg font-semibold text-highlighted">
+          没有文档集管理权限
+        </h2>
+        <p class="mt-2 text-sm leading-6 text-muted">
+          当前角色不能创建、修改或删除文档集。请联系管理员调整角色能力。
+        </p>
+      </div>
+    </div>
+
+    <div
+      v-else-if="loadError"
       class="rounded-lg border border-default bg-default p-8"
     >
       <div class="mx-auto max-w-md text-center">

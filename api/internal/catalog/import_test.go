@@ -77,6 +77,13 @@ func TestPreflightImportCreatesCheckedBatch(t *testing.T) {
 	if len(refs) != 1 || refs[0].OriginalRef != "./images/a.png" {
 		t.Fatalf("refs mismatch: %+v", refs)
 	}
+	history, err := svc.ListImports(ctx, "", 20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(history) != 1 || history[0].ID != batch.ID || history[0].CreatedAt.IsZero() {
+		t.Fatalf("import history mismatch: %+v", history)
+	}
 }
 
 func TestPreflightImportMissingImageBlocksConfirm(t *testing.T) {
