@@ -3,7 +3,7 @@ const siteBrand = process.env.NUXT_PUBLIC_SITE_BRAND || "文档库";
 
 export default defineNuxtConfig({
   extends: [
-    "@platform/auth",
+    "@yueli/identity-nuxt",
     "@platform/site",
     "@platform/manage",
     "@platform/asset",
