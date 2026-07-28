@@ -216,7 +216,7 @@ test("docs site exposes color mode controls in public and manage chrome", () => 
 
 test("collection cover upload uses the shared crop dialog before upload", () => {
   const page = readApp("pages/manage/collections.vue");
-  assert.match(page, /PlatformImageCropper/);
+  assert.match(page, /AssetImageCropper/);
   assert.match(page, /onCroppedCover/);
 });
 

@@ -7,7 +7,7 @@ import {
   CollectionSortDirectionButton,
   CollectionToolbar,
 } from "@yueli/ui/collection/pattern";
-import { PlatformImageCropper } from "@platform/ui/components";
+import { AssetImageCropper } from "@yueli/asset-nuxt/components";
 import { createPlatformNotifier } from "@platform/ui/feedback";
 import {
   ManageEmpty,
@@ -760,7 +760,7 @@ async function doDelete() {
         </div>
       </template>
     </USlideover>
-    <PlatformImageCropper
+    <AssetImageCropper
       v-model:open="coverCropOpen"
       :file="coverCropFile"
       title="裁剪文档集封面"
