@@ -1,0 +1,2 @@
+ALTER TABLE collections
+    ADD COLUMN IF NOT EXISTS cover_asset_id TEXT NOT NULL DEFAULT '';

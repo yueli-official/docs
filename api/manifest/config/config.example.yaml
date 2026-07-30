@@ -1,0 +1,61 @@
+# ── CONFIG TEMPLATE ──────────────────────────────────────────────────────────
+# Setup (once):  cp config.example.yaml config.yaml  → then set local values.
+# The real config.yaml is GITIGNORED (holds dev DB host 192.168.5.5 + secrets);
+# this template is committed. Platform standard — see backend-platform-conventions §7.
+# ─────────────────────────────────────────────────────────────────────────────
+server:
+  # Dev-stage: bind loopback so Windows Firewall never prompts (go run re-compiles
+  # to a new temp exe each time → repeated prompts on 0.0.0.0). Prod hardening:
+  # 生产环境可绑定所有接口（":8086"）；本地约束见 flightdeck/knowledge/local-dev/local-environment.md。
+  address: "127.0.0.1:8086"
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+logger:
+  level: "info"
+  stdout: true
+database:
+  default:
+    # GoFrame's pgsql driver builds the DSN from these structured fields.
+    # NOTE: GoFrame does NOT read GF_DATABASE_DEFAULT_HOST for the running service
+    # 只有测试显式读取 <SVC>_PG_HOST；环境约束见 flightdeck/knowledge/local-dev/local-environment.md。
+    # §6. The shared dev PG actually listens on 192.168.5.5: to run locally, set host
+    # below to 192.168.5.5 (and revert before commit).
+    type: "pgsql"
+    host: "127.0.0.1"
+    port: "5432"
+    user: "postgres"
+    pass: "postgres"
+    name: "docs"
+
+docs:
+  siteSlug: "docs-local"
+  brand: "文档库"
+  domain: "docs.localhost"
+  siteUrl: "http://localhost:3003"
+  siteDescription: "指南、参考与教程"
+  discovery:
+    ttl: "5m"
+  assetSpace: "default"
+  assetNamespace: "default"
+  assetProfile: "docs-default"
+  authorization:
+    # Used only if this consumer-local instance does not exist. Later role
+    # changes are persisted in this Docs database through the management API.
+    bootstrapAdministratorSubs:
+      - "ac73d232-ce55-487d-bb39-fd336f1a9806"   # test@example.com
+  abuse:
+    turnstile:
+      secret: ""            # optional; enable challenge escalation when configured
+      endpoint: ""          # empty uses Cloudflare Siteverify
+      hostnames: []         # trusted public hosts; never infer from request Host
+  # IdP JWKS for user access-token verification (Foundation auth). Lazy-fetched.
+  jwks:
+    url: "http://localhost:8081/oauth2/jwks.json"
+    issuer: "http://localhost:8081"
+    audience: ""
+    allowLoopbackHttp: true # local development only
+  identity:
+    baseUrl: "http://localhost:8081"
+  assetService:
+    baseUrl: "http://localhost:8082"
+  coverCategory: "docs-collection-cover"

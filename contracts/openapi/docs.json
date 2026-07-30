@@ -1,0 +1,4691 @@
+{
+  "components": {
+    "schemas": {
+      "github.com.yueli-official.foundation.go.discovery.AlternateURL": {
+        "properties": {
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "location": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.Diagnostic": {
+        "properties": {
+          "code": {
+            "format": "string",
+            "type": "string"
+          },
+          "message": {
+            "format": "string",
+            "type": "string"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "protocol": {
+            "format": "string",
+            "type": "string"
+          },
+          "reference": {
+            "format": "string",
+            "type": "string"
+          },
+          "severity": {
+            "format": "discovery.Severity",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.HeadProjection": {
+        "properties": {
+          "links": {
+            "format": "[]discovery.LinkTag",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.LinkTag",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "meta": {
+            "format": "[]discovery.MetaTag",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.MetaTag",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "structuredData": {
+            "format": "[]discovery.StructuredData",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.StructuredData",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.HeaderProjection": {
+        "properties": {
+          "link": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "xRobotsTag": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.LinkTag": {
+        "properties": {
+          "href": {
+            "format": "string",
+            "type": "string"
+          },
+          "hreflang": {
+            "format": "string",
+            "type": "string"
+          },
+          "rel": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.MetaTag": {
+        "properties": {
+          "content": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "property": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.PageProjection": {
+        "properties": {
+          "canonicalUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "contractVersion": {
+            "format": "string",
+            "type": "string"
+          },
+          "diagnostics": {
+            "format": "[]discovery.Diagnostic",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.Diagnostic",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "head": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.HeadProjection",
+            "description": ""
+          },
+          "headers": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.HeaderProjection",
+            "description": ""
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "sitemap": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.SitemapEntry",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.SitemapEntry": {
+        "properties": {
+          "alternates": {
+            "format": "[]discovery.AlternateURL",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.AlternateURL",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "lastModified": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "location": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.StructuredData": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "json": {
+            "format": "json.RawMessage",
+            "items": {
+              "format": "uint8",
+              "type": "integer"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.LocalRef": {
+        "properties": {
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "query": {
+            "format": "[]urllifecycle.QueryValue",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.QueryValue",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.QueryValue": {
+        "properties": {
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "value": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.Resolution": {
+        "properties": {
+          "canonical": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.LocalRef",
+            "description": ""
+          },
+          "changedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "kind": {
+            "format": "urllifecycle.ResolutionKind",
+            "type": "string"
+          },
+          "location": {
+            "format": "string",
+            "type": "string"
+          },
+          "requested": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.LocalRef",
+            "description": ""
+          },
+          "revision": {
+            "format": "urllifecycle.Revision",
+            "type": "integer"
+          },
+          "route": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.RouteKey",
+            "description": ""
+          },
+          "statusCode": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.ResourceKey": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "urllifecycle.ResourceKind",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.RouteKey": {
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.ResourceKey",
+            "description": ""
+          },
+          "variant": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.gokit.discoveryapi.ArtifactResult": {
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/platform.gokit.discoveryapi.ArtifactView",
+            "description": ""
+          },
+          "contractVersion": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.gokit.discoveryapi.ArtifactView": {
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "content": {
+            "format": "string",
+            "type": "string"
+          },
+          "mediaType": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "sha256": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ActivateAuthorizationPolicyReq": {
+        "properties": {
+          "expectedActiveRevision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "expectedActiveRevision"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ActivateAuthorizationPolicyRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ApplyForRoleReq": {
+        "properties": {
+          "abuseAttemptId": {
+            "format": "string",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "challengeProof": {
+            "format": "string",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "reason": {
+            "format": "string",
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "requestGroupId": {
+            "format": "string",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ApplyForRoleRes": {
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationApplicationView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ArchiveDocReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ArchiveDocRes": {
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.AuthorizationApplicationView": {
+        "properties": {
+          "createdAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "grantId": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "reason": {
+            "format": "string",
+            "type": "string"
+          },
+          "requestGroupId": {
+            "format": "string",
+            "type": "string"
+          },
+          "reviewReason": {
+            "format": "string",
+            "type": "string"
+          },
+          "reviewedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "reviewedBy": {
+            "format": "string",
+            "type": "string"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          },
+          "scopeId": {
+            "format": "string",
+            "type": "string"
+          },
+          "state": {
+            "format": "string",
+            "type": "string"
+          },
+          "subject": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.AuthorizationAutomaticRuleView": {
+        "properties": {
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.AuthorizationPolicyView": {
+        "properties": {
+          "activatedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "base": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "createdBy": {
+            "format": "string",
+            "type": "string"
+          },
+          "number": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "state": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.AuthorizationRoleView": {
+        "properties": {
+          "assignmentSources": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "displayName": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "string",
+            "type": "string"
+          },
+          "protected": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "scopeId": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CollectionCoverFinalizeReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uploadToken"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CollectionCoverFinalizeRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+            "description": ""
+          },
+          "coverUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CollectionCoverInitReq": {
+        "properties": {
+          "filename": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "mime": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "filename"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CollectionCoverInitRes": {
+        "properties": {
+          "uploadHeaders": {
+            "additionalProperties": {
+              "format": "string",
+              "type": "string"
+            },
+            "format": "map[string]string",
+            "type": "object"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CollectionVersionView": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "isDefault": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "sourceVersionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CollectionView": {
+        "properties": {
+          "coverAssetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "coverUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "docCount": {
+            "format": "int",
+            "type": "integer"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ConfirmDocsImportReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ConfirmDocsImportRes": {
+        "properties": {
+          "batch": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportBatchView",
+            "description": ""
+          },
+          "summary": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportSummaryView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateAuthorizationPolicyDraftReq": {
+        "properties": {
+          "expectedActiveRevision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedActiveRevision"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateAuthorizationPolicyDraftRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateAuthorizationRoleReq": {
+        "properties": {
+          "assignmentSources": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "displayName": {
+            "format": "string",
+            "type": "string"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "key",
+          "displayName"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateAuthorizationRoleRes": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationRoleView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateCollectionReq": {
+        "properties": {
+          "cover": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateCollectionRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateCollectionVersionReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "sourceVersionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "key"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateCollectionVersionRes": {
+        "properties": {
+          "version": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionVersionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateDocReq": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "content": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "seoDescription": {
+            "format": "string",
+            "type": "string"
+          },
+          "seoTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collectionId",
+          "title"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.CreateDocRes": {
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.DeleteCollectionReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.DeleteCollectionRes": {
+        "properties": {
+          "deleted": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.DeleteDocReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.DeleteDocRes": {
+        "properties": {
+          "deleted": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.DocTreeNodeView": {
+        "properties": {
+          "children": {
+            "format": "[]*v1.DocTreeNodeView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocTreeNodeView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "excerpt": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.DocView": {
+        "properties": {
+          "children": {
+            "format": "[]*v1.DocView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "content": {
+            "format": "string",
+            "type": "string"
+          },
+          "excerpt": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "seoDescription": {
+            "format": "string",
+            "type": "string"
+          },
+          "seoTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetAuthorizationPolicyReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetAuthorizationPolicyRes": {
+        "properties": {
+          "automaticRules": {
+            "format": "[]v1.AuthorizationAutomaticRuleView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationAutomaticRuleView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          },
+          "roles": {
+            "format": "[]v1.AuthorizationRoleView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationRoleView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetCollectionReq": {
+        "properties": {
+          "slug": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetCollectionRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetCollectionTreeReq": {
+        "properties": {
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetCollectionTreeRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+            "description": ""
+          },
+          "tree": {
+            "format": "[]*v1.DocTreeNodeView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocTreeNodeView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetDiscoveryArtifactReq": {
+        "properties": {
+          "name": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetDiscoveryArtifactRes": {
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/platform.gokit.discoveryapi.ArtifactResult",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetDocReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetDocRes": {
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetDocsImportReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetDocsImportRes": {
+        "properties": {
+          "batch": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportBatchView",
+            "description": ""
+          },
+          "items": {
+            "format": "[]*v1.ImportItemView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportItemView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetHomeConfigReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetHomeConfigRes": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.HomeConfigView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetManageCollectionTreeReq": {
+        "properties": {
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetManageCollectionTreeRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+            "description": ""
+          },
+          "tree": {
+            "format": "[]*v1.DocView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetPublicDocByPathReq": {
+        "properties": {
+          "collection": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collection",
+          "path"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.GetPublicDocByPathRes": {
+        "properties": {
+          "discovery": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.PageProjection",
+            "description": ""
+          },
+          "doc": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.HomeConfigView": {
+        "properties": {
+          "featuredCollections": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "footerCopyright": {
+            "format": "string",
+            "type": "string"
+          },
+          "footerTagline": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeEyebrow": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeSubtitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "quickLinks": {
+            "format": "[]*v1.HomeQuickLinkView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.HomeQuickLinkView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "siteDescription": {
+            "format": "string",
+            "type": "string"
+          },
+          "siteTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "supportEmail": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.HomeQuickLinkView": {
+        "properties": {
+          "collectionSlug": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "to": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ImportBatchView": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "defaultLocale": {
+            "format": "string",
+            "type": "string"
+          },
+          "errorMessage": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "mode": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportSummaryView",
+            "description": ""
+          },
+          "updatedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ImportIssueView": {
+        "properties": {
+          "code": {
+            "format": "string",
+            "type": "string"
+          },
+          "message": {
+            "format": "string",
+            "type": "string"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "severity": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ImportItemView": {
+        "properties": {
+          "action": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "issues": {
+            "format": "[]v1.ImportIssueView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportIssueView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sourceMarkdownPath": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetDocId": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionKey": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ImportSummaryView": {
+        "properties": {
+          "archives": {
+            "format": "int",
+            "type": "integer"
+          },
+          "blocking": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "conflicts": {
+            "format": "int",
+            "type": "integer"
+          },
+          "creates": {
+            "format": "int",
+            "type": "integer"
+          },
+          "errors": {
+            "format": "int",
+            "type": "integer"
+          },
+          "images": {
+            "format": "int",
+            "type": "integer"
+          },
+          "issues": {
+            "format": "[]v1.ImportIssueView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportIssueView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "skips": {
+            "format": "int",
+            "type": "integer"
+          },
+          "updates": {
+            "format": "int",
+            "type": "integer"
+          },
+          "warnings": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListAuthorizationPoliciesReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListAuthorizationPoliciesRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationPolicyView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationPolicyView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListAuthorizationRolesReq": {
+        "properties": {
+          "includeRetired": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListAuthorizationRolesRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationRoleView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationRoleView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListCollectionVersionsReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListCollectionVersionsRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.CollectionVersionView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionVersionView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListCollectionsReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListCollectionsRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.CollectionView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListDocsImportsReq": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "format": "int",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListDocsImportsRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.ImportBatchView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportBatchView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListDocsReq": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collectionId"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListDocsRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.DocView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListMyApplicationsReq": {
+        "properties": {
+          "limit": {
+            "default": 100,
+            "format": "int",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "format": "int",
+            "type": "integer"
+          },
+          "state": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListMyApplicationsRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationApplicationView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationApplicationView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListRequestableRolesReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListRequestableRolesRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationRoleView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationRoleView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListRoleApplicationsReq": {
+        "properties": {
+          "limit": {
+            "default": 100,
+            "format": "int",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "format": "int",
+            "type": "integer"
+          },
+          "state": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ListRoleApplicationsRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationApplicationView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationApplicationView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocCountsView": {
+        "properties": {
+          "all": {
+            "format": "int",
+            "type": "integer"
+          },
+          "archived": {
+            "format": "int",
+            "type": "integer"
+          },
+          "draft": {
+            "format": "int",
+            "type": "integer"
+          },
+          "issues": {
+            "format": "int",
+            "type": "integer"
+          },
+          "published": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocView": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "collectionSlug": {
+            "format": "string",
+            "type": "string"
+          },
+          "collectionTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "excerpt": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "slugPath": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionLabel": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocsReq": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "direction": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "q": {
+            "format": "string",
+            "type": "string"
+          },
+          "quality": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "sort": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ManageDocsRes": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ManageDocCountsView",
+            "description": ""
+          },
+          "items": {
+            "format": "[]*v1.ManageDocView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ManageDocView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.MeReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.MeRes": {
+        "properties": {
+          "me": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.MeView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.MeView": {
+        "properties": {
+          "authenticated": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isAdministrator": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "roles": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sub": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.PreviewAuthorizationPolicyReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.PreviewAuthorizationPolicyRes": {
+        "properties": {
+          "addedBindings": {
+            "format": "int",
+            "type": "integer"
+          },
+          "removedBindings": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.PublishDocReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.PublishDocRes": {
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ResolveURLReq": {
+        "properties": {
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "query": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ResolveURLRes": {
+        "properties": {
+          "resolution": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.Resolution",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.RetireAuthorizationRoleReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "role"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.RetireAuthorizationRoleRes": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationRoleView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ReviewRoleApplicationReq": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "reason": {
+            "format": "string",
+            "maxLength": 2000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "decision"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ReviewRoleApplicationRes": {
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationApplicationView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.RollbackDocsImportReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.RollbackDocsImportRes": {
+        "properties": {
+          "batch": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportBatchView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SearchCollectionFacetView": {
+        "properties": {
+          "count": {
+            "format": "int",
+            "type": "integer"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SearchDocsReq": {
+        "properties": {
+          "collection": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "q": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SearchDocsRes": {
+        "properties": {
+          "facets": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.SearchFacetsView",
+            "description": ""
+          },
+          "items": {
+            "format": "[]*v1.DocTreeNodeView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocTreeNodeView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SearchFacetsView": {
+        "properties": {
+          "collections": {
+            "format": "[]*v1.SearchCollectionFacetView",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.api.v1.SearchCollectionFacetView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SetAuthorizationAutomaticRuleReq": {
+        "properties": {
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "rule": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "rule"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SetAuthorizationAutomaticRuleRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SetAuthorizationRoleCapabilitiesReq": {
+        "properties": {
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "role"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.SetAuthorizationRoleCapabilitiesRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UpdateCollectionReq": {
+        "properties": {
+          "cover": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UpdateCollectionRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UpdateDocReq": {
+        "properties": {
+          "content": {
+            "format": "*string",
+            "type": "string"
+          },
+          "excerpt": {
+            "format": "*string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "*string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "*string",
+            "type": "string"
+          },
+          "seoDescription": {
+            "format": "*string",
+            "type": "string"
+          },
+          "seoTitle": {
+            "format": "*string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "*string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "*int",
+            "type": "integer"
+          },
+          "status": {
+            "format": "*string",
+            "type": "string"
+          },
+          "title": {
+            "format": "*string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "*string",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "*string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UpdateDocRes": {
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DocView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UpdateHomeConfigReq": {
+        "properties": {
+          "featuredCollections": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "footerCopyright": {
+            "format": "string",
+            "type": "string"
+          },
+          "footerTagline": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeEyebrow": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeSubtitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "homeTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "quickLinks": {
+            "format": "[]*model.HomeQuickLink",
+            "items": {
+              "$ref": "#/components/schemas/platform.products.docs.api.internal.model.HomeQuickLink",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "siteDescription": {
+            "format": "string",
+            "type": "string"
+          },
+          "siteTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "supportEmail": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UpdateHomeConfigRes": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.HomeConfigView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UploadDocsImportReq": {
+        "properties": {
+          "file": {
+            "format": "*ghttp.UploadFile",
+            "type": "file"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.UploadDocsImportRes": {
+        "properties": {
+          "batch": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportBatchView",
+            "description": ""
+          },
+          "summary": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ImportSummaryView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ValidateAuthorizationPolicyReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.ValidateAuthorizationPolicyRes": {
+        "properties": {
+          "valid": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "violations": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.WithdrawRoleApplicationReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "platform.products.docs.api.api.v1.WithdrawRoleApplicationRes": {
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/platform.products.docs.api.api.v1.AuthorizationApplicationView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "platform.products.docs.api.internal.model.HomeQuickLink": {
+        "properties": {
+          "collectionSlug": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "to": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "",
+    "version": ""
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/authorization/applications": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ApplyForRoleReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ApplyForRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Apply for a role",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/applications/mine": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListMyApplicationsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "My role applications",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/applications/{id}/withdraw": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.WithdrawRoleApplicationRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Withdraw my role application",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/applications": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListRoleApplicationsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Review queue",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/applications/{id}/review": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "decision": {
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ],
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "reason": {
+                    "format": "string",
+                    "maxLength": 2000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ReviewRoleApplicationRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Review a role application",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListAuthorizationPoliciesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List policy revisions",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/drafts": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateAuthorizationPolicyDraftReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateAuthorizationPolicyDraftRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create policy draft",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get policy revision",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/activate": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "expectedActiveRevision": {
+                    "format": "uint64",
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "expectedActiveRevision"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ActivateAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Activate policy draft",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/automatic/{rule}": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rule",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "enabled": {
+                    "format": "bool",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.SetAuthorizationAutomaticRuleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Configure automatic role rule",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/preview": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.PreviewAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Preview policy impact",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/roles": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assignmentSources": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "capabilities": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "displayName": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "key": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "displayName"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateAuthorizationRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create custom role",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "capabilities": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.SetAuthorizationRoleCapabilitiesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Set role capabilities",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/roles/{role}/retire": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.RetireAuthorizationRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Retire custom role",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/validate": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ValidateAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Validate policy draft",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/roles": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeRetired",
+            "schema": {
+              "format": "bool",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListAuthorizationRolesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List roles",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/requestable-roles": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListRequestableRolesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Requestable roles",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/collections": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListCollectionsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List collections",
+        "tags": [
+          "docs"
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateCollectionReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateCollectionRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create collection (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DeleteCollectionRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Delete collection (admin)",
+        "tags": [
+          "docs"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "cover": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "description": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "icon": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "slug": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "title": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.UpdateCollectionRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update collection (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{id}/cover": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "filename": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "mime": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "size": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "filename"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionCoverInitRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Begin a collection cover image upload",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{id}/cover/finalize": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "uploadToken": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uploadToken"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CollectionCoverFinalizeRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Finalize a collection cover image upload",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{id}/versions": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListCollectionVersionsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List collection versions",
+        "tags": [
+          "docs"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "key": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "label": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "sourceVersionId": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "status": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateCollectionVersionRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create collection version (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{slug}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetCollectionRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get collection by slug",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{slug}/tree": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetCollectionTreeRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get collection doc tree (public)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/discovery/artifact": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetDiscoveryArtifactRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get one artifact from the current atomic discovery publication",
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
+    "/api/v1/docs": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "collectionId",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListDocsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List docs in a collection",
+        "tags": [
+          "docs"
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateDocReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.CreateDocRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create doc (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/docs/by-path": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "collection",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetPublicDocByPathRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get published doc by collection path",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/docs/search": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collection",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.SearchDocsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Search published docs",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/docs/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.DeleteDocRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Delete doc (admin)",
+        "tags": [
+          "docs"
+        ]
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetDocRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get doc by ID",
+        "tags": [
+          "docs"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "content": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "excerpt": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "locale": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "seoDescription": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "seoTitle": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "slug": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "sortOrder": {
+                    "format": "*int",
+                    "type": "integer"
+                  },
+                  "status": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "title": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "translationKey": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "versionId": {
+                    "format": "*string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.UpdateDocRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update doc (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/docs/{id}/archive": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ArchiveDocRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Archive doc (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/docs/{id}/publish": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.PublishDocRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Publish doc (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/home": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetHomeConfigRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get homepage configuration",
+        "tags": [
+          "docs"
+        ]
+      },
+      "patch": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/platform.products.docs.api.api.v1.UpdateHomeConfigReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.UpdateHomeConfigRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update homepage configuration",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/imports/docs": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "collectionId",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ListDocsImportsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List recent docs import batches",
+        "tags": [
+          "docs"
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/platform.products.docs.api.api.v1.UploadDocsImportReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.UploadDocsImportRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Upload and preflight a docs import ZIP",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/imports/docs/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetDocsImportRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get docs import batch",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/imports/docs/{id}/confirm": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ConfirmDocsImportRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Confirm docs import",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/imports/docs/{id}/rollback": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.RollbackDocsImportRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Rollback docs import",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{slug}/tree": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.GetManageCollectionTreeRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get collection doc tree (admin)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/docs": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "quality",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "collectionId",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "parentId",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ManageDocsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Query docs for the admin workbench",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.MeRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Current caller identity",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/url-lifecycle/resolve": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/platform.products.docs.api.api.v1.ResolveURLRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Resolve a public Docs URL",
+        "tags": [
+          "url-lifecycle"
+        ]
+      }
+    }
+  }
+}
