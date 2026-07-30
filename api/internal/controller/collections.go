@@ -5,10 +5,10 @@ import (
 
 	"github.com/yueli-official/foundation/go/authorization"
 
-	v1 "platform/products/docs/api/api/v1"
-	"platform/products/docs/api/internal/catalog"
-	"platform/products/docs/api/internal/docsauthz"
-	"platform/products/docs/api/internal/model"
+	v1 "github.com/yueli-official/docs/api/api/v1"
+	"github.com/yueli-official/docs/api/internal/catalog"
+	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 // Collections handles the admin (JWT) collection-management endpoints.

@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/docsurls"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docsurls"
 )
 
 func (s *Service) WithURLLifecycle(lifecycle *docsurls.Lifecycle) *Service {

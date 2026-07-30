@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 func TestManageDocsOrderUsesAllowlistedColumns(t *testing.T) {

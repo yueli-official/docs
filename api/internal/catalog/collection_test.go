@@ -8,7 +8,7 @@ import (
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/database/gdb"
 
-	"platform/products/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/dao"
 )
 
 func colTestEnvOr(k, def string) string {

@@ -6,8 +6,8 @@
 //
 // Run (connects to the shared dev PG; host defaults to 192.168.5.5):
 //
-//	go run ./products/docs/api/cmd/importsmoke
-//	SMOKE_DIR=... DOCS_PG_HOST=... go run ./products/docs/api/cmd/importsmoke
+//	go run ./cmd/importsmoke
+//	SMOKE_DIR=... DOCS_PG_HOST=... go run ./cmd/importsmoke
 package main
 
 import (
@@ -22,8 +22,8 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/os/gctx"
 
-	"platform/products/docs/api/internal/catalog"
-	"platform/products/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/catalog"
+	"github.com/yueli-official/docs/api/internal/dao"
 )
 
 const (

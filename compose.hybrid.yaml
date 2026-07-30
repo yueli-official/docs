@@ -1,0 +1,7 @@
+name: yueli-docs-hybrid
+
+include:
+  - path: deploy/includes/asset/compose.yaml
+  - path:
+      - deploy/compose.docs.yaml
+      - deploy/topologies/docs.hybrid.yaml

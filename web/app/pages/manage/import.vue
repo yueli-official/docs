@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from "@platform/ui/feedback";
-import { ManageEmpty } from "@platform/manage/components";
+import { createDocsNotifier } from "~/utils/feedback";
+import { ManageEmpty } from "~/utils/manageComponents";
 import type {
   DocsImportBatch,
   DocsImportListResponse,
@@ -19,7 +19,7 @@ useSeoMeta({ title: "批量导入 · 控制台" });
 const { call } = useApi();
 const { can } = useMe();
 const canManageImports = computed(() => can("docs.import.manage"));
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 
 const file = ref<File | null>(null);
 const uploading = ref(false);

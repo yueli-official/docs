@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from "@platform/ui/feedback";
+import { createDocsNotifier } from "~/utils/feedback";
 
 definePageMeta({ middleware: "auth" });
 useSeoMeta({ title: "申请成为作者" });
@@ -11,7 +11,7 @@ interface Application {
 }
 
 const { call } = useApi();
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 const reason = ref("");
 const busy = ref(false);
 const { data, refresh } = await useAsyncData(

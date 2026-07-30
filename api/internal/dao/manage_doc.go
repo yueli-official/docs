@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 const manageDocsCTE = `WITH RECURSIVE doc_paths AS (

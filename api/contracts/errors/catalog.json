@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "docs.yueli.dev/error-catalog/v1",
+  "errors": [
+    {
+      "code": "docs.abuse_attempt_replayed",
+      "status": 409
+    },
+    {
+      "code": "docs.abuse_unavailable",
+      "status": 503
+    },
+    {
+      "code": "docs.authorization_unavailable",
+      "status": 503
+    },
+    {
+      "code": "docs.challenge_required",
+      "status": 403
+    },
+    {
+      "code": "docs.forbidden",
+      "status": 403
+    },
+    {
+      "code": "docs.import_blocked",
+      "status": 400
+    },
+    {
+      "code": "docs.invalid_input",
+      "status": 400
+    },
+    {
+      "code": "docs.not_found",
+      "status": 404
+    },
+    {
+      "code": "docs.rate_limited",
+      "status": 429
+    },
+    {
+      "code": "docs.slug_taken",
+      "status": 409
+    },
+    {
+      "code": "docs.upstream_failed",
+      "status": 502
+    }
+  ]
+}

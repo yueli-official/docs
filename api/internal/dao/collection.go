@@ -7,7 +7,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 const tCollections = "collections"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/yueli-official/docs/api/internal/docsauthz"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
-	"platform/products/docs/api/internal/docsauthz"
 )
 
 func TestServiceReconcilesEnabledAutomaticAuthorOnFirstAuthenticatedAccess(t *testing.T) {

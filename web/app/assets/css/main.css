@@ -2,7 +2,7 @@
 @import "@nuxt/ui";
 /* Scan responsive utilities shipped by the public Foundation UI package. */
 @import "@yueli/ui/tailwind.css";
-@import "@platform/ui/theme.css";
+@import "@yueli/ui/theme.css";
 
 /* Self-hosted brand fonts (offline-resilient; design-system §5/§12):
    Space Grotesk = display/headings, DM Sans = body. No Google fetch. */
@@ -26,9 +26,9 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
    DESIGN TOKENS — re-skin the docs from these homes (a borrowed, reusable setup):
-     • radius scale ↔ --ui-radius, fonts → @platform/ui/theme.css (shared mechanism)
-     • option lists + shape     → @platform/ui/tokens.ts      (shared, reusable)
-     • primary color            → app/app.config.ts           (platformAppConfig('docs'))
+     • radius scale ↔ --ui-radius, fonts → @yueli/ui/theme.css (shared mechanism)
+     • option lists + shape     → Docs-owned component utilities
+     • primary color            → app/app.config.ts           (createUiPreset)
      • page width               → app/utils/page.ts           (PAGE_WIDTHS)
    Radius derives from one var (--ui-radius), so every rounded-* across front +
    console follows it — no hardcoded corner sizes anywhere.

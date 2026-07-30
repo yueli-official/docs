@@ -4,7 +4,7 @@ package server_test
 // Skipped unless DOCS_PG_HOST is set:
 //
 //	DOCS_PG_HOST=192.168.5.5 DOCS_PG_USER=postgres DOCS_PG_PASS=postgres \
-//	  go test -run TestDocsRoundTrip ./products/docs/api/internal/server/... -p 1
+//	  go test -run TestDocsRoundTrip ./internal/server/... -p 1
 
 import (
 	"archive/zip"
@@ -30,10 +30,10 @@ import (
 	"github.com/gogf/gf/v2/test/gtest"
 	_ "github.com/lib/pq"
 
-	"platform/products/docs/api/internal/assetclient"
-	"platform/products/docs/api/internal/catalog"
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/server"
+	"github.com/yueli-official/docs/api/internal/assetclient"
+	"github.com/yueli-official/docs/api/internal/catalog"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/server"
 )
 
 func envOr(k, def string) string {

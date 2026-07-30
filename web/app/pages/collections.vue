@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SkeletonCards } from '@platform/ui/components'
+import { SkeletonCards } from '~/utils/manageComponents'
 import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { CollectionList } from '~/types'
 import { collectionCountLabel, collectionStats, filterCollections, paginateItems } from '~/utils/docsManual.mjs'

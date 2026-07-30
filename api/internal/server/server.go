@@ -5,15 +5,13 @@ package server
 import (
 	"github.com/gogf/gf/v2/net/ghttp"
 
+	"github.com/yueli-official/docs/api/internal/catalog"
+	"github.com/yueli-official/docs/api/internal/controller"
+	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/runtime"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/discovery"
 	"github.com/yueli-official/foundation/go/urllifecycle"
-	"platform/gokit/authhttp"
-	"platform/gokit/ghttpx"
-	"platform/gokit/healthcheck"
-	"platform/products/docs/api/internal/catalog"
-	"platform/products/docs/api/internal/controller"
-	"platform/products/docs/api/internal/docsauthz"
 )
 
 // Deps are the wiring dependencies. Catalog may be nil for a minimal
@@ -29,24 +27,34 @@ type Deps struct {
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
 func Configure(s *ghttp.Server, d Deps) {
-	apiMiddleware := ghttpx.NewMiddleware(ghttpx.MustRateLimiterFromEnvironment(), ghttpx.ForwardedClientIPKey)
-	s.Use(ghttpx.TraceRouteMiddleware)
+	apiMiddleware := runtime.MustAPIMiddleware(runtime.MustRateLimiterFromEnvironment())
+	s.Use(runtime.TraceRouteMiddleware)
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware)
+		grp.Middleware(apiMiddleware.Handle)
 		grp.GET("/healthz", controller.Healthz)
-		grp.GET("/readyz", healthcheck.Handler(map[string]healthcheck.Check{"database": healthcheck.Database}))
+		grp.GET("/readyz", runtime.ReadinessHandler(map[string]runtime.ReadinessCheck{"database": runtime.DatabaseReadiness}))
 	})
 
 	// Identity probe: JWT parsed-if-present, never 401. Available regardless of
 	// whether a Catalog is configured so health + auth probes work standalone.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware, authhttp.Optional(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+		if d.Verifier != nil {
+			grp.Middleware(apiMiddleware.Handle, runtime.OptionalAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+		} else {
+			grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+		}
 		grp.Bind(controller.NewMe())
 	})
 
 	if d.Authorization != nil {
 		s.Group("/", func(grp *ghttp.RouterGroup) {
-			grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+			if d.Verifier != nil {
+				grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+			} else {
+				// OpenAPI export has no runtime verifier, but protected route shapes
+				// still belong in the generated contract.
+				grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+			}
 			grp.Bind(controller.NewAuthorization())
 		})
 	}
@@ -57,7 +65,7 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Public browse: enveloped, no mandatory auth.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware)
+		grp.Middleware(apiMiddleware.Handle)
 		grp.Bind(controller.NewPublicCollections(d.Catalog, d.Discovery))
 		if d.DiscoveryCache != nil {
 			grp.Bind(controller.NewPublicDiscovery(d.DiscoveryCache))
@@ -69,7 +77,13 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Admin API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+		if d.Verifier != nil {
+			grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+		} else {
+			// OpenAPI export has no runtime verifier, but protected route shapes
+			// still belong in the generated contract.
+			grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+		}
 		grp.Bind(controller.NewCollections(d.Catalog))
 		grp.Bind(controller.NewVersions(d.Catalog))
 		grp.Bind(controller.NewDocs(d.Catalog))

@@ -8,12 +8,12 @@ import {
   CollectionToolbar,
 } from "@yueli/ui/collection/pattern";
 import { AssetImageCropper } from "@yueli/asset-nuxt/components";
-import { createPlatformNotifier } from "@platform/ui/feedback";
+import { createDocsNotifier } from "~/utils/feedback";
 import {
   ManageEmpty,
   ManageVisualAssetField,
   SkeletonList,
-} from "@platform/manage/components";
+} from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import type { CollectionView } from "~/types";
 
@@ -23,7 +23,7 @@ useSeoMeta({ title: "文档集 · 控制台" });
 const { call } = useApi();
 const { can } = useMe();
 const canManageCollections = computed(() => can("docs.collection.manage"));
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 const route = useRoute();
 const router = useRouter();
 type CollectionSort = "title" | "docCount";

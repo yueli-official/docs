@@ -11,9 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/yueli-official/foundation/go/audit"
 
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/docsaudit"
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docsaudit"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 func (s *Service) GetHomeConfig(ctx context.Context) (*model.HomeConfig, error) {

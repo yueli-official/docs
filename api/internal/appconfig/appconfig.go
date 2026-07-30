@@ -14,8 +14,8 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	_ "github.com/lib/pq"
 
-	"platform/products/docs/api/internal/assetclient"
-	"platform/products/docs/api/internal/docsdiscovery"
+	"github.com/yueli-official/docs/api/internal/assetclient"
+	"github.com/yueli-official/docs/api/internal/docsdiscovery"
 )
 
 // JWKS is the IdP key/issuer config for the Foundation auth verifier.

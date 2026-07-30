@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
-	v1 "platform/products/docs/api/api/v1"
-	"platform/products/docs/api/internal/docserr"
+	v1 "github.com/yueli-official/docs/api/api/v1"
+	"github.com/yueli-official/docs/api/internal/docserr"
 )
 
 // Me reports the caller's identity for the front-end manage gate. It lives on a

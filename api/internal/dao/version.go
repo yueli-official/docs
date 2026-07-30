@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 const tCollectionVersions = "collection_versions"

@@ -11,12 +11,12 @@ import (
 
 	"github.com/google/uuid"
 
-	"platform/products/docs/api/internal/assetclient"
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/docsaudit"
-	"platform/products/docs/api/internal/docserr"
-	"platform/products/docs/api/internal/importkit"
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/assetclient"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docsaudit"
+	"github.com/yueli-official/docs/api/internal/docserr"
+	"github.com/yueli-official/docs/api/internal/importkit"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 type ImportUploadInput struct {

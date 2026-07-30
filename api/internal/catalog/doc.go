@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/docsaudit"
-	"platform/products/docs/api/internal/docserr"
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docsaudit"
+	"github.com/yueli-official/docs/api/internal/docserr"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 // CreateDocInput carries the caller-supplied fields for a new doc.

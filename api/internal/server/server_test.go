@@ -12,10 +12,10 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/test/gtest"
 
+	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/runtime"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
-	"platform/gokit/authsetup"
-	"platform/products/docs/api/internal/docsauthz"
 )
 
 const (
@@ -32,7 +32,7 @@ func mustVerifier(t *gtest.T, priv *rsa.PrivateKey) *foundationauth.Verifier {
 	set := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{
 		Key: priv.Public(), KeyID: testKID, Algorithm: "RS256", Use: "sig",
 	}}}
-	v, err := authsetup.NewStaticVerifier(authsetup.StaticVerifierConfig{
+	v, err := runtime.NewStaticVerifier(runtime.StaticVerifierConfig{
 		Keys:   set,
 		Issuer: testIssuer,
 	})

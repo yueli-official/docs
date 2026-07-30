@@ -4,12 +4,12 @@ import {
   ManageIconPicker,
   ManageRepeaterRow,
   SkeletonList,
-} from "@platform/manage/components";
+} from "~/utils/manageComponents";
 import {
-  platformSettingsSaveMessages,
-  usePlatformSettingsProtection,
-} from "@platform/manage/settings";
-import { createPlatformNotifier } from "@platform/ui/feedback";
+  docsSettingsSaveMessages,
+  useDocsSettingsProtection,
+} from "~/utils/settings";
+import { createDocsNotifier } from "~/utils/feedback";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
 import {
   SettingSection,
@@ -29,7 +29,7 @@ useSeoMeta({ title: "设置 · 控制台" });
 const { call } = useApi();
 const { can } = useMe();
 const canManageSiteSettings = computed(() => can("docs.site_settings.manage"));
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 const route = useRoute();
 const router = useRouter();
 const saveError = ref("");
@@ -127,7 +127,7 @@ const settingsState = useVueSettingsWorkflow({
     Object.assign(footerForm, snapshot.footer);
   },
 });
-usePlatformSettingsProtection(() => settingsState.dirty.value);
+useDocsSettingsProtection(() => settingsState.dirty.value);
 
 watch(
   homeData,
@@ -634,7 +634,7 @@ function discardChanges() {
         :dirty="settingsState.dirty.value"
         :status="saveStatus"
         :error="saveError"
-        :messages="platformSettingsSaveMessages"
+        :messages="docsSettingsSaveMessages"
         dock-class="lg:left-60"
         @discard="discardChanges"
         @save="save"

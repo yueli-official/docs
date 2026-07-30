@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from '@platform/ui/feedback'
+import { createDocsNotifier } from '~/utils/feedback'
 import { useActionFeedback } from '@yueli/ui/feedback'
 import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
 import type { CollectionVersion, CollectionVersionsResponse, CollectionView, CollectionManageTree, DocDetail, DocDetailResponse } from '~/types'
@@ -15,7 +15,7 @@ import {
 // Fields: collection (required, new only) + parent + slug + title + body + status.
 const route = useRoute()
 const { call } = useApi()
-const toast = createPlatformNotifier(useToast())
+const toast = createDocsNotifier(useToast())
 const ROOT = '__root__' // USelect/Reka SelectItem cannot use an empty-string value.
 const routeId = computed(() => String(route.params.id ?? ''))
 const semanticCollectionSlug = computed(() => String(route.params.collectionSlug ?? ''))

@@ -7,7 +7,7 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 const tHomeConfig = "home_config"

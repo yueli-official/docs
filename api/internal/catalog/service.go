@@ -2,11 +2,11 @@
 package catalog
 
 import (
-	"platform/products/docs/api/internal/assetclient"
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/docsaudit"
-	"platform/products/docs/api/internal/docssearch"
-	"platform/products/docs/api/internal/docsurls"
+	"github.com/yueli-official/docs/api/internal/assetclient"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docsaudit"
+	"github.com/yueli-official/docs/api/internal/docssearch"
+	"github.com/yueli-official/docs/api/internal/docsurls"
 )
 
 // Service holds the catalog business logic.

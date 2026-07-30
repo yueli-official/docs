@@ -1,0 +1,4 @@
+name: yueli-docs-attach
+
+include:
+  - path: deploy/compose.docs.yaml

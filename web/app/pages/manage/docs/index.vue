@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
-import { createPlatformNotifier } from "@platform/ui/feedback";
+import { createDocsNotifier } from "~/utils/feedback";
 import {
   createCollectionRouteQueryCodec,
   createJsonCollectionQueryPolicy,
@@ -14,7 +14,7 @@ import {
   CollectionTableToolbar,
   CollectionViewToggle,
 } from "@yueli/ui/collection/pattern";
-import { ManageEmpty, SkeletonList } from "@platform/manage/components";
+import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import type {
   CollectionManageTree,
   CollectionVersion,
@@ -39,7 +39,7 @@ const canUpdateDocs = computed(() => can("docs.document.update"));
 const canPublishDocs = computed(() => can("docs.document.publish"));
 const canArchiveDocs = computed(() => can("docs.document.archive"));
 const canDeleteDocs = computed(() => can("docs.document.delete_permanently"));
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 const router = useRouter();
 const UCheckbox = resolveComponent("UCheckbox");
 const UButton = resolveComponent("UButton");

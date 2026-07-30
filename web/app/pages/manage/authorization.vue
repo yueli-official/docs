@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from "@platform/ui/feedback";
-import { ManageEmpty, SkeletonList } from "@platform/manage/components";
+import { createDocsNotifier } from "~/utils/feedback";
+import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 
 definePageMeta({ layout: "manage" });
@@ -103,7 +103,7 @@ const sourceOptions = [
 
 const { call } = useApi();
 const { isAdministrator } = useMe();
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 const mounted = ref(false);
 const publishing = ref(false);
 const operationError = ref("");

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { productSites } from "../../../../../tests/e2e/contracts";
-import { registerProductSuite } from "../../../../../tests/e2e/product-suite";
-import { loginE2E, settleNuxt } from "../../../../../tests/e2e/runtime";
+import { productSites } from "./contracts";
+import { registerProductSuite } from "./product-suite";
+import { loginE2E, settleNuxt } from "./runtime";
 
 registerProductSuite("docs");
 

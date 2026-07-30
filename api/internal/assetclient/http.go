@@ -13,7 +13,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	foundationhttpclient "github.com/yueli-official/foundation/go/httpclient"
 
-	"platform/products/docs/api/internal/docserr"
+	"github.com/yueli-official/docs/api/internal/docserr"
 )
 
 type httpClient struct {

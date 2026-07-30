@@ -9,10 +9,10 @@ import (
 	"github.com/yueli-official/foundation/go/abuse"
 	"github.com/yueli-official/foundation/go/authorization"
 
-	v1 "platform/products/docs/api/api/v1"
-	"platform/products/docs/api/internal/docsabuse"
-	"platform/products/docs/api/internal/docsauthz"
-	"platform/products/docs/api/internal/docserr"
+	v1 "github.com/yueli-official/docs/api/api/v1"
+	"github.com/yueli-official/docs/api/internal/docsabuse"
+	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/docserr"
 )
 
 type Authorization struct{}

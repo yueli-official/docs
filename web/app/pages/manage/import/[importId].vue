@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from "@platform/ui/feedback";
-import { ManageEmpty, SkeletonList } from "@platform/manage/components";
+import { createDocsNotifier } from "~/utils/feedback";
+import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import type {
   DocsImportBatch,
@@ -19,7 +19,7 @@ const route = useRoute("/manage/import/[importId]");
 const { call } = useApi();
 const { can } = useMe();
 const canManageImports = computed(() => can("docs.import.manage"));
-const toast = createPlatformNotifier(useToast());
+const toast = createDocsNotifier(useToast());
 
 const importId = computed(() => String(route.params.importId || ""));
 const mounted = ref(false);

@@ -1,14 +1,79 @@
-# 文档产品
+# 月离文档
 
-- 生命周期：活跃的可复用产品类型
-- 权威来源：Catalog 产品类型 `docs`、`api/` 迁移/OpenAPI、`web/` 界面
-- 消费者：`docs-main` 等文档站点实例
-- 验证：`pnpm platformctl verify product --file catalog/overlays/local.yaml --root . docs`
+Docs 是独立的文档消费者产品，拥有文档集合、层级页面、版本/语言、批量导入、搜索、公开阅读和管理后台。
+`api/` 与 `web/` 是本仓唯一实现真源；仓库不依赖 Platform 源码或工作区包。
 
-Docs 负责文档集合、层级页面、导航和搜索呈现。`api/` 负责持久内容与领域行为，`web/` 负责公开阅读和管理。Identity 与 Asset 仍是平台依赖；实例 URL、数据库与 OIDC 值来自 Catalog。
+## 边界
 
-授权由实例内嵌的 Foundation Authorization Module 执行，状态保存在该 Docs 实例数据库。Identity 只证明 Subject；管理员、作者、
-申请、策略和自动授权都属于 Docs。配置中的 `bootstrapAdministratorSubs` 仅在实例不存在时使用，之后修改配置不会改变授权。
-自动作者规则由 Docs 授权入口按需 reconcile：启用后，注册用户第一次使用 Docs 时获得本实例作者 Grant；Identity 不保存作者角色。
-作者可以创建文档并管理自己持有的文档；永久删除、重新分配、站点设置、导入和授权管理只允许管理员。Web 通过
-`/api/v1/me` 的 Effective Access 显示入口，但 API 的逐能力判定始终是权威。
+- Docs 自己拥有领域数据、PostgreSQL migration、授权实例、Discovery 发布和界面组件。
+- Identity 只通过 OIDC issuer、Discovery 和 JWKS 证明用户身份。
+- Asset 只通过公开 HTTP 合同管理文档集封面；Docs 不导入 Asset 内部代码。
+- Foundation 通过正式 Go module 与 JS Release 提供跨产品协议原语。
+- 本地多仓编排属于 `workspace`；生产部署属于本仓 Compose。
+
+不可变依赖与能力绑定记录在：
+
+- `deploy/contracts/requirements.json`：消费者需要的能力；
+- `deploy/deployment.lock.json`：能力到具体生产者版本的部署锁。
+
+## 本地开发
+
+推荐从相邻 `workspace` 仓启动：
+
+```powershell
+# Identity + Account + Docs 专属 Asset + Docs
+.\environments\docs-local\run.ps1 -Mode Complete
+
+# 复用已有 Identity，管理 Docs 专属 Asset
+.\environments\docs-local\run.ps1 -Mode Hybrid
+
+# 复用已有 Identity 与 Asset，只启动 Docs
+.\environments\docs-local\run.ps1 -Mode Attach
+
+.\environments\docs-local\run.ps1 -Action Down
+```
+
+所有端口均可通过 `LOCAL_*_PORT` 覆盖；`down docs` 只停止 Docs target 对应的 Workspace 会话，不会终止其他项目。
+
+## Docker Compose
+
+本仓提供三种生产/预发布拓扑：
+
+```powershell
+# 完整独立部署：Identity + Account + Docs 专属 Asset + Docs
+Copy-Item .env.example .env
+docker compose -f compose.yaml up -d --wait
+
+# 复用已有 Identity，部署 Docs 专属 Asset
+Copy-Item deploy/env/hybrid.env.example .env
+docker compose -f compose.hybrid.yaml up -d --wait
+
+# 复用已有 Identity 与 Asset
+Copy-Item deploy/env/attach.env.example .env
+docker compose -f compose.attach.yaml up -d --wait
+```
+
+生成 `.env` 后必须填写所有空 secret、管理员 Subject 和外部服务 URL。宿主端口由
+`DOCS_API_PORT`、`DOCS_WEB_PORT`、`IDENTITY_PORT`、`IDENTITY_ACCOUNT_PORT`、`ASSET_PORT` 配置，没有硬编码占用。
+
+Docs PostgreSQL 使用锁定的 `postgres-zhparser` 镜像，因为现有全文检索 migration 明确依赖 `zhparser`；普通 PostgreSQL
+不能替代该契约。
+
+## 独立命令
+
+```powershell
+cd api
+go run ./cmd/docs
+go run ./cmd/errorcatalog
+
+cd ..\web
+pnpm install --frozen-lockfile --ignore-workspace
+pnpm dev
+```
+
+运行配置模板位于 `api/manifest/config/config.example.yaml`。本仓不使用 `doctor.yaml`。
+
+## 验收策略
+
+API、Web、Compose 与浏览器合同均由本仓 CI 拥有。当前迁移批次按约定暂停逐产品测试；完成所有消费者迁移后，
+再统一运行 API、前端、容器、Compose 和 Playwright 验收。

@@ -5,7 +5,7 @@ import (
 
 	"github.com/yueli-official/foundation/go/discovery"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 func TestProjectDocUsesSEOFieldsAndVersionLocaleIdentity(t *testing.T) {

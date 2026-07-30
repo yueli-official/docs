@@ -2,6 +2,9 @@
 package main
 
 import (
+	"context"
+	"time"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
 	foundationabuse "github.com/yueli-official/foundation/go/abuse"
@@ -11,28 +14,33 @@ import (
 
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 
-	"platform/gokit/authsetup"
-	"platform/gokit/observability"
-	"platform/gokit/openapiexport"
-	"platform/products/docs/api/internal/appconfig"
-	"platform/products/docs/api/internal/catalog"
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/docsabuse"
-	"platform/products/docs/api/internal/docsaudit"
-	"platform/products/docs/api/internal/docsauthz"
-	"platform/products/docs/api/internal/docsdiscovery"
-	"platform/products/docs/api/internal/docssearch"
-	"platform/products/docs/api/internal/docsurls"
-	"platform/products/docs/api/internal/server"
+	"github.com/yueli-official/docs/api/internal/appconfig"
+	"github.com/yueli-official/docs/api/internal/catalog"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docsabuse"
+	"github.com/yueli-official/docs/api/internal/docsaudit"
+	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/docsdiscovery"
+	"github.com/yueli-official/docs/api/internal/docssearch"
+	"github.com/yueli-official/docs/api/internal/docsurls"
+	"github.com/yueli-official/docs/api/internal/runtime"
+	"github.com/yueli-official/docs/api/internal/server"
 )
 
 func main() {
+	if err := runtime.EnableEnvironmentConfig(); err != nil {
+		panic(err)
+	}
 	ctx := gctx.New()
-	shutdown, err := observability.StartFromEnvironment(ctx, "docs-api")
+	if runtime.OpenAPIRequested() {
+		exportOpenAPI(ctx)
+		return
+	}
+	shutdown, err := runtime.StartTelemetry(ctx, "docs-api")
 	if err != nil {
 		panic(err)
 	}
-	defer observability.ShutdownWithTimeout(shutdown)
+	defer runtime.ShutdownTelemetry(shutdown)
 
 	// ── Catalog logic (DB access) ─────────────────────────────────────────────
 	store := dao.NewPG(g.DB())
@@ -46,7 +54,7 @@ func main() {
 		abuseChallenge *foundationabuse.ChallengeDefinition
 		abuseVerifiers map[foundationabuse.ChallengeKind]foundationabuse.ChallengeVerifier
 	)
-	if secret := g.Cfg().MustGet(ctx, "docs.abuse.turnstile.secret").String(); secret != "" && !openapiexport.Requested() {
+	if secret := g.Cfg().MustGet(ctx, "docs.abuse.turnstile.secret").String(); secret != "" {
 		hostnames := g.Cfg().MustGet(ctx, "docs.abuse.turnstile.hostnames").Strings()
 		if len(hostnames) == 0 {
 			panic("docs.abuse.turnstile.hostnames is required when Turnstile is enabled")
@@ -69,55 +77,6 @@ func main() {
 	abuseCatalog := foundationabuse.MustCompile(docsabuse.Definition(docsabuse.Policy{
 		Challenge: abuseChallenge,
 	}))
-	if openapiexport.Requested() {
-		urlLifecycle, err := docsurls.NewMemory(appconfig.SiteURL(ctx), appconfig.DefaultLocale(ctx))
-		if err != nil {
-			panic(err)
-		}
-		cat.WithURLLifecycle(urlLifecycle)
-		definition, err := authorization.Compile(docsauthz.Definition())
-		if err != nil {
-			panic(err)
-		}
-		authz, err := authorization.NewMemory(definition, authorization.MemoryOptions{
-			RootScopeID:       docsauthz.RootScopeID,
-			ProtectedSubjects: []authorization.SubjectRef{{Kind: authorization.SubjectUser, ID: "openapi-export-admin"}},
-			Constraints:       docsauthz.ConstraintEvaluators(),
-			Predicates:        docsauthz.PredicateEvaluators(),
-		})
-		if err != nil {
-			panic(err)
-		}
-		abuseModule, err := foundationabuse.NewMemory(abuseCatalog, foundationabuse.MemoryOptions{
-			Secret:    []byte("docs-openapi-abuse-memory-secret"),
-			Verifiers: abuseVerifiers,
-		})
-		if err != nil {
-			panic(err)
-		}
-		authorizationService := docsauthz.New(authz)
-		if err := authorizationService.SetAbuse(abuseModule); err != nil {
-			panic(err)
-		}
-		jw := appconfig.LoadJWKS(ctx)
-		verifier, err := authsetup.NewRemoteVerifier(authsetup.RemoteVerifierConfig{
-			JWKSURL: jw.URL, Issuer: jw.Issuer, Audience: jw.Audience,
-			AllowLoopbackHTTP: jw.AllowLoopbackHTTP,
-		})
-		if err != nil {
-			panic(err)
-		}
-		s := g.Server()
-		server.Configure(s, server.Deps{
-			Verifier: verifier, Catalog: cat, Authorization: authorizationService,
-			Discovery: discoveryModule, DiscoveryCache: discoveryCache,
-			URLResolver: urlLifecycle.Resolver(),
-		})
-		if _, err := openapiexport.ExportIfRequested(s); err != nil {
-			panic(err)
-		}
-		return
-	}
 
 	// ── Instance-local authorization ─────────────────────────────────────────
 	authDB, err := appconfig.OpenAuthorizationDB(ctx)
@@ -197,7 +156,7 @@ func main() {
 
 	// ── JWT verifier (IdP JWKS, lazy) ────────────────────────────────────────
 	jw := appconfig.LoadJWKS(ctx)
-	verifier, err := authsetup.NewRemoteVerifier(authsetup.RemoteVerifierConfig{
+	verifier, err := runtime.NewRemoteVerifier(runtime.RemoteVerifierConfig{
 		JWKSURL: jw.URL, Issuer: jw.Issuer, Audience: jw.Audience,
 		AllowLoopbackHTTP: jw.AllowLoopbackHTTP,
 	})
@@ -211,12 +170,62 @@ func main() {
 		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
 		URLResolver: urlLifecycle.Resolver(),
 	})
-	if handled, err := openapiexport.ExportIfRequested(s); handled {
-		if err != nil {
-			panic(err)
-		}
-		return
-	}
 	g.Log().Info(ctx, "docs-service starting")
 	s.Run()
+}
+
+func exportOpenAPI(ctx context.Context) {
+	discoveryModule, discoveryCache, err := docsdiscovery.New(nil, docsdiscovery.Config{
+		Origin:        "https://docs.example.test",
+		Name:          "Docs",
+		Description:   "OpenAPI export",
+		DefaultLocale: "en",
+		TTL:           5 * time.Minute,
+		Clock:         time.Now,
+	})
+	if err != nil {
+		panic(err)
+	}
+	urlLifecycle, err := docsurls.NewMemory("https://docs.example.test", "en")
+	if err != nil {
+		panic(err)
+	}
+	cat := catalog.New(nil).WithURLLifecycle(urlLifecycle)
+	definition, err := authorization.Compile(docsauthz.Definition())
+	if err != nil {
+		panic(err)
+	}
+	authz, err := authorization.NewMemory(definition, authorization.MemoryOptions{
+		RootScopeID:       docsauthz.RootScopeID,
+		ProtectedSubjects: []authorization.SubjectRef{{Kind: authorization.SubjectUser, ID: "openapi-export-admin"}},
+		Constraints:       docsauthz.ConstraintEvaluators(),
+		Predicates:        docsauthz.PredicateEvaluators(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	abuseCatalog := foundationabuse.MustCompile(docsabuse.Definition(docsabuse.Policy{}))
+	abuseModule, err := foundationabuse.NewMemory(abuseCatalog, foundationabuse.MemoryOptions{
+		Secret: []byte("docs-openapi-abuse-memory-secret"),
+	})
+	if err != nil {
+		panic(err)
+	}
+	authorizationService := docsauthz.New(authz)
+	if err := authorizationService.SetAbuse(abuseModule); err != nil {
+		panic(err)
+	}
+	s := g.Server()
+	server.Configure(s, server.Deps{
+		Catalog: cat, Authorization: authorizationService,
+		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
+		URLResolver: urlLifecycle.Resolver(),
+	})
+	handled, err := runtime.ExportOpenAPIIfRequested(s)
+	if err != nil {
+		panic(err)
+	}
+	if !handled {
+		panic("DOCS_OPENAPI_OUTPUT is required")
+	}
 }

@@ -1,0 +1,151 @@
+services:
+  docs-postgres:
+    image: ghcr.io/mnixry/postgres-zhparser:16@sha256:b81350b938126f04379b982dee06f8845a5bb9a4769315740bace6e1283c62cd
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DOCS_POSTGRES_USER:-docs}
+      POSTGRES_PASSWORD: ${DOCS_POSTGRES_PASSWORD:?set DOCS_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DOCS_POSTGRES_DB:-docs}
+    volumes:
+      - docs-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  docs-migrate:
+    image: ${DOCS_MIGRATION_IMAGE:-yueli/docs-migration:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: migration
+    restart: "no"
+    command:
+      - -path=/migrations
+      - -database=${DOCS_DATABASE_URL:?set DOCS_DATABASE_URL}
+      - up
+    depends_on:
+      docs-postgres:
+        condition: service_healthy
+
+  docs-bootstrap:
+    image: ${DOCS_BOOTSTRAP_IMAGE:-yueli/docs-bootstrap:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: bootstrap
+    restart: "no"
+    environment:
+      DOCS_DATABASE_URL: ${DOCS_DATABASE_URL:?set DOCS_DATABASE_URL}
+    depends_on:
+      docs-migrate:
+        condition: service_completed_successfully
+
+  docs-binding:
+    image: ${DOCS_BINDING_IMAGE:-yueli/docs-bindingcheck:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: bindingcheck
+    restart: "no"
+    environment:
+      DOCS_IDENTITY_ISSUER: ${DOCS_IDENTITY_ISSUER:?set DOCS_IDENTITY_ISSUER}
+      DOCS_IDENTITY_DISCOVERY_URL: ${DOCS_IDENTITY_DISCOVERY_URL:?set DOCS_IDENTITY_DISCOVERY_URL}
+      DOCS_IDENTITY_JWKS_URL: ${DOCS_IDENTITY_JWKS_URL:?set DOCS_IDENTITY_JWKS_URL}
+      DOCS_ASSET_BASE_URL: ${DOCS_ASSET_INTERNAL_URL:?set DOCS_ASSET_INTERNAL_URL}
+      DOCS_BINDING_ALLOW_INSECURE_IDENTITY_HTTP: ${DOCS_BINDING_ALLOW_INSECURE_IDENTITY_HTTP:-false}
+      DOCS_BINDING_ALLOW_INSECURE_ASSET_HTTP: ${DOCS_BINDING_ALLOW_INSECURE_ASSET_HTTP:-false}
+      DOCS_BINDING_TIMEOUT: ${DOCS_BINDING_TIMEOUT:-3m}
+
+  docs-api:
+    image: ${DOCS_API_IMAGE:-yueli/docs-api:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: runtime
+    restart: unless-stopped
+    environment:
+      GF_GCFG_FILE: /app/manifest/config/config.example.yaml
+      GF_SERVER_ADDRESS: 0.0.0.0:8086
+      DOCS_DATABASE_URL: ${DOCS_DATABASE_URL:?set DOCS_DATABASE_URL}
+      GF_DOCS_SITESLUG: ${DOCS_SITE_KEY:-docs-main}
+      GF_DOCS_BRAND: ${DOCS_SITE_BRAND:-月离文档}
+      GF_DOCS_DOMAIN: ${DOCS_SITE_DOMAIN:-docs.localhost}
+      GF_DOCS_SITEURL: ${DOCS_PUBLIC_ORIGIN:?set DOCS_PUBLIC_ORIGIN}
+      GF_DOCS_SITEDESCRIPTION: ${DOCS_SITE_DESCRIPTION:-指南、参考与教程}
+      GF_DOCS_ASSETSPACE: ${DOCS_ASSET_SPACE:-yueli}
+      GF_DOCS_COVERCATEGORY: ${DOCS_ASSET_PROFILE:-docs-collection-cover}
+      GF_DOCS_AUTHORIZATION_BOOTSTRAPADMINISTRATORSUBS: ${DOCS_BOOTSTRAP_ADMIN_SUBS:?set DOCS_BOOTSTRAP_ADMIN_SUBS as a JSON array}
+      GF_DOCS_JWKS_URL: ${DOCS_IDENTITY_JWKS_URL:?set DOCS_IDENTITY_JWKS_URL}
+      GF_DOCS_JWKS_ISSUER: ${DOCS_IDENTITY_ISSUER:?set DOCS_IDENTITY_ISSUER}
+      GF_DOCS_JWKS_AUDIENCE: ${DOCS_OIDC_CLIENT_ID:-docs-main-web}
+      GF_DOCS_JWKS_ALLOWLOOPBACKHTTP: ${DOCS_ALLOW_LOOPBACK_IDENTITY_HTTP:-false}
+      GF_DOCS_ASSETSERVICE_BASEURL: ${DOCS_ASSET_INTERNAL_URL:?set DOCS_ASSET_INTERNAL_URL}
+      DOCS_ENVIRONMENT: ${DOCS_ENVIRONMENT:-production}
+      DOCS_RATE_LIMIT_PER_MINUTE: ${DOCS_RATE_LIMIT_PER_MINUTE:-600}
+      OTEL_TRACES_EXPORTER: ${OTEL_TRACES_EXPORTER:-none}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    ports:
+      - "${DOCS_API_PORT:-8086}:8086"
+    depends_on:
+      docs-postgres:
+        condition: service_healthy
+      docs-migrate:
+        condition: service_completed_successfully
+      docs-bootstrap:
+        condition: service_completed_successfully
+      docs-binding:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/docs-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  docs-web:
+    image: ${DOCS_WEB_IMAGE:-yueli/docs-web:local}
+    pull_policy: build
+    build:
+      context: ../web
+    restart: unless-stopped
+    environment:
+      NUXT_API_BASE: http://docs-api:8086
+      NUXT_DOWNSTREAM_BASE: http://docs-api:8086
+      NUXT_ASSET_BASE: ${DOCS_ASSET_INTERNAL_URL:?set DOCS_ASSET_INTERNAL_URL}
+      NUXT_IDENTITY_BASE: ${DOCS_IDENTITY_INTERNAL_URL:?set DOCS_IDENTITY_INTERNAL_URL}
+      NUXT_SEAL_SECRET: ${DOCS_WEB_SEAL_SECRET:?set DOCS_WEB_SEAL_SECRET}
+      NUXT_COOKIE_SECURE: ${DOCS_COOKIE_SECURE:-true}
+      NUXT_PUBLIC_OIDC_ISSUER: ${DOCS_IDENTITY_ISSUER:?set DOCS_IDENTITY_ISSUER}
+      NUXT_PUBLIC_OIDC_CLIENT_ID: ${DOCS_OIDC_CLIENT_ID:-docs-main-web}
+      NUXT_PUBLIC_OIDC_REDIRECT_URI: ${DOCS_OIDC_REDIRECT_URI:?set DOCS_OIDC_REDIRECT_URI}
+      NUXT_PUBLIC_OIDC_POST_LOGOUT_REDIRECT_URI: ${DOCS_OIDC_POST_LOGOUT_REDIRECT_URI:?set DOCS_OIDC_POST_LOGOUT_REDIRECT_URI}
+      NUXT_PUBLIC_OIDC_SCOPES: ${DOCS_OIDC_SCOPES:-openid profile email roles offline_access}
+      NUXT_PUBLIC_ACCOUNT_URL: ${DOCS_ACCOUNT_ORIGIN:?set DOCS_ACCOUNT_ORIGIN}
+      NUXT_PUBLIC_SITE_SLUG: ${DOCS_SITE_KEY:-docs-main}
+      NUXT_PUBLIC_SITE_BRAND: ${DOCS_SITE_BRAND:-月离文档}
+      NUXT_PUBLIC_SITE_DOMAIN: ${DOCS_SITE_DOMAIN:-docs.localhost}
+      NUXT_PUBLIC_ASSET_SPACE: ${DOCS_ASSET_SPACE:-yueli}
+      NUXT_PUBLIC_ASSET_NAMESPACE: ${DOCS_ASSET_NAMESPACE:-docs-main}
+      NUXT_PUBLIC_ASSET_PROFILE: ${DOCS_ASSET_PROFILE:-docs-collection-cover}
+    ports:
+      - "${DOCS_WEB_PORT:-3003}:3003"
+    depends_on:
+      docs-api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3003/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+volumes:
+  docs-postgres:

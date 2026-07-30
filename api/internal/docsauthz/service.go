@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/yueli-official/docs/api/internal/docsabuse"
 	"github.com/yueli-official/foundation/go/abuse"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
-	"platform/products/docs/api/internal/docsabuse"
 )
 
 type Runtime interface {

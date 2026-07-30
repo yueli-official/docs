@@ -5,7 +5,7 @@ import (
 
 	"github.com/yueli-official/foundation/go/audit"
 
-	"platform/products/docs/api/internal/docsaudit"
+	"github.com/yueli-official/docs/api/internal/docsaudit"
 )
 
 func TestDefinitionCompilesStableConsumerActions(t *testing.T) {

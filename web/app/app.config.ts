@@ -1,3 +1,3 @@
-import { platformAppConfig } from '@platform/ui/app-config'
-// Docs site theme = the 'docs' preset (indigo).
-export default defineAppConfig(platformAppConfig('docs'))
+import { createUiPreset } from '@yueli/ui/theme'
+
+export default defineAppConfig(createUiPreset({ primary: 'indigo' }))

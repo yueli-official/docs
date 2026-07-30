@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"platform/products/docs/api/internal/assetclient"
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/assetclient"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 func TestImportAssetUsesDedicatedImageProfile(t *testing.T) {

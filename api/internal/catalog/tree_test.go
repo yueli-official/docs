@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/test/gtest"
 
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 func TestBuildTree(t *testing.T) {

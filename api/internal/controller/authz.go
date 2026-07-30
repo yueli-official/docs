@@ -6,10 +6,10 @@ import (
 
 	"github.com/gogf/gf/v2/net/ghttp"
 
+	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/docserr"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
-	"platform/products/docs/api/internal/docsauthz"
-	"platform/products/docs/api/internal/docserr"
 )
 
 type authorizationContextKey struct{}

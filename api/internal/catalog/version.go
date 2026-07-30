@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"platform/products/docs/api/internal/docserr"
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/docserr"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 var versionKeyPattern = regexp.MustCompile(`^(v[0-9][0-9a-z.-]*|next|latest|default)$`)

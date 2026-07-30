@@ -2,7 +2,7 @@ package dao_test
 
 // Schema smoke against a live PG (database "docs"). Skipped unless DOCS_PG=1.
 //
-//	DOCS_PG=1 DOCS_PG_HOST=192.168.5.5 go test ./products/docs/api/internal/dao/ -p 1 -v
+//	DOCS_PG=1 DOCS_PG_HOST=192.168.5.5 go test ./internal/dao/ -p 1 -v
 
 import (
 	"context"
@@ -16,8 +16,8 @@ import (
 	"github.com/gogf/gf/v2/test/gtest"
 	"github.com/google/uuid"
 
-	"platform/products/docs/api/internal/dao"
-	"platform/products/docs/api/internal/model"
+	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/model"
 )
 
 func envOr(k, def string) string {

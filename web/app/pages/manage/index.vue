@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SkeletonList } from "@platform/manage/components";
+import { SkeletonList } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import type {
   CollectionList,
