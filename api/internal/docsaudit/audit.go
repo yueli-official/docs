@@ -184,11 +184,14 @@ func actorFromContext(ctx context.Context, explicit string) audit.Actor {
 	if explicit != "" {
 		return audit.Actor{Kind: audit.ActorUser, ID: explicit}
 	}
-	if principal, ok := foundationauth.FromContext(ctx); ok {
-		if principal.Subject != "" {
+	if principal, ok := foundationauth.FromContext(ctx); ok && principal != nil {
+		kind, _ := principal.Claim("subject_kind")
+		switch kind {
+		case "user":
 			return audit.Actor{Kind: audit.ActorUser, ID: principal.Subject}
-		}
-		if principal.ClientID != "" {
+		case "guest":
+			return audit.Actor{Kind: audit.ActorGuest, ID: principal.Subject}
+		case "client":
 			return audit.Actor{Kind: audit.ActorService, ID: principal.ClientID}
 		}
 	}

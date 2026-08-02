@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/testidentity"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
 )
@@ -40,7 +41,7 @@ func TestServiceReconcilesEnabledAutomaticAuthorOnFirstAuthenticatedAccess(t *te
 		t.Fatalf("ActivatePolicy() error = %v", err)
 	}
 	service := docsauthz.New(module)
-	userContext := foundationauth.NewContext(ctx, &foundationauth.Principal{Subject: "registered-user"})
+	userContext := foundationauth.NewContext(ctx, testidentity.User(t, "registered-user", nil, nil))
 	access, err := service.EffectiveAccess(userContext)
 	if err != nil {
 		t.Fatalf("EffectiveAccess() error = %v", err)

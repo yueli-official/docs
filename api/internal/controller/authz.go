@@ -37,7 +37,11 @@ func authorizationService(ctx context.Context) *docsauthz.Service {
 // subject extracts the authenticated subject (JWT group), or a forbidden error.
 func subject(ctx context.Context) (string, error) {
 	p, ok := foundationauth.FromContext(ctx)
-	if !ok {
+	if !ok || p == nil || strings.TrimSpace(p.Subject) == "" {
+		return "", docserr.Forbidden()
+	}
+	kind, _ := p.Claim("subject_kind")
+	if kind != "user" {
 		return "", docserr.Forbidden()
 	}
 	return p.Subject, nil
