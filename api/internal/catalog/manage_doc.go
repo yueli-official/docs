@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 const (
@@ -88,12 +87,17 @@ func normalizeManageDocsQuery(input ManageDocsInput) (model.ManageDocsQuery, err
 		return model.ManageDocsQuery{}, fmt.Errorf("size must be between 1 and %d", maxManageDocsSize)
 	case query.Version != "" && query.CollectionID == "":
 		return model.ManageDocsQuery{}, fmt.Errorf("version requires collectionId")
-	case query.CollectionID != "" && uuid.Validate(query.CollectionID) != nil:
+	case query.CollectionID != "" && !isCanonicalUUID(query.CollectionID):
 		return model.ManageDocsQuery{}, fmt.Errorf("collectionId must be a UUID")
-	case query.ParentID != "" && query.ParentID != "root" && uuid.Validate(query.ParentID) != nil:
+	case query.ParentID != "" && query.ParentID != "root" && !isCanonicalUUID(query.ParentID):
 		return model.ManageDocsQuery{}, fmt.Errorf("parentId must be root or a UUID")
 	}
 	return query, nil
+}
+
+func isCanonicalUUID(value string) bool {
+	_, err := identifier.Parse(value)
+	return err == nil
 }
 
 func (s *Service) ManageDocs(ctx context.Context, input ManageDocsInput) (*model.ManageDocsResult, error) {
