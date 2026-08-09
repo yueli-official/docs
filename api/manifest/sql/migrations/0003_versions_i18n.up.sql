@@ -1,5 +1,5 @@
 CREATE TABLE collection_versions (
-    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                UUID PRIMARY KEY,
     collection_id     UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
     key               TEXT NOT NULL,
     label             TEXT NOT NULL,
@@ -18,23 +18,9 @@ CREATE UNIQUE INDEX ux_collection_versions_one_default
     ON collection_versions (collection_id)
     WHERE is_default;
 
-INSERT INTO collection_versions (collection_id, key, label, status, is_default, sort_order)
-SELECT c.id, 'default', '默认版本', 'published', true, 0
-FROM collections c
-WHERE NOT EXISTS (
-    SELECT 1 FROM collection_versions v WHERE v.collection_id = c.id AND v.is_default
-);
-
 ALTER TABLE docs ADD COLUMN version_id UUID REFERENCES collection_versions(id) ON DELETE RESTRICT;
-ALTER TABLE docs ADD COLUMN translation_key TEXT NOT NULL DEFAULT gen_random_uuid()::text;
+ALTER TABLE docs ADD COLUMN translation_key TEXT NOT NULL;
 ALTER TABLE doc_search_events ADD COLUMN version_key TEXT NOT NULL DEFAULT '';
-
-UPDATE docs d
-SET version_id = v.id
-FROM collection_versions v
-WHERE v.collection_id = d.collection_id
-  AND v.is_default
-  AND d.version_id IS NULL;
 
 ALTER TABLE docs ALTER COLUMN version_id SET NOT NULL;
 

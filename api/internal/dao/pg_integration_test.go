@@ -14,10 +14,10 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/test/gtest"
-	"github.com/google/uuid"
 
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 func envOr(k, def string) string {
@@ -67,7 +67,7 @@ func TestPGCollectionCRUD(t *testing.T) {
 		db := openTestDB(t)
 		resetSchema(ctx, t, db)
 		p := dao.NewPG(db)
-		c := &model.Collection{ID: uuid.NewString(), Slug: "ps", Title: "PS教程", AuthorSub: "u1"}
+		c := &model.Collection{ID: identifier.MustNew().String(), Slug: "ps", Title: "PS教程", AuthorSub: "u1"}
 		t.AssertNil(p.InsertCollection(ctx, c))
 		got, err := p.GetCollectionBySlug(ctx, "ps")
 		t.AssertNil(err)
@@ -90,10 +90,10 @@ func TestPGDocCRUD(t *testing.T) {
 		db := openTestDB(t)
 		resetSchema(ctx, t, db)
 		p := dao.NewPG(db)
-		col := &model.Collection{ID: uuid.NewString(), Slug: "yueli", Title: "YUELI", AuthorSub: "u1"}
+		col := &model.Collection{ID: identifier.MustNew().String(), Slug: "yueli", Title: "YUELI", AuthorSub: "u1"}
 		t.AssertNil(p.InsertCollection(ctx, col))
 		version := &model.CollectionVersion{
-			ID:           uuid.NewString(),
+			ID:           identifier.MustNew().String(),
 			CollectionID: col.ID,
 			Key:          "default",
 			Label:        "默认版本",
@@ -102,7 +102,7 @@ func TestPGDocCRUD(t *testing.T) {
 		}
 		t.AssertNil(p.InsertCollectionVersion(ctx, version))
 		d := &model.Doc{
-			ID:             uuid.NewString(),
+			ID:             identifier.MustNew().String(),
 			CollectionID:   col.ID,
 			VersionID:      version.ID,
 			Slug:           "intro",
@@ -133,19 +133,19 @@ func TestSchemaApplies(t *testing.T) {
 		db := openTestDB(t)
 		resetSchema(ctx, t, db)
 
-		colID := uuid.NewString()
+		colID := identifier.MustNew().String()
 		_, err := db.Model("collections").Ctx(ctx).Data(g.Map{
 			"id": colID, "slug": "sapphire", "title": "Sapphire", "author_sub": "u1",
 		}).Insert()
 		t.AssertNil(err)
-		versionID := uuid.NewString()
+		versionID := identifier.MustNew().String()
 		_, err = db.Model("collection_versions").Ctx(ctx).Data(g.Map{
 			"id": versionID, "collection_id": colID, "key": "default", "label": "默认版本",
 			"status": "published", "is_default": true,
 		}).Insert()
 		t.AssertNil(err)
 
-		rootID := uuid.NewString()
+		rootID := identifier.MustNew().String()
 		_, err = db.Model("docs").Ctx(ctx).Data(g.Map{
 			"id": rootID, "collection_id": colID, "version_id": versionID,
 			"slug": "adjust", "title": "Adjust", "locale": "en",
@@ -155,7 +155,7 @@ func TestSchemaApplies(t *testing.T) {
 
 		// child references parent → exercises parent_id self-FK
 		_, err = db.Model("docs").Ctx(ctx).Data(g.Map{
-			"id": uuid.NewString(), "collection_id": colID, "version_id": versionID,
+			"id": identifier.MustNew().String(), "collection_id": colID, "version_id": versionID,
 			"parent_id": rootID, "slug": "gamma", "title": "Gamma", "locale": "en",
 			"translation_key": "gamma", "author_sub": "u1",
 		}).Insert()
@@ -187,11 +187,11 @@ func TestPGImportSchemaApplies(t *testing.T) {
 		_, err = db.Exec(ctx, string(up4))
 		t.AssertNil(err)
 
-		colID := uuid.NewString()
-		versionID := uuid.NewString()
-		batchID := uuid.NewString()
-		itemID := uuid.NewString()
-		assetID := uuid.NewString()
+		colID := identifier.MustNew().String()
+		versionID := identifier.MustNew().String()
+		batchID := identifier.MustNew().String()
+		itemID := identifier.MustNew().String()
+		assetID := identifier.MustNew().String()
 
 		_, err = db.Model("collections").Ctx(ctx).Data(g.Map{
 			"id": colID, "slug": "imported", "title": "Imported", "author_sub": "u1",

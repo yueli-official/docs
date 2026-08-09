@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 func TestPostgresCollectionCascadeAndProjectionShareTransaction(t *testing.T) {
@@ -22,7 +22,7 @@ func TestPostgresCollectionCascadeAndProjectionShareTransaction(t *testing.T) {
 	}
 	defer db.Close()
 
-	site := "test-" + uuid.NewString()
+	site := "test-" + identifier.MustNew().String()
 	index, err := NewPostgres(ctx, db, site)
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +31,7 @@ func TestPostgresCollectionCascadeAndProjectionShareTransaction(t *testing.T) {
 		_, _ = db.ExecContext(ctx, `DELETE FROM search_instances WHERE instance_key=$1`, "docs.search."+site)
 	})
 
-	collectionID, versionID, docID := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	collectionID, versionID, docID := identifier.MustNew().String(), identifier.MustNew().String(), identifier.MustNew().String()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)

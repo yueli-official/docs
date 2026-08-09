@@ -10,7 +10,7 @@ BEGIN
 END$$;
 
 CREATE TABLE collections (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY,
     slug        TEXT NOT NULL UNIQUE,
     title       TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
@@ -23,7 +23,7 @@ CREATE TABLE collections (
 );
 
 CREATE TABLE docs (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY,
     collection_id UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
     parent_id     UUID REFERENCES docs(id) ON DELETE CASCADE,
     slug          TEXT NOT NULL,
@@ -51,7 +51,7 @@ CREATE INDEX ix_docs_parent ON docs (parent_id);
 CREATE INDEX ix_docs_search ON docs USING GIN (search_vector);
 
 CREATE TABLE doc_search_events (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY,
     query           TEXT NOT NULL,
     collection_slug TEXT NOT NULL DEFAULT '',
     locale          TEXT NOT NULL DEFAULT 'en',

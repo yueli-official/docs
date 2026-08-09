@@ -4,10 +4,9 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/google/uuid"
-
 	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 var versionKeyPattern = regexp.MustCompile(`^(v[0-9][0-9a-z.-]*|next|latest|default)$`)
@@ -42,7 +41,7 @@ func (s *Service) CreateVersion(ctx context.Context, in CreateVersionInput) (*mo
 		return nil, docserr.NotFound(in.CollectionID)
 	}
 	m := &model.CollectionVersion{
-		ID:              uuid.NewString(),
+		ID:              identifier.MustNew().String(),
 		CollectionID:    in.CollectionID,
 		Key:             in.Key,
 		Label:           in.Label,

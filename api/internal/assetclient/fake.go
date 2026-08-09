@@ -4,7 +4,7 @@ import (
 	"context"
 	"path"
 
-	"github.com/google/uuid"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 type Fake struct {
@@ -18,7 +18,7 @@ func (f *Fake) UploadInit(context.Context, string, InitInput) (InitOutput, error
 }
 
 func (f *Fake) Finalize(context.Context, string, string) (View, error) {
-	return View{ID: uuid.NewString(), CdnURL: "https://asset.test/docs/fake.png", Mime: "image/png", Filename: "fake.png"}, nil
+	return View{ID: identifier.MustNew().String(), CdnURL: "https://asset.test/docs/fake.png", Mime: "image/png", Filename: "fake.png"}, nil
 }
 
 func (f *Fake) Upload(_ context.Context, _ string, in InitInput, data []byte) (View, error) {
@@ -27,7 +27,7 @@ func (f *Fake) Upload(_ context.Context, _ string, in InitInput, data []byte) (V
 	}
 	url := "https://asset.test/docs/" + path.Base(in.Filename)
 	f.Uploaded[url] = append([]byte(nil), data...)
-	return View{ID: uuid.NewString(), CdnURL: url, Size: in.Size, Mime: in.Mime, Filename: in.Filename}, nil
+	return View{ID: identifier.MustNew().String(), CdnURL: url, Size: in.Size, Mime: in.Mime, Filename: in.Filename}, nil
 }
 
 func (f *Fake) RegisterReference(_ context.Context, _ string, in ReferenceInput) error {

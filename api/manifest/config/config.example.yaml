@@ -39,7 +39,7 @@ docs:
     # Used only if this consumer-local instance does not exist. Later role
     # changes are persisted in this Docs database through the management API.
     bootstrapAdministratorSubs:
-      - "usr_AAAAAAAAAAAAAAAAAAAAAA"   # test@example.com
+      - "TestA123"   # test@example.com
   abuse:
     turnstile:
       secret: ""            # optional; enable challenge escalation when configured

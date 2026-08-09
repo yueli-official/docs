@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/foundation/go/urllifecycle"
 )
 
@@ -22,11 +22,11 @@ func TestPostgresCollectionSubtreeRollbackTogether(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	lifecycle, err := NewPostgres(ctx, db, "docs-test:"+uuid.NewString(), "https://docs.test", "en")
+	lifecycle, err := NewPostgres(ctx, db, "docs-test:"+identifier.MustNew().String(), "https://docs.test", "en")
 	if err != nil {
 		t.Fatal(err)
 	}
-	collectionID, versionID, docID := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	collectionID, versionID, docID := identifier.MustNew().String(), identifier.MustNew().String(), identifier.MustNew().String()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)

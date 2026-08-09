@@ -9,14 +9,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/yueli-official/docs/api/internal/assetclient"
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
 	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/importkit"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 type ImportUploadInput struct {
@@ -76,7 +75,7 @@ func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*m
 	if err != nil {
 		return nil, ImportSummary{}, err
 	}
-	batchID := uuid.NewString()
+	batchID := identifier.MustNew().String()
 	summary := summarizePackage(pkg)
 	items := make([]*model.ImportItem, 0, len(pkg.Docs))
 	itemIDBySource := map[string]string{}
@@ -99,7 +98,7 @@ func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*m
 		} else {
 			summary.Creates++
 		}
-		itemID := uuid.NewString()
+		itemID := identifier.MustNew().String()
 		itemIDBySource[doc.SourcePath] = itemID
 		planned := plannedImportDoc{
 			CollectionID:   col.ID,
@@ -141,7 +140,7 @@ func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*m
 			}
 			summary.Archives++
 			items = append(items, &model.ImportItem{
-				ID:             uuid.NewString(),
+				ID:             identifier.MustNew().String(),
 				BatchID:        batchID,
 				Locale:         current.Locale,
 				VersionKey:     pkg.Manifest.Version,
@@ -431,7 +430,7 @@ func importAssetsAndRefs(batchID string, pkg *importkit.Package, itemIDBySource 
 			asset := pkg.Assets[ref.ResolvedPath]
 			assetID := assetIDBySource[ref.ResolvedPath]
 			if assetID == "" && asset.SourcePath != "" {
-				assetID = uuid.NewString()
+				assetID = identifier.MustNew().String()
 				assetIDBySource[ref.ResolvedPath] = assetID
 				assets = append(assets, &model.ImportAsset{
 					ID:          assetID,
@@ -443,7 +442,7 @@ func importAssetsAndRefs(batchID string, pkg *importkit.Package, itemIDBySource 
 				})
 			}
 			refs = append(refs, &model.ImportAssetRef{
-				ID:               uuid.NewString(),
+				ID:               identifier.MustNew().String(),
 				BatchID:          batchID,
 				AssetID:          assetID,
 				ItemID:           itemID,
@@ -539,7 +538,7 @@ func (s *Service) prepareImportMutation(
 	planned.ParentID = parentIDs[importDocKey(planned.Locale, planned.ParentPath)]
 	doc := &model.Doc{}
 	if item.Action == "create" {
-		doc.ID = uuid.NewString()
+		doc.ID = identifier.MustNew().String()
 		doc.AuthorSub = "import"
 	} else {
 		if err := json.Unmarshal([]byte(item.BeforeDocJSON), doc); err != nil {

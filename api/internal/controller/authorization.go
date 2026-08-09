@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/v2/net/ghttp"
-	"github.com/google/uuid"
 	"github.com/yueli-official/foundation/go/abuse"
 	"github.com/yueli-official/foundation/go/authorization"
+	"github.com/yueli-official/foundation/go/identifier"
 
 	v1 "github.com/yueli-official/docs/api/api/v1"
 	"github.com/yueli-official/docs/api/internal/docsabuse"
@@ -47,7 +47,7 @@ func (controller *Authorization) ApplyForRole(
 		attemptID = strings.TrimSpace(idempotencyKeyOf(ctx))
 	}
 	if attemptID == "" {
-		attemptID = uuid.NewString()
+		attemptID = identifier.MustNew().String()
 	}
 	if action := service.AuthorApplicationAction(); action != nil {
 		request := ghttp.RequestFromCtx(ctx)

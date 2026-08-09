@@ -6,10 +6,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/yueli-official/foundation/go/audit"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
+	"github.com/yueli-official/foundation/go/identifier"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -165,7 +165,7 @@ func (journal *Journal) Export(
 		return audit.ExportManifest{}, err
 	}
 	command, err := audit.Prepare(journal.contracts[ActionDataExported], audit.Attempt[Evidence]{
-		ID: audit.EventID(uuid.NewString()), Actor: actorFromContext(ctx, ""),
+		ID: audit.EventID(identifier.MustNew().String()), Actor: actorFromContext(ctx, ""),
 		Target:      audit.Target{Type: "docs.data_export", ID: string(manifest.ContentDigest)},
 		Outcome:     audit.Outcome{Kind: audit.OutcomeSucceeded},
 		Correlation: correlationFromContext(ctx),

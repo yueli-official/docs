@@ -111,6 +111,7 @@ const {
 } = useActionFeedback();
 const initialized = ref(false);
 const activeIconPickerLinkId = ref("");
+let quickLinkDraftSequence = 0;
 const settingsState = useVueSettingsWorkflow({
   snapshot: () => ({
     quickLinks: quickLinks.value,
@@ -136,7 +137,7 @@ watch(
     const config = value?.config;
     if (!config) return;
     quickLinks.value = config.quickLinks.map((link, index) => ({
-      id: link.id || crypto.randomUUID(),
+      id: link.id || newQuickLinkDraftKey(),
       title: link.title || "",
       description: link.description || "",
       icon: link.icon || "i-tabler-arrow-up-right",
@@ -185,7 +186,7 @@ watch(section, (value) => {
 
 function addQuickLink() {
   quickLinks.value.push({
-    id: crypto.randomUUID(),
+    id: newQuickLinkDraftKey(),
     title: "",
     description: "",
     icon: "i-tabler-arrow-up-right",
@@ -194,6 +195,11 @@ function addQuickLink() {
     sortOrder: quickLinks.value.length,
     enabled: true,
   });
+}
+
+function newQuickLinkDraftKey() {
+  quickLinkDraftSequence += 1;
+  return `draft-quick-link-${quickLinkDraftSequence}`;
 }
 
 function removeQuickLink(id: string) {

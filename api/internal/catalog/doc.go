@@ -5,12 +5,11 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
 	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 // CreateDocInput carries the caller-supplied fields for a new doc.
@@ -72,7 +71,7 @@ func (s *Service) CreateDoc(ctx context.Context, authorSub string, in CreateDocI
 	}
 	translationKey := in.TranslationKey
 	if translationKey == "" {
-		translationKey = uuid.NewString()
+		translationKey = identifier.MustNew().String()
 	}
 	slugSource := in.Title
 	if strings.TrimSpace(in.Slug) != "" {
@@ -83,7 +82,7 @@ func (s *Service) CreateDoc(ctx context.Context, authorSub string, in CreateDocI
 		return nil, docserr.InvalidInput("slug produces empty value")
 	}
 	m := &model.Doc{
-		ID:             uuid.NewString(),
+		ID:             identifier.MustNew().String(),
 		CollectionID:   in.CollectionID,
 		VersionID:      versionID,
 		ParentID:       in.ParentID,

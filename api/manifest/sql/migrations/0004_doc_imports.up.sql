@@ -1,5 +1,5 @@
 CREATE TABLE doc_import_batches (
-    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id             UUID PRIMARY KEY,
     collection_id  UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
     version_id     UUID NOT NULL REFERENCES collection_versions(id) ON DELETE RESTRICT,
     default_locale TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE doc_import_batches (
 );
 
 CREATE TABLE doc_import_items (
-    id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                       UUID PRIMARY KEY,
     batch_id                 UUID NOT NULL REFERENCES doc_import_batches(id) ON DELETE CASCADE,
     locale                   TEXT NOT NULL,
     version_key              TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE doc_import_items (
 );
 
 CREATE TABLE doc_import_assets (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY,
     batch_id      UUID NOT NULL REFERENCES doc_import_batches(id) ON DELETE CASCADE,
     source_path   TEXT NOT NULL,
     data          BYTEA NOT NULL DEFAULT '\x',
@@ -50,7 +50,7 @@ CREATE TABLE doc_import_assets (
 );
 
 CREATE TABLE doc_import_asset_refs (
-    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                 UUID PRIMARY KEY,
     batch_id           UUID NOT NULL REFERENCES doc_import_batches(id) ON DELETE CASCADE,
     asset_id           UUID REFERENCES doc_import_assets(id) ON DELETE SET NULL,
     item_id            UUID NOT NULL REFERENCES doc_import_items(id) ON DELETE CASCADE,

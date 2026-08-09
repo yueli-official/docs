@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/google/uuid"
 	"github.com/yueli-official/foundation/go/audit"
+	"github.com/yueli-official/foundation/go/identifier"
 
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
@@ -22,7 +22,7 @@ func (s *Service) documentMutationHook(
 	var auditHook dao.TransactionHook
 	if s.audit != nil && action != "" {
 		auditHook = s.audit.Hook(
-			ctx, action, uuid.NewString(),
+			ctx, action, identifier.MustNew().String(),
 			audit.Target{Type: "docs.document", ID: doc.ID},
 			docsaudit.Evidence{Digest: documentDigest(doc)}, "",
 		)
@@ -52,7 +52,7 @@ func (s *Service) importMutationHook(
 	var auditHook dao.TransactionHook
 	if s.audit != nil {
 		auditHook = s.audit.Hook(
-			ctx, action, uuid.NewString(),
+			ctx, action, identifier.MustNew().String(),
 			audit.Target{Type: "docs.import", ID: batch.ID},
 			docsaudit.Evidence{Count: uint64(count)}, actor,
 		)

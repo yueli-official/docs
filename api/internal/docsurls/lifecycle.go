@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/foundation/go/urllifecycle"
 )
 
@@ -338,7 +338,7 @@ func planReconciliation(
 		})
 	}
 	return urllifecycle.ChangeSet{
-		CommandID:       urllifecycle.CommandID(uuid.NewString()),
+		CommandID:       urllifecycle.CommandID(identifier.MustNew().String()),
 		Actor:           urllifecycle.ActorRef{Kind: "system", ID: "docs"},
 		Reason:          reason,
 		ResourceChanges: changes,

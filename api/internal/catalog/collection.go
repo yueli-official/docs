@@ -4,12 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/yueli-official/docs/api/internal/assetclient"
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 // CreateCollection generates a slug from the title, guards duplicates, and
@@ -29,7 +28,7 @@ func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, 
 		return nil, docserr.SlugTaken(slug)
 	}
 	m := &model.Collection{
-		ID:          uuid.NewString(),
+		ID:          identifier.MustNew().String(),
 		Slug:        slug,
 		Title:       title,
 		Description: description,
@@ -38,7 +37,7 @@ func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, 
 		AuthorSub:   authorSub,
 	}
 	version := &model.CollectionVersion{
-		ID:           uuid.NewString(),
+		ID:           identifier.MustNew().String(),
 		CollectionID: m.ID,
 		Key:          "default",
 		Label:        "默认版本",

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/google/uuid"
 	"github.com/yueli-official/foundation/go/audit"
+	"github.com/yueli-official/foundation/go/identifier"
 
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
@@ -44,7 +44,7 @@ func (s *Service) UpdateHomeConfig(ctx context.Context, cfg *model.HomeConfig) (
 		raw, _ := json.Marshal(clean)
 		sum := sha256.Sum256(raw)
 		auditHook = s.audit.Hook(
-			ctx, docsaudit.ActionSiteProfilePublished, uuid.NewString(),
+			ctx, docsaudit.ActionSiteProfilePublished, identifier.MustNew().String(),
 			audit.Target{Type: "docs.site_profile", ID: "default"},
 			docsaudit.Evidence{Digest: hex.EncodeToString(sum[:])}, "",
 		)
@@ -67,10 +67,7 @@ func sanitizeHomeQuickLinks(in []*model.HomeQuickLink) []*model.HomeQuickLink {
 		if title == "" && to == "" && collectionSlug == "" {
 			continue
 		}
-		id := strings.TrimSpace(link.ID)
-		if id == "" {
-			id = uuid.NewString()
-		}
+		id := normalizeHomeLinkID(link.ID)
 		out = append(out, &model.HomeQuickLink{
 			ID:             id,
 			Title:          title,
@@ -83,6 +80,14 @@ func sanitizeHomeQuickLinks(in []*model.HomeQuickLink) []*model.HomeQuickLink {
 		})
 	}
 	return out
+}
+
+func normalizeHomeLinkID(text string) string {
+	value, err := identifier.Parse(strings.TrimSpace(text))
+	if err == nil && value.Version() == 7 {
+		return value.String()
+	}
+	return identifier.MustNew().String()
 }
 
 func sanitizeFeaturedCollections(in []string) []string {
