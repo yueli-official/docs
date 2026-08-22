@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "@yueli/asset-nuxt/tailwind.css";
 /* Scan responsive utilities shipped by the public Foundation UI package. */
 @import "@yueli/ui/tailwind.css";
 @import "@yueli/ui/theme.css";
