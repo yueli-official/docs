@@ -8,6 +8,7 @@ import {
   CollectionToolbar,
 } from "@yueli/ui/collection/pattern";
 import { AssetImageCropper } from "@yueli/asset-nuxt/components";
+import { assetUploadURL } from "@yueli/asset-nuxt/upload";
 import { createDocsNotifier } from "~/utils/feedback";
 import {
   ManageEmpty,
@@ -285,7 +286,7 @@ function putWithProgress(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("PUT", url);
+    xhr.open("PUT", assetUploadURL(url));
     for (const [key, value] of Object.entries(headers ?? {}))
       xhr.setRequestHeader(key, value);
     xhr.upload.onprogress = (event) => {

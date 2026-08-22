@@ -186,8 +186,9 @@ test("docs settings and authorization consume effective capabilities", () => {
 
   assert.match(home, /can\("docs\.site_settings\.manage"\)/);
   assert.match(home, /没有站点设置权限/);
-  assert.match(assets, /can\("docs\.asset_settings\.manage"\)/);
-  assert.match(assets, /:can-manage="canManageAssets"/);
+  assert.match(assets, /AssetRegistrationSummary/);
+  assert.match(assets, /expected-namespace="docs"/);
+  assert.doesNotMatch(assets, /ManageAssetSettings/);
   assert.match(authorization, /<YAdminPage/);
   assert.match(authorization, /isAdministrator/);
   assert.match(authorization, /自定义角色/);

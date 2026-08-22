@@ -109,7 +109,7 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
   ...(can("docs.asset_settings.manage")
     ? [
         {
-          label: "资源配置",
+          label: "资源策略",
           icon: "i-tabler-database-cog",
           to: "/manage/assets",
           active: isActive("/manage/assets"),
@@ -212,7 +212,7 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
           ? [
               {
                 id: "assets",
-                label: "资源配置",
+                label: "资源策略",
                 icon: "i-tabler-database-cog",
                 to: "/manage/assets",
               },

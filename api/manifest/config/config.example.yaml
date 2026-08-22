@@ -33,7 +33,7 @@ docs:
   discovery:
     ttl: "5m"
   assetSpace: "default"
-  assetNamespace: "default"
+  assetNamespace: "docs"
   assetProfile: "docs-default"
   authorization:
     # Used only if this consumer-local instance does not exist. Later role

@@ -150,7 +150,7 @@ const quickActions = computed(() => [
   ...(canManageAssetSettings.value
     ? [
         {
-          label: "资源配置",
+          label: "资源策略",
           description: "检查存储与用途规则",
           icon: "i-tabler-database-cog",
           to: "/manage/assets",

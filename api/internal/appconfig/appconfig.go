@@ -77,7 +77,7 @@ func LoadJWKS(ctx context.Context) JWKS {
 
 func BuildAssetClient(ctx context.Context) assetclient.Client {
 	base := g.Cfg().MustGet(ctx, "docs.assetService.baseUrl", "http://localhost:8082").String()
-	return assetclient.NewHTTP(base, SiteSlug(ctx), AssetSpace(ctx))
+	return assetclient.NewHTTP(base, AssetNamespace(ctx), AssetSpace(ctx))
 }
 
 func SiteSlug(ctx context.Context) string {
@@ -94,6 +94,10 @@ func DefaultLocale(context.Context) string {
 
 func AssetSpace(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "docs.assetSpace", "default").String()
+}
+
+func AssetNamespace(ctx context.Context) string {
+	return g.Cfg().MustGet(ctx, "docs.assetNamespace", "docs").String()
 }
 
 func CoverCategory(ctx context.Context) string {
