@@ -3,6 +3,8 @@ import { AssetRegistrationSummary } from "@yueli/asset-nuxt/components";
 
 definePageMeta({ layout: "manage", middleware: "auth" });
 
+const { can } = useMe();
+const canEditAssets = computed(() => can("docs.asset_settings.manage"));
 useSeoMeta({ title: "资源策略 · 控制台" });
 </script>
 
@@ -15,7 +17,7 @@ useSeoMeta({ title: "资源策略 · 控制台" });
     body-class="mx-auto w-full max-w-screen-2xl"
   >
     <ClientOnly>
-      <AssetRegistrationSummary expected-namespace="docs" :profile-order="['docs-collection-cover']" />
+      <AssetRegistrationSummary expected-namespace="docs" :profile-order="['docs-collection-cover']" :can-edit="canEditAssets" />
       <template #fallback><USkeleton class="h-56 w-full rounded-xl" /></template>
     </ClientOnly>
   </YAdminPage>
