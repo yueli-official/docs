@@ -22,6 +22,9 @@ test("manage navigation puts homepage configuration in settings at the end", () 
   const layout = readApp("layouts/manage.vue");
   const page = readApp("pages/manage/home.vue");
   assert.match(layout, /YAdminShell/);
+  assert.match(layout, /<template>\s*<YAdminShell/);
+  assert.doesNotMatch(layout, /<template>\s*<ClientOnly>[\s\S]*?<YAdminShell/);
+  assert.doesNotMatch(layout, /正在打开[^\n]{0,16}控制台/);
   assert.match(layout, /label: "站点设置"/);
   assert.match(layout, /i-tabler-settings/);
   assert.ok(
