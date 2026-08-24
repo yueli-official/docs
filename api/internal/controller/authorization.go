@@ -19,6 +19,63 @@ type Authorization struct{}
 
 func NewAuthorization() *Authorization { return &Authorization{} }
 
+func (controller *Authorization) GetAuthorizationConsole(
+	ctx context.Context,
+	_ *v1.GetAuthorizationConsoleReq,
+) (*v1.GetAuthorizationConsoleRes, error) {
+	service := authorizationService(ctx)
+	if service == nil {
+		return nil, docserr.AuthorizationUnavailable()
+	}
+	revisions, err := service.Runtime().ListPolicyRevisions(ctx, authorization.PolicyRevisionListQuery{
+		Actor: service.Subject(ctx), ScopeID: docsauthz.RootScopeID, Limit: 500,
+	})
+	if err != nil {
+		return nil, mapAuthorizationError(err)
+	}
+	var active, selected authorization.PolicyRevision
+	for _, revision := range revisions.Revisions {
+		if revision.State == authorization.PolicyActive && revision.Number > active.Number {
+			active = revision
+		}
+		if revision.State == authorization.PolicyDraft && revision.Number > selected.Number {
+			selected = revision
+		}
+	}
+	if selected.Number == 0 {
+		selected = active
+	}
+	snapshot, err := service.Runtime().GetPolicySnapshot(ctx, authorization.PolicySnapshotQuery{
+		Actor: service.Subject(ctx), Revision: selected.Number, ScopeID: docsauthz.RootScopeID,
+	})
+	if err != nil {
+		return nil, mapAuthorizationError(err)
+	}
+	applications, err := service.Runtime().ListApplications(ctx, authorization.ApplicationListQuery{
+		Actor: service.Subject(ctx), ScopeID: docsauthz.RootScopeID,
+		State: authorization.ApplicationPending, Limit: 500,
+	})
+	if err != nil {
+		return nil, mapAuthorizationError(err)
+	}
+	grants, err := service.Runtime().ListGrants(ctx, authorization.GrantListQuery{
+		Actor: service.Subject(ctx), ScopeID: docsauthz.RootScopeID,
+		ActiveOnly: true, Limit: 1000,
+	})
+	if err != nil {
+		return nil, mapAuthorizationError(err)
+	}
+	return &v1.GetAuthorizationConsoleRes{
+		ActiveRevision: active.Number,
+		Policy:         authorizationPolicyView(snapshot.Revision),
+		Roles:          authorizationRoleViews(snapshot.Roles),
+		AutomaticRules: authorizationAutomaticRuleViews(snapshot.AutomaticRules),
+		Applications:   authorizationApplicationViews(applications.Applications),
+		Grants:         authorizationGrantViews(grants.Grants),
+		Capabilities:   docsCapabilityViews(),
+	}, nil
+}
+
 func (controller *Authorization) ListRequestableRoles(
 	ctx context.Context,
 	_ *v1.ListRequestableRolesReq,
@@ -345,6 +402,56 @@ func (controller *Authorization) ActivateAuthorizationPolicy(
 	return &v1.ActivateAuthorizationPolicyRes{Policy: authorizationPolicyView(revision)}, nil
 }
 
+func (controller *Authorization) GrantAuthorizationRole(
+	ctx context.Context,
+	req *v1.GrantAuthorizationRoleReq,
+) (*v1.GrantAuthorizationRoleRes, error) {
+	service := authorizationService(ctx)
+	grant, err := service.Runtime().Grant(ctx, authorization.GrantCommand{
+		Actor:  service.Subject(ctx),
+		Target: authorization.SubjectRef{Kind: authorization.SubjectUser, ID: req.Subject},
+		Role:   authorization.RoleKey(req.Role), ScopeID: docsauthz.RootScopeID,
+		Source: authorization.GrantSourceDirect,
+	})
+	if err != nil {
+		return nil, mapAuthorizationError(err)
+	}
+	return &v1.GrantAuthorizationRoleRes{Grant: authorizationGrantView(grant)}, nil
+}
+
+func (controller *Authorization) RevokeAuthorizationGrant(
+	ctx context.Context,
+	req *v1.RevokeAuthorizationGrantReq,
+) (*v1.RevokeAuthorizationGrantRes, error) {
+	service := authorizationService(ctx)
+	grant, err := service.Runtime().Revoke(ctx, authorization.RevokeCommand{
+		Actor: service.Subject(ctx), GrantID: authorization.GrantID(req.ID),
+	})
+	if err != nil {
+		if authorization.Is(err, authorization.ErrorInvariant) {
+			return nil, docserr.AdministratorGrantProtected()
+		}
+		return nil, mapAuthorizationError(err)
+	}
+	return &v1.RevokeAuthorizationGrantRes{Grant: authorizationGrantView(grant)}, nil
+}
+
+func authorizationRoleViews(roles []authorization.Role) []v1.AuthorizationRoleView {
+	items := make([]v1.AuthorizationRoleView, len(roles))
+	for index, role := range roles {
+		items[index] = authorizationRoleView(role)
+	}
+	return items
+}
+
+func authorizationAutomaticRuleViews(rules []authorization.AutomaticRulePolicy) []v1.AuthorizationAutomaticRuleView {
+	items := make([]v1.AuthorizationAutomaticRuleView, len(rules))
+	for index, rule := range rules {
+		items[index] = v1.AuthorizationAutomaticRuleView{Key: rule.Key, Enabled: rule.Enabled}
+	}
+	return items
+}
+
 func authorizationRoleView(role authorization.Role) v1.AuthorizationRoleView {
 	capabilities := make([]string, len(role.Capabilities))
 	for index, capability := range role.Capabilities {
@@ -399,5 +506,37 @@ func authorizationApplicationView(application authorization.Application) v1.Auth
 		Reason: application.Reason, State: string(application.State), GrantID: string(application.GrantID),
 		CreatedAt: application.CreatedAt, ReviewedAt: application.ReviewedAt,
 		ReviewedBy: application.ReviewedBy.ID, ReviewReason: application.ReviewReason,
+	}
+}
+
+func authorizationGrantViews(grants []authorization.Grant) []v1.AuthorizationGrantView {
+	items := make([]v1.AuthorizationGrantView, len(grants))
+	for index, grant := range grants {
+		items[index] = authorizationGrantView(grant)
+	}
+	return items
+}
+
+func authorizationGrantView(grant authorization.Grant) v1.AuthorizationGrantView {
+	return v1.AuthorizationGrantView{
+		ID: string(grant.ID), Subject: grant.Target.ID,
+		Role: string(grant.Role), Source: string(grant.Source),
+	}
+}
+
+func docsCapabilityViews() []v1.AuthorizationCapabilityView {
+	return []v1.AuthorizationCapabilityView{
+		{Key: string(docsauthz.CapabilityCollectionManage), DisplayName: "管理文档集"},
+		{Key: string(docsauthz.CapabilityDocumentCreate), DisplayName: "新建文档"},
+		{Key: string(docsauthz.CapabilityDocumentRead), DisplayName: "查看可管理文档"},
+		{Key: string(docsauthz.CapabilityDocumentUpdate), DisplayName: "编辑自己的文档"},
+		{Key: string(docsauthz.CapabilityDocumentPublish), DisplayName: "发布自己的文档"},
+		{Key: string(docsauthz.CapabilityDocumentArchive), DisplayName: "归档自己的文档"},
+		{Key: string(docsauthz.CapabilityDocumentDeletePermanently), DisplayName: "永久删除文档"},
+		{Key: string(docsauthz.CapabilityDocumentReassign), DisplayName: "转让文档"},
+		{Key: string(docsauthz.CapabilityVersionManage), DisplayName: "管理版本"},
+		{Key: string(docsauthz.CapabilityImportManage), DisplayName: "管理批量导入"},
+		{Key: string(docsauthz.CapabilitySiteSettingsManage), DisplayName: "管理站点设置"},
+		{Key: string(docsauthz.CapabilityAssetSettingsManage), DisplayName: "管理资源策略"},
 	}
 }

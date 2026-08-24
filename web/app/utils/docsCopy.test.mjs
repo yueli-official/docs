@@ -18,39 +18,72 @@ test("homepage separates recommended documents from quick links", () => {
   assert.doesNotMatch(page, /搜索全部文档/);
 });
 
-test("manage navigation puts homepage configuration in settings at the end", () => {
+test("manage navigation keeps one settings entry and moves its workflows into tabs", () => {
   const layout = readApp("layouts/manage.vue");
   const page = readApp("pages/manage/home.vue");
-  assert.match(layout, /YAdminShell/);
-  assert.match(layout, /<template>\s*<YAdminShell/);
-  assert.doesNotMatch(layout, /<template>\s*<ClientOnly>[\s\S]*?<YAdminShell/);
+  assert.match(layout, /YAdminConsoleLayout/);
+  assert.match(layout, /<template>\s*<YAdminConsoleLayout/);
+  assert.doesNotMatch(layout, /<template>\s*<ClientOnly>[\s\S]*?<YAdminConsoleLayout/);
   assert.doesNotMatch(layout, /正在打开[^\n]{0,16}控制台/);
   assert.match(layout, /label: "站点设置"/);
   assert.match(layout, /i-tabler-settings/);
   assert.ok(
     layout.indexOf('label: "站点设置"') > layout.indexOf('label: "文档"'),
   );
-  assert.doesNotMatch(layout, /首页布局/);
-  assert.match(page, /SettingsLayout/);
-  assert.match(page, /:show-header="false"/);
-  assert.match(page, /首屏文案、快速入口和推荐文档/);
-  assert.doesNotMatch(page, /推荐入口/);
+  const settingsNavigation = layout.slice(
+    layout.indexOf('label: "站点设置"'),
+    layout.indexOf('can("docs.asset_settings.manage")'),
+  );
+  assert.match(settingsNavigation, /to: "\/manage\/home"/);
+  assert.doesNotMatch(settingsNavigation, /children:|type: "trigger"/);
+  assert.doesNotMatch(layout, /站点设置 · (?:首页|页脚|基础)/);
+  assert.equal(layout.match(/label: "站点设置"/g)?.length, 2);
+  assert.match(page, /import \{ TabbedSurface \} from "@yueli\/ui\/admin"/);
+  assert.match(page, /<TabbedSurface/);
+  assert.match(page, /navigation-label="站点设置"/);
+  assert.match(page, /value: "home"/);
+  assert.match(page, /value: "footer"/);
+  assert.match(page, /value: "site"/);
+  assert.doesNotMatch(page, /SettingsLayout/);
 });
 
-test("manage sidebar owns one context menu and one account footer", () => {
+test("Identity BFF downstream configuration stays origin-only", () => {
+  const config = readApp("../nuxt.config.ts");
+  assert.match(
+    config,
+    /downstreamBase:\s*process\.env\.NUXT_DOWNSTREAM_BASE\s*\|\|\s*['"]http:\/\/127\.0\.0\.1:8086['"]/,
+  );
+  assert.doesNotMatch(
+    config,
+    /NUXT_DOWNSTREAM_BASE\s*\|\|\s*['"][^'"]+\/api\/v1['"]/,
+  );
+});
+
+test("manage sidebar owns one direct brand link and one account footer", () => {
   const layout = readApp("layouts/manage.vue");
-  assert.match(layout, /workspaceMenuItems/);
-  assert.match(layout, /打开文档站/);
-  assert.match(layout, /#brand="\{ collapsed \}"/);
-  assert.match(layout, /#sidebar-footer="\{ collapsed \}"/);
+  assert.match(layout, /brand-to="\/"/);
+  assert.match(layout, /brand-icon="i-tabler-book"/);
+  assert.match(layout, /#account="\{ collapsed \}"/);
   assert.match(layout, /show-appearance/);
   assert.match(layout, /trigger-mode/);
+  assert.match(layout, /:current-label="currentLabel"/);
+  assert.doesNotMatch(layout, /workspaceMenuItems|UDropdownMenu/);
   assert.doesNotMatch(layout, /secondaryNavigation/);
   assert.doesNotMatch(layout, /UColorModeButton/);
-  assert.doesNotMatch(layout, /:collapsible="false"/);
 });
 
-test("manage dashboard and search only expose capability-backed work", () => {
+test("manage gate resolves Docs capabilities before the server render", () => {
+  const gate = readApp("middleware/manage-gate.global.ts");
+  const refresh = gate.indexOf("await refreshMe()");
+  const serverReturn = gate.indexOf("if (import.meta.server) return");
+  assert.ok(refresh >= 0, "manage gate must load Docs effective access");
+  assert.ok(
+    serverReturn > refresh,
+    "server middleware must populate Docs access before rendering navigation",
+  );
+});
+
+test("manage dashboard uses Blog-style reading analytics instead of maintenance activity", () => {
   const layout = readApp("layouts/manage.vue");
   const page = readApp("pages/manage/index.vue");
 
@@ -58,13 +91,22 @@ test("manage dashboard and search only expose capability-backed work", () => {
   assert.match(layout, /can\("docs\.document\.create"\)/);
   assert.match(layout, /can\("docs\.import\.manage"\)/);
   assert.match(layout, /isAdministrator\.value/);
-  assert.match(page, /const quickActions = computed/);
-  assert.match(page, /v-if="canCreateDocs"/);
-  assert.match(page, /loadOptional/);
-  assert.match(page, /documentDataUnavailable/);
-  assert.match(page, /collectionDataUnavailable/);
-  assert.match(page, /工作区状态/);
-  assert.match(page, /部分不可用/);
+  assert.match(page, /DashboardTrendChart/);
+  assert.match(page, /\/api\/v1\/dashboard\/overview/);
+  assert.match(page, /累计浏览/);
+  assert.match(page, /近.*天浏览/);
+  assert.match(page, /浏览深度/);
+  assert.match(page, /搜索次数/);
+  assert.match(page, /浏览趋势/);
+  assert.match(page, /访客趋势/);
+  assert.match(page, /热门文档/);
+  assert.match(page, /流量来源/);
+  assert.match(page, /热门搜索/);
+  assert.match(page, /publicDocumentLink/);
+  assert.match(page, /locale:\s*document\.locale/);
+  assert.match(page, /version:\s*document\.versionKey/);
+  assert.doesNotMatch(page, /工作区状态|可用操作|快捷操作/);
+  assert.doesNotMatch(page, /最近更新|文档集|最近导入|草稿|待完善/);
   assert.doesNotMatch(page, /aria-label="关键指标"/);
   assert.doesNotMatch(page, /服务状态/);
 });
@@ -171,6 +213,8 @@ test("docs import is a recoverable capability-backed workflow", () => {
   assert.match(start, /confirmError/);
   assert.match(start, /importStatusMeta/);
   assert.match(start, /importModeLabel/);
+  assert.match(start, /class="grid items-start gap-4/);
+  assert.doesNotMatch(start, /xl:top-24/);
   assert.doesNotMatch(start, /ZIP only/);
   assert.match(detail, /can\("docs\.import\.manage"\)/);
   assert.match(detail, /batch\.errorMessage/);
@@ -189,14 +233,23 @@ test("docs settings and authorization consume effective capabilities", () => {
   assert.match(assets, /AssetRegistrationSummary/);
   assert.match(assets, /expected-namespace="docs"/);
   assert.doesNotMatch(assets, /ManageAssetSettings/);
-  assert.match(authorization, /<YAdminPage/);
+  assert.match(authorization, /<ManagePage/);
+  assert.match(authorization, /<TabbedSurface/);
+  assert.match(authorization, /用户管理/);
+  assert.match(authorization, /\/api\/v1\/authorization\/manage\/console/);
+  assert.match(authorization, /\/api\/v1\/authorization\/manage\/grants/);
+  assert.match(authorization, /data-authorization-role-row/);
+  assert.match(authorization, /title="撤销角色"/);
+  assert.match(authorization, /label="确认撤销"/);
+  assert.match(authorization, /docs\.administrator_grant_protected/);
+  assert.doesNotMatch(authorization, /window\.confirm/);
   assert.match(authorization, /isAdministrator/);
   assert.match(authorization, /自定义角色/);
   assert.match(authorization, /create-role/);
   assert.match(authorization, /retire-role/);
   assert.match(authorization, /\/preview/);
   assert.match(authorization, /确认后才会创建服务端 draft/);
-  assert.match(authorization, /没有超级管理员/);
+  assert.match(authorization, /管理员能力受保护/);
   assert.match(authorization, /拒绝申请时请填写原因/);
   assert.doesNotMatch(authorization, /<main class=/);
 });
@@ -222,6 +275,8 @@ test("collection cover upload uses the shared crop dialog before upload", () => 
   const page = readApp("pages/manage/collections.vue");
   assert.match(page, /AssetImageCropper/);
   assert.match(page, /onCroppedCover/);
+  assert.match(page, /CollectionTableToolbar/);
+  assert.doesNotMatch(page, /CollectionToolbar,/);
 });
 
 test("document reader has a fuller reading surface", () => {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { DropdownMenuItem } from "@nuxt/ui";
 import type {
   AdminNavigationItem,
   AdminSearchGroup,
@@ -11,10 +10,22 @@ const { brand: siteBrand } = useSiteRuntime();
 const sidebarOpen = ref(false);
 const { can, isAdministrator } = useMe();
 
+const currentLabel = computed(() => {
+  if (route.path === "/manage") return "控制台";
+  if (route.path.startsWith("/manage/docs")) return "文档";
+  if (route.path.startsWith("/manage/collections")) return "文档集";
+  if (route.path.startsWith("/manage/import")) return "批量导入";
+  if (route.path.startsWith("/manage/home")) return "站点设置";
+  if (route.path.startsWith("/manage/assets")) return "资源策略";
+  if (route.path.startsWith("/manage/authorization")) return "权限与申请";
+  return "控制台";
+});
+
 const messages: AdminShellMessages = {
   skipToContent: "跳到主要内容",
   search: "搜索后台",
   searchPlaceholder: "搜索页面与常用操作",
+  currentLocation: "当前位置",
 };
 
 function isActive(path: string, exact = false) {
@@ -74,35 +85,6 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
           to: "/manage/home",
           active: isActive("/manage/home"),
           onSelect: closeSidebar,
-          children: [
-            {
-              label: "首页",
-              icon: "i-tabler-home-cog",
-              to: "/manage/home?section=home",
-              onSelect: closeSidebar,
-              active:
-                isActive("/manage/home", true) &&
-                (route.query.section ?? "home") === "home",
-            },
-            {
-              label: "页脚",
-              icon: "i-tabler-layout-bottombar",
-              to: "/manage/home?section=footer",
-              onSelect: closeSidebar,
-              active:
-                isActive("/manage/home", true) &&
-                route.query.section === "footer",
-            },
-            {
-              label: "基础",
-              icon: "i-tabler-adjustments-horizontal",
-              to: "/manage/home?section=site",
-              onSelect: closeSidebar,
-              active:
-                isActive("/manage/home", true) &&
-                route.query.section === "site",
-            },
-          ],
         },
       ]
     : []),
@@ -128,32 +110,6 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
         },
       ]
     : []),
-]);
-
-const workspaceMenuItems = computed<DropdownMenuItem[][]>(() => [
-  [
-    {
-      type: "label",
-      label: siteBrand.value,
-    },
-  ],
-  [
-    {
-      label: "内容管理",
-      icon: "i-tabler-layout-dashboard",
-      type: "checkbox",
-      checked: true,
-      onSelect: (event: Event) => event.preventDefault(),
-    },
-  ],
-  [
-    {
-      label: "打开文档站",
-      icon: "i-tabler-external-link",
-      to: "/",
-      onSelect: closeSidebar,
-    },
-  ],
 ]);
 
 const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
@@ -265,74 +221,42 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
 </script>
 
 <template>
-  <YAdminShell
-      v-model:open="sidebarOpen"
-      :navigation="navigation"
-      :search-groups="searchGroups"
-      :messages="messages"
-      storage-key="docs-manage"
-      main-id="manage-main"
-      :default-size="16"
-      :min-size="14"
-      :max-size="20"
-    >
-      <template #brand="{ collapsed }">
-        <UDropdownMenu
-          :items="workspaceMenuItems"
-          :content="{ align: 'center', collisionPadding: 12 }"
-          :ui="{
-            content: collapsed
-              ? 'w-56'
-              : 'w-(--reka-dropdown-menu-trigger-width)',
-          }"
-        >
-          <UButton
-            type="button"
-            color="neutral"
-            variant="ghost"
-            :block="!collapsed"
-            :square="collapsed"
-            :aria-label="`打开${siteBrand}站点菜单`"
-            :class="[
-              'min-h-11 gap-2 px-1.5 data-[state=open]:bg-elevated',
-              !collapsed && 'w-full justify-start',
-              collapsed && 'aspect-square justify-center px-0',
-            ]"
-          >
-            <span
-              class="grid size-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary"
-            >
-              <UIcon name="i-tabler-book" class="size-4" />
-            </span>
-            <span
-              v-if="!collapsed"
-              class="min-w-0 truncate text-sm font-semibold text-highlighted"
-            >
-              {{ siteBrand }}
-            </span>
-            <UIcon
-              v-if="!collapsed"
-              name="i-tabler-chevrons-up-down"
-              class="ms-auto size-3.5 text-dimmed"
-            />
-          </UButton>
-        </UDropdownMenu>
-      </template>
-
-      <template #sidebar-footer="{ collapsed }">
-        <ConsumerManageAccountControl
-          home-to=""
-          show-appearance
-          :trigger-mode="collapsed ? 'collapsed' : 'sidebar'"
-        />
-      </template>
-
-      <slot />
-      <YBackToTop
-        target-id="manage-main"
-        scroll-container-id="manage-main"
-        avoid-selector="[data-manage-dock], [data-back-to-top-avoid]"
-        label="返回顶部"
+  <YAdminConsoleLayout
+    :navigation="navigation"
+    :search-groups="searchGroups"
+    :messages="messages"
+    storage-key="docs-manage"
+    main-id="manage-main"
+    :brand-label="siteBrand"
+    brand-icon="i-tabler-book"
+    brand-to="/"
+    :context-label="siteBrand"
+    :current-label="currentLabel"
+    back-to-top-label="返回顶部"
+    data-docs-manage-shell
+  >
+    <template #account="{ collapsed }">
+      <ConsumerManageAccountControl
+        home-to=""
+        show-appearance
+        :trigger-mode="collapsed ? 'collapsed' : 'sidebar'"
       />
-  </YAdminShell>
+    </template>
+    <slot />
+  </YAdminConsoleLayout>
 </template>
+
+<style scoped>
+@media (max-width: 640px) {
+  [data-docs-manage-shell] :deep(button),
+  [data-docs-manage-shell] :deep(a[href]),
+  [data-docs-manage-shell] :deep(summary) {
+    min-height: 44px;
+  }
+
+  [data-docs-manage-shell] :deep(button[aria-label]),
+  [data-docs-manage-shell] :deep(a[aria-label]) {
+    min-width: 44px;
+  }
+}
+</style>

@@ -6,13 +6,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!user.value) await refresh()
   if (!user.value) return login(to.fullPath)
 
-  // Effective access is checked by the docs backend through the BFF session. On the
-  // server, useApi would call the backend directly without the sealed BFF token,
-  // so do the owner check only after the client session is available.
-  if (import.meta.server) return
-
   const { me, canManage, refresh: refreshMe } = useMe()
   if (!me.value) await refreshMe()
+  // Resolve the product-local capability set during SSR so the navigation tree is
+  // identical before and after hydration. Redirect decisions remain client-side;
+  // a transient SSR access lookup must not turn into an incorrect public redirect.
+  if (import.meta.server) return
   if (canManage.value) return
   return navigateTo('/')
 })

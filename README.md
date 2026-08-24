@@ -9,6 +9,8 @@ Docs 是独立的文档消费者产品，拥有文档集合、层级页面、版
 - Identity 只通过 OIDC issuer、Discovery 和 JWKS 证明用户身份。
 - Asset 只通过公开 HTTP 合同管理文档集封面；Docs 不导入 Asset 内部代码。
 - Foundation 通过正式 Go module 与 JS Release 提供跨产品协议原语。
+- Foundation Traffic 提供幂等浏览、访客日与聚合原语；Docs 自己拥有 `document` 资源语义、来源归因、搜索统计、
+  `/api/v1/docs/{id}/view`、dashboard overview 和控制台展示。统计真值保存在每个 Docs 实例自己的 PostgreSQL。
 - 本地多仓编排属于 `workspace`；生产部署属于本仓 Compose。
 
 不可变依赖与能力绑定记录在：
@@ -34,6 +36,13 @@ Docs 是独立的文档消费者产品，拥有文档集合、层级页面、版
 ```
 
 所有端口均可通过 `LOCAL_*_PORT` 覆盖；`down docs` 只停止 Docs target 对应的 Workspace 会话，不会终止其他项目。
+
+`docs-local` 默认启用正式 Dev Seed：2 个文档集、6 篇发布文档，以及可重复执行的 7 天浏览、来源和搜索样本。Seed 只在
+`DOCS_DEV_SEED=true` 时运行，使用稳定 ID 且不覆盖已编辑记录；生产 Compose 不启用。需要空白本地库时，在启动前设置：
+
+```powershell
+$env:LOCAL_DOCS_DEV_SEED = "false"
+```
 
 ## Docker Compose
 

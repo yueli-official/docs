@@ -179,6 +179,58 @@ func TestAuthorizationApplicationFlow(t *testing.T) {
 		defer me.Close()
 		t.Assert(me.StatusCode, http.StatusOK)
 		t.Assert(gjson.New(me.ReadAllString()).Get("me.roles.0").String(), "author")
+
+		console, err := client(testSub).Get(ctx, "/api/v1/authorization/manage/console")
+		t.AssertNil(err)
+		defer console.Close()
+		t.Assert(console.StatusCode, http.StatusOK)
+		consoleJSON := gjson.New(console.ReadAllString())
+		t.Assert(consoleJSON.Get("activeRevision").Uint() > 0, true)
+		t.Assert(consoleJSON.Get("roles.0.key").String(), "administrator")
+		t.Assert(len(consoleJSON.Get("capabilities").Array()) > 0, true)
+		protectedGrantID := ""
+		for _, item := range consoleJSON.Get("grants").Array() {
+			grant := gjson.New(item)
+			if grant.Get("subject").String() == testSub && grant.Get("role").String() == "administrator" {
+				protectedGrantID = grant.Get("id").String()
+				break
+			}
+		}
+		t.AssertNE(protectedGrantID, "")
+		protectedRevoke, err := client(testSub).Delete(
+			ctx, "/api/v1/authorization/manage/grants/"+protectedGrantID,
+		)
+		t.AssertNil(err)
+		defer protectedRevoke.Close()
+		t.Assert(protectedRevoke.StatusCode, http.StatusConflict)
+		t.Assert(
+			gjson.New(protectedRevoke.ReadAllString()).Get("code").String(),
+			"docs.administrator_grant_protected",
+		)
+
+		directSubject := "33333333-3333-4333-8333-333333333333"
+		granted, err := client(testSub).Post(ctx, "/api/v1/authorization/manage/grants", g.Map{
+			"subject": directSubject, "role": "author",
+		})
+		t.AssertNil(err)
+		defer granted.Close()
+		t.Assert(granted.StatusCode, http.StatusOK)
+		grantID := gjson.New(granted.ReadAllString()).Get("grant.id").String()
+		t.AssertNE(grantID, "")
+
+		console, err = client(testSub).Get(ctx, "/api/v1/authorization/manage/console")
+		t.AssertNil(err)
+		defer console.Close()
+		t.Assert(console.StatusCode, http.StatusOK)
+		t.Assert(bodyContains(console.ReadAllString(), directSubject), true)
+
+		revoked, err := client(testSub).Delete(
+			ctx, "/api/v1/authorization/manage/grants/"+grantID,
+		)
+		t.AssertNil(err)
+		defer revoked.Close()
+		t.Assert(revoked.StatusCode, http.StatusOK)
+		t.Assert(gjson.New(revoked.ReadAllString()).Get("grant.id").String(), grantID)
 	})
 }
 

@@ -30,6 +30,16 @@ type JWKS struct {
 // the Foundation Authorization Adapter. It points at the same consumer-owned
 // database as GoFrame; authorization does not use a central service or store.
 func OpenAuthorizationDB(ctx context.Context) (*sql.DB, error) {
+	return openConsumerDB(ctx, "authorization")
+}
+
+// OpenTrafficDB opens the standard-library PostgreSQL handle required by the
+// Foundation Traffic Adapter. Traffic truth remains in the Docs database.
+func OpenTrafficDB(ctx context.Context) (*sql.DB, error) {
+	return openConsumerDB(ctx, "traffic")
+}
+
+func openConsumerDB(ctx context.Context, purpose string) (*sql.DB, error) {
 	host := g.Cfg().MustGet(ctx, "database.default.host").String()
 	port := g.Cfg().MustGet(ctx, "database.default.port", "5432").String()
 	name := g.Cfg().MustGet(ctx, "database.default.name").String()
@@ -49,13 +59,17 @@ func OpenAuthorizationDB(ctx context.Context) (*sql.DB, error) {
 	dsn.RawQuery = query.Encode()
 	db, err := sql.Open("postgres", dsn.String())
 	if err != nil {
-		return nil, fmt.Errorf("open authorization database: %w", err)
+		return nil, fmt.Errorf("open %s database: %w", purpose, err)
 	}
 	if err := db.PingContext(ctx); err != nil {
 		_ = db.Close()
-		return nil, fmt.Errorf("ping authorization database: %w", err)
+		return nil, fmt.Errorf("ping %s database: %w", purpose, err)
 	}
 	return db, nil
+}
+
+func TrafficTimeZone(ctx context.Context) string {
+	return g.Cfg().MustGet(ctx, "docs.traffic.timeZone", "Asia/Shanghai").String()
 }
 
 // BootstrapAdministratorSubs are identity subjects used only when the local

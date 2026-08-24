@@ -193,3 +193,48 @@ export interface DocsImportDetailResponse {
 export interface DocsImportListResponse {
   items: DocsImportBatch[];
 }
+
+export interface DashboardTrafficPoint {
+  day: string;
+  views: number;
+  uniqueVisitorDays: number;
+}
+
+export interface DashboardTopDocument {
+  id: string;
+  title: string;
+  collectionSlug: string;
+  versionKey: string;
+  slugPath: string;
+  locale: string;
+  views: number;
+  uniqueVisitorDays: number;
+}
+
+export interface DashboardTrafficSource {
+  source: string;
+  views: number;
+}
+
+export interface DashboardSearchQuery {
+  query: string;
+  searches: number;
+  zeroResults: number;
+}
+
+export interface DashboardOverview {
+  days: number;
+  allTimeViews: number;
+  allTimeUniqueVisitorDays: number;
+  periodViews: number;
+  periodUniqueVisitorDays: number;
+  previousPeriodViews: number;
+  previousUniqueVisitorDays: number;
+  periodSearches: number;
+  previousPeriodSearches: number;
+  zeroResultSearches: number;
+  series: DashboardTrafficPoint[];
+  topDocuments: DashboardTopDocument[];
+  topSources: DashboardTrafficSource[];
+  topSearches: DashboardSearchQuery[];
+}

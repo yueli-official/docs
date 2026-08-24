@@ -7,6 +7,7 @@ import (
 
 	"github.com/yueli-official/docs/api/internal/catalog"
 	"github.com/yueli-official/docs/api/internal/controller"
+	"github.com/yueli-official/docs/api/internal/docsanalytics"
 	"github.com/yueli-official/docs/api/internal/docsauthz"
 	"github.com/yueli-official/docs/api/internal/runtime"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
@@ -23,6 +24,7 @@ type Deps struct {
 	Discovery      *discovery.Module
 	DiscoveryCache *discovery.Cache
 	URLResolver    urllifecycle.Resolver
+	Analytics      *docsanalytics.Module
 }
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
@@ -67,6 +69,9 @@ func Configure(s *ghttp.Server, d Deps) {
 	s.Group("/", func(grp *ghttp.RouterGroup) {
 		grp.Middleware(apiMiddleware.Handle)
 		grp.Bind(controller.NewPublicCollections(d.Catalog, d.Discovery))
+		if d.Analytics != nil {
+			grp.Bind(controller.NewPublicAnalytics(d.Analytics, d.Verifier))
+		}
 		if d.DiscoveryCache != nil {
 			grp.Bind(controller.NewPublicDiscovery(d.DiscoveryCache))
 		}
@@ -88,5 +93,8 @@ func Configure(s *ghttp.Server, d Deps) {
 		grp.Bind(controller.NewVersions(d.Catalog))
 		grp.Bind(controller.NewDocs(d.Catalog))
 		grp.Bind(controller.NewImports(d.Catalog))
+		if d.Analytics != nil {
+			grp.Bind(controller.NewDashboard(d.Analytics))
+		}
 	})
 }

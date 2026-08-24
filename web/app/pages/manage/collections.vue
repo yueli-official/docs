@@ -5,7 +5,7 @@ import {
   CollectionDock,
   CollectionPagination,
   CollectionSortDirectionButton,
-  CollectionToolbar,
+  CollectionTableToolbar,
 } from "@yueli/ui/collection/pattern";
 import { AssetImageCropper } from "@yueli/asset-nuxt/components";
 import { assetUploadURL } from "@yueli/asset-nuxt/upload";
@@ -400,12 +400,12 @@ async function doDelete() {
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="collections"
     title="文档集"
     icon="i-tabler-stack-2"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl"
+    body-class="w-full"
   >
     <template #actions>
       <UButton
@@ -482,39 +482,39 @@ async function doDelete() {
     <SkeletonList v-else-if="showSkeleton" :rows="8" />
 
     <template v-else>
-      <CollectionToolbar
-        v-model:search="searchInput"
-        search-placeholder="搜索标题、路径标识或说明…"
-        compact-filters
-        class="mb-5"
-      >
-        <template #filters>
-          <USelectMenu
-            v-model="sort"
-            :items="sortItems"
-            value-key="value"
-            icon="i-tabler-arrows-sort"
-            size="sm"
-          />
-          <CollectionSortDirectionButton v-model="direction" />
-        </template>
-      </CollectionToolbar>
+      <section class="overflow-hidden rounded-xl border border-default bg-default">
+        <CollectionTableToolbar
+          v-model:search="searchInput"
+          label="文档集工具栏"
+          search-placeholder="搜索标题、路径标识或说明…"
+          filter-label="筛选"
+        >
+          <template #utilities>
+            <USelectMenu
+              v-model="sort"
+              :items="sortItems"
+              value-key="value"
+              icon="i-tabler-arrows-sort"
+              aria-label="排序方式"
+              size="sm"
+              class="w-36"
+            />
+            <CollectionSortDirectionButton v-model="direction" />
+          </template>
+        </CollectionTableToolbar>
 
-      <ManageEmpty
-        v-if="!items.length"
-        icon="i-tabler-stack-2"
-        text="还没有文档集"
-      />
-      <ManageEmpty
-        v-else-if="!filteredItems.length"
-        icon="i-tabler-search-off"
-        text="没有匹配的文档集"
-      />
+        <ManageEmpty
+          v-if="!items.length"
+          icon="i-tabler-stack-2"
+          text="还没有文档集"
+        />
+        <ManageEmpty
+          v-else-if="!filteredItems.length"
+          icon="i-tabler-search-off"
+          text="没有匹配的文档集"
+        />
 
-      <div
-        v-else
-        class="overflow-hidden rounded-xl border border-default bg-default"
-      >
+        <template v-else>
         <div
           class="hidden grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_3rem] items-center gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid"
         >
@@ -582,7 +582,8 @@ async function doDelete() {
             </span>
           </button>
         </div>
-      </div>
+        </template>
+      </section>
 
       <CollectionDock v-if="pagedItems.length" label="文档集统计与分页">
         <template #selection>
@@ -771,5 +772,5 @@ async function doDelete() {
       output-type="image/jpeg"
       @cropped="onCroppedCover"
     />
-  </YAdminPage>
+  </ManagePage>
 </template>

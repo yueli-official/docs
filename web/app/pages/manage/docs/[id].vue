@@ -5,13 +5,13 @@ definePageMeta({ layout: "manage" });
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="document-editor"
     title="文档编辑器"
     icon="i-tabler-file-pencil"
     main-id="manage-main"
-    body-class="!p-5 lg:!p-10"
+    body-class="w-full"
   >
     <DocEditorWorkbench />
-  </YAdminPage>
+  </ManagePage>
 </template>

@@ -123,6 +123,48 @@ type AuthorizationAutomaticRuleView struct {
 	Enabled bool   `json:"enabled"`
 }
 
+type AuthorizationGrantView struct {
+	ID      string `json:"id"`
+	Subject string `json:"subject"`
+	Role    string `json:"role"`
+	Source  string `json:"source"`
+}
+
+type AuthorizationCapabilityView struct {
+	Key         string `json:"key"`
+	DisplayName string `json:"displayName"`
+}
+
+type GetAuthorizationConsoleReq struct {
+	g.Meta `path:"/api/v1/authorization/manage/console" method:"get" tags:"authorization" summary:"Authorization management console"`
+}
+type GetAuthorizationConsoleRes struct {
+	ActiveRevision uint64                           `json:"activeRevision"`
+	Policy         AuthorizationPolicyView          `json:"policy"`
+	Roles          []AuthorizationRoleView          `json:"roles"`
+	AutomaticRules []AuthorizationAutomaticRuleView `json:"automaticRules"`
+	Applications   []AuthorizationApplicationView   `json:"applications"`
+	Grants         []AuthorizationGrantView         `json:"grants"`
+	Capabilities   []AuthorizationCapabilityView    `json:"capabilities"`
+}
+
+type GrantAuthorizationRoleReq struct {
+	g.Meta  `path:"/api/v1/authorization/manage/grants" method:"post" tags:"authorization" summary:"Grant a Docs role directly"`
+	Subject string `json:"subject" v:"required|length:1,255"`
+	Role    string `json:"role" v:"required"`
+}
+type GrantAuthorizationRoleRes struct {
+	Grant AuthorizationGrantView `json:"grant"`
+}
+
+type RevokeAuthorizationGrantReq struct {
+	g.Meta `path:"/api/v1/authorization/manage/grants/{id}" method:"delete" tags:"authorization" summary:"Revoke a Docs role grant"`
+	ID     string `json:"id" in:"path" v:"required"`
+}
+type RevokeAuthorizationGrantRes struct {
+	Grant AuthorizationGrantView `json:"grant"`
+}
+
 type GetAuthorizationPolicyReq struct {
 	g.Meta   `path:"/api/v1/authorization/manage/policies/{revision}" method:"get" tags:"authorization" summary:"Get policy revision"`
 	Revision uint64 `json:"revision" in:"path" v:"required|min:1"`

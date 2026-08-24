@@ -10,17 +10,18 @@ import (
 )
 
 const (
-	CodeNotFound                 = "docs.not_found"
-	CodeForbidden                = "docs.forbidden"
-	CodeSlugTaken                = "docs.slug_taken"
-	CodeInvalidInput             = "docs.invalid_input"
-	CodeUpstream                 = "docs.upstream_failed"
-	CodeImportBlocked            = "docs.import_blocked"
-	CodeAuthorizationUnavailable = "docs.authorization_unavailable"
-	CodeRateLimited              = "docs.rate_limited"
-	CodeChallengeRequired        = "docs.challenge_required"
-	CodeAbuseUnavailable         = "docs.abuse_unavailable"
-	CodeAbuseReplay              = "docs.abuse_attempt_replayed"
+	CodeNotFound                    = "docs.not_found"
+	CodeForbidden                   = "docs.forbidden"
+	CodeSlugTaken                   = "docs.slug_taken"
+	CodeInvalidInput                = "docs.invalid_input"
+	CodeUpstream                    = "docs.upstream_failed"
+	CodeImportBlocked               = "docs.import_blocked"
+	CodeAuthorizationUnavailable    = "docs.authorization_unavailable"
+	CodeAdministratorGrantProtected = "docs.administrator_grant_protected"
+	CodeRateLimited                 = "docs.rate_limited"
+	CodeChallengeRequired           = "docs.challenge_required"
+	CodeAbuseUnavailable            = "docs.abuse_unavailable"
+	CodeAbuseReplay                 = "docs.abuse_attempt_replayed"
 )
 
 var (
@@ -29,17 +30,18 @@ var (
 	DescriptorInternal    = descriptor("common.internal", http.StatusInternalServerError)
 
 	descriptors = map[string]problem.Descriptor{
-		CodeNotFound:                 descriptor(CodeNotFound, http.StatusNotFound),
-		CodeForbidden:                descriptor(CodeForbidden, http.StatusForbidden),
-		CodeSlugTaken:                descriptor(CodeSlugTaken, http.StatusConflict),
-		CodeInvalidInput:             descriptor(CodeInvalidInput, http.StatusBadRequest),
-		CodeUpstream:                 descriptor(CodeUpstream, http.StatusBadGateway),
-		CodeImportBlocked:            descriptor(CodeImportBlocked, http.StatusBadRequest),
-		CodeAuthorizationUnavailable: descriptor(CodeAuthorizationUnavailable, http.StatusServiceUnavailable),
-		CodeRateLimited:              descriptor(CodeRateLimited, http.StatusTooManyRequests),
-		CodeChallengeRequired:        descriptor(CodeChallengeRequired, http.StatusForbidden),
-		CodeAbuseUnavailable:         descriptor(CodeAbuseUnavailable, http.StatusServiceUnavailable),
-		CodeAbuseReplay:              descriptor(CodeAbuseReplay, http.StatusConflict),
+		CodeNotFound:                    descriptor(CodeNotFound, http.StatusNotFound),
+		CodeForbidden:                   descriptor(CodeForbidden, http.StatusForbidden),
+		CodeSlugTaken:                   descriptor(CodeSlugTaken, http.StatusConflict),
+		CodeInvalidInput:                descriptor(CodeInvalidInput, http.StatusBadRequest),
+		CodeUpstream:                    descriptor(CodeUpstream, http.StatusBadGateway),
+		CodeImportBlocked:               descriptor(CodeImportBlocked, http.StatusBadRequest),
+		CodeAuthorizationUnavailable:    descriptor(CodeAuthorizationUnavailable, http.StatusServiceUnavailable),
+		CodeAdministratorGrantProtected: descriptor(CodeAdministratorGrantProtected, http.StatusConflict),
+		CodeRateLimited:                 descriptor(CodeRateLimited, http.StatusTooManyRequests),
+		CodeChallengeRequired:           descriptor(CodeChallengeRequired, http.StatusForbidden),
+		CodeAbuseUnavailable:            descriptor(CodeAbuseUnavailable, http.StatusServiceUnavailable),
+		CodeAbuseReplay:                 descriptor(CodeAbuseReplay, http.StatusConflict),
 	}
 )
 
@@ -91,6 +93,10 @@ func Forbidden() error {
 
 func AuthorizationUnavailable() error {
 	return mapped(CodeAuthorizationUnavailable, nil)
+}
+
+func AdministratorGrantProtected() error {
+	return mapped(CodeAdministratorGrantProtected, nil)
 }
 
 func RateLimited() error {

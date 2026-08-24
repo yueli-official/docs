@@ -32,6 +32,9 @@ docs:
   siteDescription: "指南、参考与教程"
   discovery:
     ttl: "5m"
+  traffic:
+    # Traffic 实例创建后不可修改；决定每日边界与访客日归属。
+    timeZone: "Asia/Shanghai"
   assetSpace: "default"
   assetNamespace: "docs"
   assetProfile: "docs-default"

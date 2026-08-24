@@ -205,6 +205,9 @@ func (s *Service) SearchPublishedDocs(ctx context.Context, collectionSlug, versi
 			}
 		}
 	}
+	// Search analytics are best-effort: an event write must never turn a valid
+	// reader search into an error response.
+	_ = s.dao.RecordAnalyticsSearch(ctx, q, collectionSlug, locale, int(page.Total))
 	return &model.SearchResult{Items: items, Total: int(page.Total), CollectionFacets: facets}, nil
 }
 

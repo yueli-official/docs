@@ -145,12 +145,12 @@ async function rollback() {
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="import-detail"
     title="导入详情"
     icon="i-tabler-list-details"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl"
+    body-class="w-full"
   >
     <template #trailing>
       <span class="truncate font-mono text-xs text-muted">{{ importId }}</span>
@@ -434,5 +434,5 @@ async function rollback() {
         </aside>
       </div>
     </template>
-  </YAdminPage>
+  </ManagePage>
 </template>

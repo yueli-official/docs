@@ -175,12 +175,12 @@ async function confirmImport() {
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="import"
     title="批量导入"
     icon="i-tabler-file-import"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl"
+    body-class="w-full"
   >
     <div
       v-if="!canManageImports"
@@ -201,7 +201,10 @@ async function confirmImport() {
       </div>
     </div>
 
-    <div v-else class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div
+      v-else
+      class="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]"
+    >
       <section class="min-w-0 space-y-4">
         <div class="rounded-lg border border-default bg-default p-5">
           <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -413,7 +416,7 @@ async function confirmImport() {
       </section>
 
       <aside
-        class="rounded-lg border border-default bg-default p-4 xl:sticky xl:top-24 xl:self-start"
+        class="rounded-lg border border-default bg-default p-4 xl:self-start"
       >
         <div class="mb-4 flex items-start justify-between gap-3">
           <div>
@@ -487,5 +490,5 @@ async function confirmImport() {
         </div>
       </aside>
     </div>
-  </YAdminPage>
+  </ManagePage>
 </template>

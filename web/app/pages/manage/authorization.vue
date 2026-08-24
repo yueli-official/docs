@@ -2,6 +2,7 @@
 import { createDocsNotifier } from "~/utils/feedback";
 import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
+import { TabbedSurface } from "@yueli/ui/admin";
 
 definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "权限与申请 · 控制台" });
@@ -9,6 +10,7 @@ useSeoMeta({ title: "权限与申请 · 控制台" });
 interface Role {
   key: string;
   displayName: string;
+  kind: string;
   protected: boolean;
   status: string;
   capabilities: string[];
@@ -37,8 +39,39 @@ interface AuthorizationData {
   roles: Role[];
   policies: Policy[];
   applications: Application[];
+  grants: Grant[];
+  capabilities: Capability[];
   snapshot: PolicySnapshot | null;
 }
+interface Capability {
+  key: string;
+  displayName: string;
+}
+interface Grant {
+  id: string;
+  subject: string;
+  role: string;
+  source: string;
+}
+interface PublicUser {
+  userKey: string;
+  handle: string;
+  displayName: string;
+}
+interface AuthorizationUserRow {
+  subject: string;
+  grants: Grant[];
+}
+interface AuthorizationConsole {
+  activeRevision: number;
+  policy: Policy;
+  roles: Role[];
+  automaticRules: Array<{ key: string; enabled: boolean }>;
+  applications: Application[];
+  grants: Grant[];
+  capabilities: Capability[];
+}
+type AuthorizationTab = "applications" | "permissions" | "users";
 interface Impact {
   addedBindings: number;
   removedBindings: number;
@@ -105,9 +138,21 @@ const { call } = useApi();
 const { isAdministrator } = useMe();
 const toast = createDocsNotifier(useToast());
 const mounted = ref(false);
+const activeTab = ref<AuthorizationTab>("applications");
+const expandedRoleKey = ref("");
 const publishing = ref(false);
 const operationError = ref("");
 const lastImpact = ref<Impact | null>(null);
+const identityUsers = ref<Record<string, PublicUser>>({});
+const userQuery = ref("");
+const userRole = ref("all");
+const selectedUsers = ref<string[]>([]);
+const grantOpen = ref(false);
+const grantBusy = ref(false);
+const grantForm = reactive({ subject: "", role: "author" });
+const revokeOpen = ref(false);
+const revokeTargets = ref<Grant[]>([]);
+const revokeError = ref("");
 onMounted(() => {
   mounted.value = true;
 });
@@ -116,26 +161,28 @@ const { data, pending, error, refresh } = await useAsyncData(
   "docs-authorization-management",
   async (): Promise<AuthorizationData> => {
     if (!isAdministrator.value) {
-      return { roles: [], policies: [], applications: [], snapshot: null };
+      return {
+        roles: [],
+        policies: [],
+        applications: [],
+        grants: [],
+        capabilities: [],
+        snapshot: null,
+      };
     }
-    const [roles, policies, applications] = await Promise.all([
-      call<{ items: Role[] }>("/api/v1/authorization/manage/roles"),
-      call<{ items: Policy[] }>("/api/v1/authorization/manage/policies"),
-      call<{ items: Application[] }>(
-        "/api/v1/authorization/manage/applications?state=pending",
-      ),
-    ]);
-    const active = policies.items.find((policy) => policy.state === "active");
-    const snapshot = active
-      ? await call<PolicySnapshot>(
-          `/api/v1/authorization/manage/policies/${active.number}`,
-        )
-      : null;
+    const console = await call<AuthorizationConsole>(
+      "/api/v1/authorization/manage/console",
+    );
     return {
-      roles: roles.items,
-      policies: policies.items,
-      applications: applications.items,
-      snapshot,
+      roles: console.roles,
+      policies: [console.policy],
+      applications: console.applications,
+      grants: console.grants,
+      capabilities: console.capabilities,
+      snapshot: {
+        roles: console.roles,
+        automaticRules: console.automaticRules,
+      },
     };
   },
   {
@@ -144,6 +191,8 @@ const { data, pending, error, refresh } = await useAsyncData(
       roles: [],
       policies: [],
       applications: [],
+      grants: [],
+      capabilities: [],
       snapshot: null,
     }),
   },
@@ -154,17 +203,13 @@ const showSkeleton = useMinimumLoading(
 );
 const roles = computed(() => data.value?.roles ?? []);
 const applications = computed(() => data.value?.applications ?? []);
+const grants = computed(() => data.value?.grants ?? []);
+const capabilities = computed(() => data.value?.capabilities ?? []);
 const activePolicy = computed(() =>
   data.value?.policies.find((policy) => policy.state === "active"),
 );
 const author = computed(() =>
   roles.value.find((role) => role.key === "author"),
-);
-const customRoles = computed(() =>
-  roles.value.filter(
-    (role) =>
-      !role.protected && role.key !== "author" && role.status !== "retired",
-  ),
 );
 const selectedAuthorCapabilities = ref<string[]>([]);
 watch(
@@ -185,13 +230,138 @@ const autoAuthorEnabled = computed(
       (rule) => rule.key === "docs.registration_author",
     )?.enabled ?? false,
 );
+const tabItems = computed(() => [
+  {
+    label: "申请",
+    value: "applications",
+    icon: "i-tabler-inbox",
+    badge: applications.value.length || undefined,
+  },
+  { label: "权限", value: "permissions", icon: "i-tabler-shield-lock" },
+  {
+    label: "用户管理",
+    value: "users",
+    icon: "i-tabler-users",
+    badge: userRows.value.length || undefined,
+  },
+]);
+const roleOptions = computed(() => [
+  { label: "全部角色", value: "all" },
+  ...roles.value.map((role) => ({ label: role.displayName, value: role.key })),
+]);
+const grantRoleOptions = computed(() =>
+  roles.value
+    .filter((role) => role.kind !== "custom" || role.capabilities.length)
+    .map((role) => ({ label: role.displayName, value: role.key })),
+);
+const userRows = computed<AuthorizationUserRow[]>(() => {
+  const rows = new Map<string, Grant[]>();
+  for (const grant of grants.value) {
+    rows.set(grant.subject, [...(rows.get(grant.subject) ?? []), grant]);
+  }
+  return [...rows.entries()]
+    .map(([subject, subjectGrants]) => ({ subject, grants: subjectGrants }))
+    .sort((left, right) =>
+      userName(left.subject).localeCompare(userName(right.subject), "zh-CN"),
+    );
+});
+const filteredUsers = computed(() => {
+  const keyword = userQuery.value.trim().toLocaleLowerCase();
+  return userRows.value.filter((user) => {
+    if (
+      userRole.value !== "all" &&
+      !user.grants.some((grant) => grant.role === userRole.value)
+    ) {
+      return false;
+    }
+    if (!keyword) return true;
+    return [
+      user.subject,
+      userName(user.subject),
+      identityUsers.value[user.subject]?.handle,
+    ].some((value) => value?.toLocaleLowerCase().includes(keyword));
+  });
+});
+const allUsersSelected = computed(
+  () =>
+    filteredUsers.value.length > 0 &&
+    filteredUsers.value.every((user) =>
+      selectedUsers.value.includes(user.subject),
+    ),
+);
+const subjectKey = computed(() =>
+  [
+    ...new Set(
+      [...applications.value, ...grants.value]
+        .map((item) => item.subject)
+        .filter(Boolean),
+    ),
+  ]
+    .sort()
+    .join(","),
+);
+
+watch(
+  subjectKey,
+  async (value) => {
+    if (!import.meta.client || !value) return;
+    const subjects = value.split(",");
+    const users: Record<string, PublicUser> = { ...identityUsers.value };
+    try {
+      for (let index = 0; index < subjects.length; index += 100) {
+        const result = await $fetch<{ users: PublicUser[] }>(
+          "/identity-api/api/v1/users",
+          { query: { ids: subjects.slice(index, index + 100).join(",") } },
+        );
+        for (const user of result.users ?? []) users[user.userKey] = user;
+      }
+      identityUsers.value = users;
+    } catch {
+      // Identity enrichment is best-effort; authorization remains usable by subject ID.
+    }
+  },
+  { immediate: true },
+);
+watch([userQuery, userRole], () => {
+  selectedUsers.value = [];
+});
 
 function normalizedCapabilities(values: readonly string[]) {
   return [...new Set(values)].sort();
 }
 
 function capabilityLabel(key: string) {
-  return capabilityOptions.find((item) => item.key === key)?.label ?? key;
+  return (
+    capabilities.value.find((item) => item.key === key)?.displayName ??
+    capabilityOptions.find((item) => item.key === key)?.label ??
+    key
+  );
+}
+
+function roleCapabilityOptions(role: Role) {
+  if (role.protected) return capabilities.value;
+  const editable = new Set<string>(capabilityOptions.map((item) => item.key));
+  return capabilities.value.filter((item) => editable.has(item.key));
+}
+
+function roleHasCapability(role: Role, capability: string) {
+  if (role.key === "author") {
+    return selectedAuthorCapabilities.value.includes(capability);
+  }
+  return role.capabilities.includes(capability);
+}
+
+function toggleRoleRowCapability(
+  role: Role,
+  capability: string,
+  enabled: boolean,
+) {
+  if (role.key !== "author" || role.protected) return;
+  selectedAuthorCapabilities.value = toggleCapability(
+    selectedAuthorCapabilities.value,
+    capability,
+    enabled,
+  );
 }
 
 function toggleCapability(
@@ -486,6 +656,170 @@ async function submitReview() {
   }
 }
 
+function roleLabel(key: string) {
+  return roles.value.find((role) => role.key === key)?.displayName ?? key;
+}
+
+function userName(subject: string) {
+  const user = identityUsers.value[subject];
+  return user?.displayName || user?.handle || subject;
+}
+
+function userMeta(subject: string) {
+  const user = identityUsers.value[subject];
+  if (!user) return subject;
+  return user.handle ? `@${user.handle} · ${subject}` : subject;
+}
+
+function grantSourceLabel(source: string) {
+  return (
+    {
+      application: "申请批准",
+      invitation: "邀请加入",
+      direct: "直接授予",
+      automatic: "自动授权",
+      bootstrap: "系统初始化",
+      group: "用户组",
+    } as Record<string, string>
+  )[source] ?? source;
+}
+
+function toggleUser(subject: string, selected: boolean) {
+  selectedUsers.value = selected
+    ? [...new Set([...selectedUsers.value, subject])]
+    : selectedUsers.value.filter((item) => item !== subject);
+}
+
+function toggleAllUsers(selected: boolean) {
+  const visibleSubjects = filteredUsers.value.map((user) => user.subject);
+  selectedUsers.value = selected
+    ? [...new Set([...selectedUsers.value, ...visibleSubjects])]
+    : selectedUsers.value.filter(
+        (subject) => !visibleSubjects.includes(subject),
+      );
+}
+
+function openGrant() {
+  grantOpen.value = true;
+}
+
+function closeGrant() {
+  grantOpen.value = false;
+}
+
+async function grantRole() {
+  if (!grantForm.subject.trim() || !grantForm.role || grantBusy.value) return;
+  grantBusy.value = true;
+  try {
+    await call("/api/v1/authorization/manage/grants", {
+      method: "POST",
+      body: { subject: grantForm.subject.trim(), role: grantForm.role },
+    });
+    grantForm.subject = "";
+    grantOpen.value = false;
+    await refresh();
+    toast.add({ title: "用户角色已添加", color: "success" });
+  } catch (caught) {
+    toast.add({
+      title: "添加用户失败",
+      description:
+        caught instanceof Error ? caught.message : "请检查用户标识后重试。",
+      color: "error",
+    });
+  } finally {
+    grantBusy.value = false;
+  }
+}
+
+async function revokeGrants(targets: Grant[]) {
+  if (!targets.length || grantBusy.value) return;
+  grantBusy.value = true;
+  try {
+    await Promise.all(
+      targets.map((grant) =>
+        call(`/api/v1/authorization/manage/grants/${grant.id}`, {
+          method: "DELETE",
+        }),
+      ),
+    );
+    selectedUsers.value = [];
+    await refresh();
+    revokeOpen.value = false;
+    revokeTargets.value = [];
+    revokeError.value = "";
+    toast.add({ title: "用户角色已撤销", color: "success" });
+  } catch (caught) {
+    revokeError.value = authorizationErrorMessage(caught, targets);
+    await refresh();
+  } finally {
+    grantBusy.value = false;
+  }
+}
+
+function authorizationErrorCode(caught: unknown) {
+  const data = (caught as {
+    data?: {
+      code?: string;
+      type?: string;
+      failure?: { code?: string };
+    };
+  } | null)?.data;
+  if (data?.failure?.code) return data.failure.code;
+  if (data?.code) return data.code;
+  return data?.type?.split("/").at(-1) ?? "";
+}
+
+function authorizationErrorMessage(caught: unknown, targets: Grant[] = []) {
+  const code = authorizationErrorCode(caught);
+  if (
+    code === "docs.administrator_grant_protected" ||
+    ((code === "docs.authorization_unavailable" ||
+      code === "blog.authorization_unavailable") &&
+      targets.some((grant) => grant.role === "administrator"))
+  ) {
+    return "不能撤销当前管理员角色。当前账号正在依靠该角色管理本站，或本站只剩这一位管理员；请先添加另一位管理员后再操作。";
+  }
+  if (code === "docs.forbidden" || code === "blog.forbidden") {
+    return "当前账号没有撤销该角色的权限。";
+  }
+  if (
+    code === "docs.authorization_unavailable" ||
+    code === "blog.authorization_unavailable"
+  ) {
+    return "权限服务暂时不可用，请稍后重试。";
+  }
+  return "角色未撤销，请刷新权限数据后重试。";
+}
+
+function openRevoke(targets: Grant[]) {
+  if (!targets.length) return;
+  revokeTargets.value = [...targets];
+  revokeError.value = "";
+  revokeOpen.value = true;
+}
+
+function revokeGrant(grant: Grant) {
+  openRevoke([grant]);
+}
+
+function revokeSelectedUsers() {
+  const targets = grants.value.filter((grant) =>
+    selectedUsers.value.includes(grant.subject),
+  );
+  openRevoke(targets);
+}
+
+function closeRevoke() {
+  if (grantBusy.value) return;
+  revokeOpen.value = false;
+  revokeTargets.value = [];
+  revokeError.value = "";
+}
+
+function submitRevoke() {
+  return revokeGrants(revokeTargets.value);
+}
+
 function formatDate(value: string) {
   if (!value) return "未记录";
   const date = new Date(value);
@@ -501,21 +835,27 @@ function formatDate(value: string) {
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="authorization"
     title="权限与申请"
     icon="i-tabler-shield-lock"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl space-y-4"
+    body-class="w-full space-y-5"
   >
     <template #actions>
       <UButton
-        v-if="isAdministrator"
+        v-if="isAdministrator && activeTab === 'permissions'"
         label="新建自定义角色"
         icon="i-tabler-user-shield"
         color="neutral"
         variant="outline"
         @click="openCreateRole"
+      />
+      <UButton
+        v-else-if="isAdministrator && activeTab === 'users'"
+        label="添加用户"
+        icon="i-tabler-user-plus"
+        @click="openGrant"
       />
     </template>
 
@@ -585,11 +925,16 @@ function formatDate(value: string) {
         :description="operationError"
       />
 
-      <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div class="min-w-0 space-y-4">
+      <TabbedSurface
+        v-model="activeTab"
+        :items="tabItems"
+        navigation-label="权限管理"
+        data-manage-surface="authorization"
+      >
           <section
+            v-if="activeTab === 'applications'"
             aria-labelledby="applications-title"
-            class="overflow-hidden rounded-xl border border-default bg-default"
+            class="overflow-hidden"
           >
             <div
               class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 sm:px-5"
@@ -663,214 +1008,343 @@ function formatDate(value: string) {
             <ManageEmpty v-else icon="i-tabler-inbox" text="暂无待审批申请" />
           </section>
 
-          <section
-            aria-labelledby="author-role-title"
-            class="rounded-xl border border-default bg-default"
-          >
-            <div class="border-b border-default px-4 py-3 sm:px-5">
-              <h2
-                id="author-role-title"
-                class="text-sm font-semibold text-highlighted"
-              >
-                作者能力
-              </h2>
-              <p class="mt-0.5 text-xs text-muted">
-                作者始终受所有者约束，只能管理自己的文档。管理员能力不可在此修改。
-              </p>
-            </div>
-            <div class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
-              <label
-                v-for="option in capabilityOptions"
-                :key="option.key"
-                class="flex items-start gap-3 rounded-lg border border-default p-3"
-              >
-                <UCheckbox
-                  :model-value="selectedAuthorCapabilities.includes(option.key)"
-                  :aria-label="option.label"
-                  @update:model-value="
-                    selectedAuthorCapabilities = toggleCapability(
-                      selectedAuthorCapabilities,
-                      option.key,
-                      Boolean($event),
-                    )
-                  "
-                />
-                <span class="min-w-0">
-                  <span class="block text-sm font-medium text-highlighted">
-                    {{ option.label }}
-                  </span>
-                  <span class="mt-0.5 block text-xs leading-5 text-muted">
-                    {{ option.description }}
-                  </span>
-                </span>
-              </label>
-            </div>
-            <div
-              class="flex items-center justify-between gap-3 border-t border-default px-4 py-3 sm:px-5"
-            >
-              <p class="text-xs text-muted">
-                修改后先复核差异，再创建、校验并发布新策略。
-              </p>
-              <UButton
-                label="复核并发布"
-                icon="i-tabler-shield-check"
-                :disabled="!authorDirty"
-                @click="prepareAuthorCapabilities"
-              />
-            </div>
-          </section>
-
-          <section
-            aria-labelledby="custom-roles-title"
-            class="overflow-hidden rounded-xl border border-default bg-default"
-          >
-            <div
-              class="flex items-center justify-between gap-3 border-b border-default px-4 py-3 sm:px-5"
-            >
+        <div v-else-if="activeTab === 'permissions'" class="min-w-0">
+          <section aria-labelledby="roles-title">
+            <div class="border-b border-default px-4 py-4 sm:px-5">
               <div>
                 <h2
-                  id="custom-roles-title"
+                  id="roles-title"
                   class="text-sm font-semibold text-highlighted"
                 >
-                  自定义角色
+                  角色与能力
                 </h2>
-                <p class="mt-0.5 text-xs text-muted">
-                  自定义角色只能组合普通能力，不能获得管理员专属能力。
+                <p class="mt-1 text-xs text-muted">
+                  管理员能力受保护；作者只能管理自己拥有的文档。
                 </p>
               </div>
-              <UButton
-                label="新建角色"
-                icon="i-tabler-plus"
-                color="neutral"
-                variant="outline"
-                size="sm"
-                @click="openCreateRole"
-              />
             </div>
-            <div v-if="customRoles.length" class="divide-y divide-default">
-              <div
-                v-for="role in customRoles"
-                :key="role.key"
-                class="grid gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5"
-              >
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <p class="text-sm font-medium text-highlighted">
-                      {{ role.displayName }}
-                    </p>
-                    <span class="font-mono text-xs text-dimmed">
-                      {{ role.key }}
-                    </span>
-                  </div>
-                  <p class="mt-1 text-xs text-muted">
-                    {{ role.capabilities.length }} 项能力 ·
-                    {{
-                      role.assignmentSources
-                        .map(
-                          (source) =>
-                            sourceOptions.find((item) => item.key === source)
-                              ?.label || source,
-                        )
-                        .join("、")
-                    }}
-                  </p>
-                </div>
-                <div class="flex gap-2">
-                  <UButton
-                    label="编辑"
-                    icon="i-tabler-pencil"
-                    size="sm"
-                    color="neutral"
-                    variant="outline"
-                    @click="openEditRole(role)"
-                  />
-                  <UButton
-                    label="停用"
-                    icon="i-tabler-user-off"
-                    size="sm"
-                    color="error"
-                    variant="soft"
-                    @click="prepareRoleRetirement(role)"
-                  />
-                </div>
-              </div>
-            </div>
-            <ManageEmpty
-              v-else
-              icon="i-tabler-user-shield"
-              text="还没有自定义角色"
-            />
-          </section>
-        </div>
 
-        <aside class="min-w-0 space-y-4">
-          <section
-            aria-labelledby="automatic-role-title"
-            class="rounded-xl border border-default bg-default p-4"
-          >
-            <h2
-              id="automatic-role-title"
-              class="text-sm font-semibold text-highlighted"
-            >
-              注册自动授权
-            </h2>
-            <p class="mt-1 text-xs leading-5 text-muted">
-              启用后在用户首次进入本站时幂等补齐作者授权；关闭不会撤销已有授权。
-            </p>
-            <div
-              class="mt-4 flex items-center justify-between gap-3 rounded-lg bg-elevated/40 p-3"
-            >
-              <span class="text-sm text-highlighted">
-                注册用户自动成为作者
-              </span>
+            <div class="divide-y divide-default">
+              <article
+                v-for="role in roles"
+                :key="role.key"
+                class="min-w-0 px-4 py-4 sm:px-5"
+                data-authorization-role-row
+              >
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 text-left"
+                  :aria-expanded="expandedRoleKey === role.key"
+                  @click="
+                    expandedRoleKey =
+                      expandedRoleKey === role.key ? '' : role.key
+                  "
+                >
+                  <span
+                    class="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
+                  >
+                    <UIcon name="i-tabler-shield-lock" class="size-5" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex flex-wrap items-center gap-2">
+                      <span class="font-medium text-highlighted">
+                        {{ role.displayName }}
+                      </span>
+                      <UBadge
+                        :label="
+                          role.protected
+                            ? '受保护'
+                            : role.kind === 'custom'
+                              ? '自定义'
+                              : '内置'
+                        "
+                        color="neutral"
+                        variant="soft"
+                      />
+                    </span>
+                    <span class="mt-1 block text-xs text-muted">
+                      {{ role.capabilities.length }} 项能力
+                    </span>
+                  </span>
+                  <UIcon
+                    name="i-tabler-chevron-down"
+                    class="size-5 shrink-0 text-muted transition-transform"
+                    :class="expandedRoleKey === role.key ? 'rotate-180' : ''"
+                  />
+                </button>
+
+                <div
+                  v-if="expandedRoleKey === role.key"
+                  class="mt-4 border-t border-default pt-4 sm:ml-12"
+                >
+                  <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <UCheckbox
+                      v-for="capability in roleCapabilityOptions(role)"
+                      :key="capability.key"
+                      :model-value="roleHasCapability(role, capability.key)"
+                      :label="capability.displayName"
+                      :disabled="role.protected || role.key !== 'author' || publishing"
+                      @update:model-value="
+                        toggleRoleRowCapability(
+                          role,
+                          capability.key,
+                          Boolean($event),
+                        )
+                      "
+                    />
+                  </div>
+
+                  <div
+                    v-if="role.key === 'author' || role.kind === 'custom'"
+                    class="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-default pt-3"
+                  >
+                    <template v-if="role.key === 'author'">
+                      <span v-if="!authorDirty" class="mr-auto text-xs text-muted">
+                        作者能力没有未发布变更
+                      </span>
+                      <UButton
+                        label="复核并发布"
+                        icon="i-tabler-shield-check"
+                        size="sm"
+                        :disabled="!authorDirty"
+                        @click="prepareAuthorCapabilities"
+                      />
+                    </template>
+                    <template v-else>
+                      <UButton
+                        label="编辑角色"
+                        icon="i-tabler-pencil"
+                        color="neutral"
+                        variant="outline"
+                        size="sm"
+                        @click="openEditRole(role)"
+                      />
+                      <UButton
+                        label="停用角色"
+                        icon="i-tabler-user-off"
+                        color="error"
+                        variant="soft"
+                        size="sm"
+                        @click="prepareRoleRetirement(role)"
+                      />
+                    </template>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="border-t border-default px-4 py-5 sm:px-5">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-sm font-semibold text-highlighted">
+                  注册用户自动成为作者
+                </h2>
+                <p class="mt-1 text-xs text-muted">
+                  开启后，新用户首次进入本站时获得作者角色。
+                </p>
+              </div>
               <USwitch
                 :model-value="autoAuthorEnabled"
                 aria-label="注册用户自动成为作者"
+                :disabled="publishing"
                 @update:model-value="prepareAutomaticAuthor(Boolean($event))"
               />
             </div>
           </section>
+        </div>
 
-          <section
-            aria-labelledby="policy-status-title"
-            class="rounded-xl border border-default bg-default p-4"
+        <div v-else class="min-w-0">
+          <div
+            class="grid gap-3 border-b border-default p-4 sm:grid-cols-[minmax(0,1fr)_14rem] sm:px-5"
           >
-            <h2
-              id="policy-status-title"
-              class="text-sm font-semibold text-highlighted"
-            >
-              当前策略
-            </h2>
-            <dl class="mt-4 grid gap-3 text-sm">
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">活动版本</dt>
-                <dd class="font-mono text-highlighted">
-                  {{ activePolicy?.number ?? "未初始化" }}
-                </dd>
-              </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">内置角色</dt>
-                <dd class="tabular-nums text-highlighted">管理员、作者</dd>
-              </div>
-              <div class="flex items-center justify-between gap-3">
-                <dt class="text-muted">自定义角色</dt>
-                <dd class="tabular-nums text-highlighted">
-                  {{ customRoles.length }}
-                </dd>
-              </div>
-            </dl>
-            <UAlert
-              class="mt-4"
-              color="neutral"
-              variant="soft"
-              icon="i-tabler-info-circle"
-              title="没有超级管理员"
-              description="Identity 只负责登录身份，本站管理员由实例自己的授权数据决定。"
+            <UInput
+              v-model="userQuery"
+              icon="i-tabler-search"
+              placeholder="搜索用户"
+              class="w-full"
             />
-          </section>
-        </aside>
-      </div>
+            <USelect
+              v-model="userRole"
+              :items="roleOptions"
+              value-key="value"
+              class="w-full"
+              aria-label="筛选用户角色"
+            />
+          </div>
+
+          <div
+            v-if="selectedUsers.length"
+            class="flex flex-wrap items-center justify-between gap-3 border-b border-default bg-primary/5 px-4 py-3 sm:px-5"
+            data-authorization-user-bulk
+          >
+            <span class="text-sm font-medium text-highlighted">
+              已选择 {{ selectedUsers.length }} 位用户
+            </span>
+            <UButton
+              label="批量撤销角色"
+              color="error"
+              variant="soft"
+              size="sm"
+              :disabled="grantBusy"
+              @click="revokeSelectedUsers"
+            />
+          </div>
+
+          <div v-if="filteredUsers.length" class="min-w-0">
+            <div
+              class="flex items-center border-b border-default px-4 py-3 sm:px-5"
+            >
+              <UCheckbox
+                :model-value="allUsersSelected"
+                label="选择全部结果"
+                @update:model-value="toggleAllUsers(Boolean($event))"
+              />
+            </div>
+            <div class="divide-y divide-default">
+              <article
+                v-for="user in filteredUsers"
+                :key="user.subject"
+                class="grid min-w-0 gap-3 px-4 py-4 sm:grid-cols-[auto_minmax(12rem,0.8fr)_minmax(16rem,1.2fr)] sm:items-center sm:px-5"
+                data-authorization-user-row
+              >
+                <UCheckbox
+                  :model-value="selectedUsers.includes(user.subject)"
+                  :aria-label="`选择 ${userName(user.subject)}`"
+                  @update:model-value="toggleUser(user.subject, Boolean($event))"
+                />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-medium text-highlighted">
+                    {{ userName(user.subject) }}
+                  </p>
+                  <p class="mt-1 truncate text-xs text-muted">
+                    {{ userMeta(user.subject) }}
+                  </p>
+                </div>
+                <div
+                  class="ml-7 flex min-w-0 flex-wrap gap-2 sm:ml-0 sm:justify-end"
+                >
+                  <div
+                    v-for="grant in user.grants"
+                    :key="grant.id"
+                    class="inline-flex min-w-0 items-center gap-2"
+                  >
+                    <UBadge
+                      :label="`${roleLabel(grant.role)} · ${grantSourceLabel(grant.source)}`"
+                      color="neutral"
+                      variant="soft"
+                    />
+                    <UButton
+                      label="撤销"
+                      icon="i-tabler-user-minus"
+                      color="neutral"
+                      variant="outline"
+                      size="sm"
+                      :aria-label="`撤销 ${userName(user.subject)} 的${roleLabel(grant.role)}角色`"
+                      :disabled="grantBusy"
+                      @click="revokeGrant(grant)"
+                    />
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+          <ManageEmpty
+            v-else
+            icon="i-tabler-users"
+            text="当前没有匹配的用户"
+            class="m-5"
+          />
+        </div>
+      </TabbedSurface>
     </template>
+
+    <UModal
+      v-model:open="grantOpen"
+      title="添加用户"
+      description="为 Identity 用户授予本站角色。"
+      :ui="{ footer: 'justify-end' }"
+    >
+      <template #body>
+        <div class="space-y-4">
+          <UFormField label="用户标识" required>
+            <UInput
+              v-model="grantForm.subject"
+              placeholder="Identity 用户 ID"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField label="角色" required>
+            <USelect
+              v-model="grantForm.role"
+              value-key="value"
+              :items="grantRoleOptions"
+              class="w-full"
+            />
+          </UFormField>
+        </div>
+      </template>
+      <template #footer>
+        <UButton
+          label="取消"
+          color="neutral"
+          variant="outline"
+          :disabled="grantBusy"
+          @click="closeGrant"
+        />
+        <UButton
+          label="添加用户"
+          icon="i-tabler-user-plus"
+          :disabled="!grantForm.subject.trim() || grantBusy"
+          :loading="grantBusy"
+          @click="grantRole"
+        />
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="revokeOpen"
+      title="撤销角色"
+      :description="
+        revokeTargets.length === 1
+          ? `撤销 ${userName(revokeTargets[0]?.subject || '')} 的${roleLabel(revokeTargets[0]?.role || '')}角色。`
+          : `撤销所选 ${selectedUsers.length} 位用户的全部本站角色。`
+      "
+      :dismissible="!grantBusy"
+      :ui="{ footer: 'justify-end' }"
+    >
+      <template #body>
+        <div class="space-y-4">
+          <UAlert
+            v-if="revokeError"
+            color="error"
+            variant="soft"
+            icon="i-tabler-alert-circle"
+            title="角色未撤销"
+            :description="revokeError"
+          />
+          <p class="text-sm leading-6 text-muted">
+            撤销后，对应用户会立即失去该角色授予的本站权限。管理员角色必须至少保留一位，当前账号也不能撤销正在提供本次管理权限的角色。
+          </p>
+        </div>
+      </template>
+      <template #footer>
+        <UButton
+          label="取消"
+          color="neutral"
+          variant="outline"
+          :disabled="grantBusy"
+          @click="closeRevoke"
+        />
+        <UButton
+          label="确认撤销"
+          icon="i-tabler-user-minus"
+          color="error"
+          :loading="grantBusy"
+          @click="submitRevoke"
+        />
+      </template>
+    </UModal>
 
     <UModal
       v-model:open="policyConfirmOpen"
@@ -1115,5 +1589,5 @@ function formatDate(value: string) {
         />
       </template>
     </UModal>
-  </YAdminPage>
+  </ManagePage>
 </template>

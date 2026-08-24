@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { DocDetailResponse } from "~/types";
+import { createTrafficReplayKey } from "~/utils/traffic-replay-key.mjs";
+import { trafficSource } from "~/utils/traffic-source.mjs";
 
 definePageMeta({ layout: "collection", middleware: "url-lifecycle" });
 const route = useRoute();
@@ -59,6 +61,27 @@ const { data: docData, pending: docPending } = await useAsyncData(
   { watch: [collectionSlug, docPath, locale, version] },
 );
 const doc = computed(() => docData.value?.doc ?? null);
+const recordedDocument = ref("");
+watch(
+  () => doc.value?.id,
+  (documentID) => {
+    if (!import.meta.client || !documentID || documentID === recordedDocument.value)
+      return;
+    recordedDocument.value = documentID;
+    const viewEvent = {
+      eventId: createTrafficReplayKey(),
+      occurredAt: new Date().toISOString(),
+      source: trafficSource(document.referrer, window.location.href),
+    };
+    const recordView = () =>
+      call(`/api/v1/docs/${documentID}/view`, {
+        method: "POST",
+        body: viewEvent,
+      });
+    recordView().catch(() => recordView().catch(() => {}));
+  },
+  { immediate: true },
+);
 
 // prev/next = adjacent entries in DFS pre-order (whole flattened list).
 const idx = computed(() =>

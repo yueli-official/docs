@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -11,6 +13,8 @@ import (
 	"github.com/yueli-official/foundation/go/abuse/turnstile"
 	"github.com/yueli-official/foundation/go/authorization"
 	authorizationpostgres "github.com/yueli-official/foundation/go/authorization/postgres"
+	"github.com/yueli-official/foundation/go/traffic"
+	trafficpostgres "github.com/yueli-official/foundation/go/traffic/postgres"
 
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 
@@ -18,10 +22,12 @@ import (
 	"github.com/yueli-official/docs/api/internal/catalog"
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docsabuse"
+	"github.com/yueli-official/docs/api/internal/docsanalytics"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
 	"github.com/yueli-official/docs/api/internal/docsauthz"
 	"github.com/yueli-official/docs/api/internal/docsdiscovery"
 	"github.com/yueli-official/docs/api/internal/docssearch"
+	"github.com/yueli-official/docs/api/internal/docstraffic"
 	"github.com/yueli-official/docs/api/internal/docsurls"
 	"github.com/yueli-official/docs/api/internal/runtime"
 	"github.com/yueli-official/docs/api/internal/server"
@@ -46,6 +52,37 @@ func main() {
 	store := dao.NewPG(g.DB())
 	discoveryModule, discoveryCache, err := docsdiscovery.New(store, appconfig.DiscoveryConfig(ctx))
 	if err != nil {
+		panic(err)
+	}
+	trafficDB, err := appconfig.OpenTrafficDB(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer trafficDB.Close()
+	trafficCatalog, err := traffic.Compile(docstraffic.Definition(appconfig.TrafficTimeZone(ctx)))
+	if err != nil {
+		panic(err)
+	}
+	trafficModule, err := trafficpostgres.New(ctx, trafficCatalog, trafficpostgres.Options{
+		DB: trafficDB, InstanceKey: "docs:" + appconfig.SiteSlug(ctx),
+	})
+	if err != nil {
+		panic(err)
+	}
+	analyticsModule, err := docsanalytics.New(store, trafficModule, appconfig.TrafficTimeZone(ctx))
+	if err != nil {
+		panic(err)
+	}
+	trafficLocation, err := time.LoadLocation(appconfig.TrafficTimeZone(ctx))
+	if err != nil {
+		panic(err)
+	}
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("DOCS_DEV_SEED")), "true") {
+		if err := docsanalytics.SeedLocal(ctx, analyticsModule, time.Now().In(trafficLocation)); err != nil {
+			panic(err)
+		}
+	}
+	if err := store.PruneAnalyticsTrafficSourceReceipts(ctx, time.Now().In(trafficLocation).AddDate(0, 0, -60)); err != nil {
 		panic(err)
 	}
 	cat := catalog.New(store).
@@ -168,7 +205,7 @@ func main() {
 	server.Configure(s, server.Deps{
 		Verifier: verifier, Catalog: cat, Authorization: authorizationService,
 		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
-		URLResolver: urlLifecycle.Resolver(),
+		URLResolver: urlLifecycle.Resolver(), Analytics: analyticsModule,
 	})
 	g.Log().Info(ctx, "docs-service starting")
 	s.Run()
@@ -183,6 +220,20 @@ func exportOpenAPI(ctx context.Context) {
 		TTL:           5 * time.Minute,
 		Clock:         time.Now,
 	})
+	if err != nil {
+		panic(err)
+	}
+	trafficCatalog, err := traffic.Compile(docstraffic.Definition("UTC"))
+	if err != nil {
+		panic(err)
+	}
+	trafficModule, err := traffic.NewMemory(trafficCatalog, traffic.MemoryOptions{
+		Clock: time.Now, Secret: []byte("docs-openapi-traffic-secret-32-bytes"),
+	})
+	if err != nil {
+		panic(err)
+	}
+	analyticsModule, err := docsanalytics.New(dao.NewPG(nil), trafficModule, "UTC")
 	if err != nil {
 		panic(err)
 	}
@@ -219,7 +270,7 @@ func exportOpenAPI(ctx context.Context) {
 	server.Configure(s, server.Deps{
 		Catalog: cat, Authorization: authorizationService,
 		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
-		URLResolver: urlLifecycle.Resolver(),
+		URLResolver: urlLifecycle.Resolver(), Analytics: analyticsModule,
 	})
 	handled, err := runtime.ExportOpenAPIIfRequested(s)
 	if err != nil {

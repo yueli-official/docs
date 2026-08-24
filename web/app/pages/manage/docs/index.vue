@@ -1200,12 +1200,12 @@ const docColumns = computed(() =>
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="documents"
     title="文档"
     icon="i-tabler-file-text"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl"
+    body-class="w-full"
   >
     <template #actions>
       <UButton
@@ -1736,5 +1736,5 @@ const docColumns = computed(() =>
       @saved="onQuickEditSaved"
       @open-full="() => quickEditTarget && openDoc(quickEditTarget)"
     />
-  </YAdminPage>
+  </ManagePage>
 </template>

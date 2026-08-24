@@ -1,493 +1,380 @@
 <script setup lang="ts">
-import { SkeletonList } from "~/utils/manageComponents";
-import { useMinimumLoading } from "@yueli/ui/feedback";
-import type {
-  CollectionList,
-  ManageDocListItem,
-  ManageDocsResponse,
-} from "~/types";
-import { docManageRoute } from "~/utils/docsManageRoutes.mjs";
+import DashboardTrendChart from "~/components/DashboardTrendChart.vue";
+import ManageMetricCard from "~/components/ManageMetricCard.vue";
+import type { DashboardOverview } from "~/types";
 
 definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "控制台" });
 
-interface DashboardData {
-  collections: CollectionList | null;
-  recent: ManageDocsResponse | null;
-  issues: ManageDocsResponse | null;
-}
-
 const { call } = useApi();
-const { can, isAdministrator } = useMe();
-const canReadDocs = computed(() => can("docs.document.read"));
-const canCreateDocs = computed(() => can("docs.document.create"));
-const canManageCollections = computed(() => can("docs.collection.manage"));
-const canManageImports = computed(() => can("docs.import.manage"));
-const canManageSiteSettings = computed(() => can("docs.site_settings.manage"));
-const canManageAssetSettings = computed(() =>
-  can("docs.asset_settings.manage"),
-);
+const period = ref(14);
+const periodItems = [
+  { label: "7 天", value: 7 },
+  { label: "14 天", value: 14 },
+  { label: "30 天", value: 30 },
+];
+const dashboardCardClass = "bg-elevated shadow-sm";
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
 });
 
-async function loadOptional<T>(request: Promise<T>): Promise<T | null> {
-  try {
-    return await request;
-  } catch {
-    return null;
-  }
-}
-
-const { data, pending, refresh } = await useAsyncData(
-  "manage-overview",
-  async (): Promise<DashboardData> => {
-    const [collections, recent, issues] = await Promise.all([
-      canManageCollections.value
-        ? loadOptional(call<CollectionList>("/api/v1/collections"))
-        : null,
-      canReadDocs.value
-        ? loadOptional(
-            call<ManageDocsResponse>("/api/v1/manage/docs", {
-              query: {
-                status: "all",
-                quality: "all",
-                sort: "updatedAt",
-                direction: "desc",
-                page: 1,
-                size: 6,
-              },
-            }),
-          )
-        : null,
-      canReadDocs.value
-        ? loadOptional(
-            call<ManageDocsResponse>("/api/v1/manage/docs", {
-              query: {
-                status: "all",
-                quality: "issues",
-                sort: "updatedAt",
-                direction: "desc",
-                page: 1,
-                size: 5,
-              },
-            }),
-          )
-        : null,
-    ]);
-    return { collections, recent, issues };
-  },
+const {
+  data: analytics,
+  pending: analyticsPending,
+  error: analyticsError,
+  refresh,
+} = await useAsyncData(
+  "docs-dashboard-analytics",
+  () =>
+    call<DashboardOverview>("/api/v1/dashboard/overview", {
+      query: { days: period.value },
+    }),
   {
     server: false,
+    watch: [period],
     default: () => ({
-      collections: null,
-      recent: null,
-      issues: null,
+      days: period.value,
+      allTimeViews: 0,
+      allTimeUniqueVisitorDays: 0,
+      periodViews: 0,
+      periodUniqueVisitorDays: 0,
+      previousPeriodViews: 0,
+      previousUniqueVisitorDays: 0,
+      periodSearches: 0,
+      previousPeriodSearches: 0,
+      zeroResultSearches: 0,
+      series: [],
+      topDocuments: [],
+      topSources: [],
+      topSearches: [],
     }),
   },
 );
 
-const showSkeleton = useMinimumLoading(
-  computed(() => !mounted.value || pending.value),
+const formatter = new Intl.NumberFormat("zh-CN");
+function formatNumber(value: number) {
+  return formatter.format(value);
+}
+function formatMetricValue(value: number) {
+  return Number.isInteger(value) ? formatNumber(value) : value.toFixed(1);
+}
+function comparison(current: number, previous: number, unit = "") {
+  const suffix = unit ? ` ${unit}` : "";
+  if (!previous)
+    return current
+      ? `本期新增 ${formatNumber(current)}${suffix}`
+      : "与前期持平";
+  const percent = Math.round(((current - previous) / previous) * 100);
+  return `${percent >= 0 ? "+" : ""}${percent}% 较前 ${period.value} 天`;
+}
+const readingDepth = computed(() => {
+  const visitors = analytics.value?.periodUniqueVisitorDays ?? 0;
+  return visitors ? (analytics.value?.periodViews ?? 0) / visitors : 0;
+});
+const zeroResultRate = computed(() => {
+  const searches = analytics.value?.periodSearches ?? 0;
+  return searches
+    ? ((analytics.value?.zeroResultSearches ?? 0) / searches) * 100
+    : 0;
+});
+const visitorAverage = computed(
+  () => (analytics.value?.periodUniqueVisitorDays ?? 0) / period.value,
 );
-
-const recentDocs = computed(() => data.value?.recent?.items ?? []);
-const issueDocs = computed(() => data.value?.issues?.items ?? []);
-const collectionCount = computed(
-  () => data.value?.collections?.items.length ?? null,
+const visitorPeakPoint = computed(() =>
+  (analytics.value?.series ?? []).reduce<
+    DashboardOverview["series"][number] | undefined
+  >(
+    (peak, point) =>
+      !peak || point.uniqueVisitorDays > peak.uniqueVisitorDays ? point : peak,
+    undefined,
+  ),
 );
-const documentDataUnavailable = computed(
-  () => canReadDocs.value && (!data.value?.recent || !data.value?.issues),
+const visitorComparison = computed(() =>
+  comparison(
+    analytics.value?.periodUniqueVisitorDays ?? 0,
+    analytics.value?.previousUniqueVisitorDays ?? 0,
+    "访客日",
+  ),
 );
-const collectionDataUnavailable = computed(
-  () => canManageCollections.value && !data.value?.collections,
+const visitorComparisonColor = computed(() =>
+  (analytics.value?.periodUniqueVisitorDays ?? 0) >=
+  (analytics.value?.previousUniqueVisitorDays ?? 0)
+    ? ("success" as const)
+    : ("warning" as const),
 );
-const workspaceDegraded = computed(
-  () => documentDataUnavailable.value || collectionDataUnavailable.value,
+const topPeak = computed(() =>
+  Math.max(
+    1,
+    ...(analytics.value?.topDocuments ?? []).map((document) => document.views),
+  ),
 );
-const quickActions = computed(() => [
-  ...(canReadDocs.value
-    ? [
-        {
-          label: "管理文档",
-          description: "查找、筛选与维护内容",
-          icon: "i-tabler-files",
-          to: "/manage/docs",
-        },
-      ]
-    : []),
-  ...(canManageCollections.value
-    ? [
-        {
-          label: "管理文档集",
-          description: "调整内容结构与分组",
-          icon: "i-tabler-stack-2",
-          to: "/manage/collections",
-        },
-      ]
-    : []),
-  ...(canManageImports.value
-    ? [
-        {
-          label: "批量导入",
-          description: "一次导入多篇文档",
-          icon: "i-tabler-file-import",
-          to: "/manage/import",
-        },
-      ]
-    : []),
-  ...(canManageSiteSettings.value
-    ? [
-        {
-          label: "站点设置",
-          description: "维护站点展示信息",
-          icon: "i-tabler-settings",
-          to: "/manage/home",
-        },
-      ]
-    : []),
-  ...(canManageAssetSettings.value
-    ? [
-        {
-          label: "资源策略",
-          description: "检查存储与用途规则",
-          icon: "i-tabler-database-cog",
-          to: "/manage/assets",
-        },
-      ]
-    : []),
-  ...(isAdministrator.value
-    ? [
-        {
-          label: "权限与申请",
-          description: "管理作者能力与申请",
-          icon: "i-tabler-shield-lock",
-          to: "/manage/authorization",
-        },
-      ]
-    : []),
+const sourcePeak = computed(() =>
+  Math.max(1, ...(analytics.value?.topSources ?? []).map((source) => source.views)),
+);
+const searchPeak = computed(() =>
+  Math.max(1, ...(analytics.value?.topSearches ?? []).map((search) => search.searches)),
+);
+const metricCards = computed(() => [
+  {
+    label: "累计浏览",
+    value: analytics.value?.allTimeViews ?? 0,
+    detail: `${formatNumber(analytics.value?.allTimeUniqueVisitorDays ?? 0)} 访客日`,
+    icon: "i-tabler-eye",
+    tone: "primary" as const,
+  },
+  {
+    label: `近 ${period.value} 天浏览`,
+    value: analytics.value?.periodViews ?? 0,
+    detail: comparison(
+      analytics.value?.periodViews ?? 0,
+      analytics.value?.previousPeriodViews ?? 0,
+    ),
+    icon: "i-tabler-chart-line",
+    tone: "primary" as const,
+  },
+  {
+    label: "浏览深度",
+    value: readingDepth.value,
+    detail: "平均每访客日浏览",
+    icon: "i-tabler-chart-dots-3",
+    tone: "neutral" as const,
+  },
+  {
+    label: "搜索次数",
+    value: analytics.value?.periodSearches ?? 0,
+    detail: analytics.value?.periodSearches
+      ? `${zeroResultRate.value.toFixed(0)}% 未找到结果`
+      : "当前周期暂无搜索",
+    icon: "i-tabler-search",
+    tone: zeroResultRate.value > 20 ? ("warning" as const) : ("success" as const),
+  },
 ]);
 
-function docLink(doc: ManageDocListItem) {
-  return docManageRoute(
-    doc.collectionSlug,
-    doc.slugPath.split("/").filter(Boolean),
-  );
+function setPeriod(value: string | number) {
+  period.value = Number(value);
 }
 
-function issueLabel(doc: ManageDocListItem) {
-  const issues: string[] = [];
-  if (!doc.title.trim()) issues.push("缺标题");
-  if (!doc.slug.trim()) issues.push("缺路径");
-  if (!doc.excerpt.trim()) issues.push("缺摘要");
-  return issues.join(" · ") || "需要复核内容信息";
+function sourceLabel(value: string) {
+  const labels: Record<string, string> = {
+    direct: "直接访问",
+    "google.com": "Google",
+    "bing.com": "Bing",
+    "baidu.com": "百度",
+    "zhihu.com": "知乎",
+    "x.com": "X",
+    "weibo.com": "微博",
+  };
+  return labels[value] ?? value;
 }
 
-function statusLabel(status: string) {
-  return (
-    { draft: "草稿", published: "已发布", archived: "已归档" }[status] ?? status
-  );
-}
-
-function formatUpdatedAt(value: string) {
-  if (!value) return "未记录";
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+function publicDocumentLink(document: DashboardOverview["topDocuments"][number]) {
+  return {
+    path: `/${document.collectionSlug}/${document.slugPath}`,
+    query: {
+      ...(document.locale && document.locale !== "en"
+        ? { locale: document.locale }
+        : {}),
+      ...(document.versionKey ? { version: document.versionKey } : {}),
+    },
+  };
 }
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="dashboard"
     title="控制台"
     icon="i-tabler-dashboard"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl space-y-4"
+    body-class="w-full space-y-5"
+    data-docs-dashboard-analytics
   >
-    <template #actions>
-      <UButton
-        v-if="canCreateDocs"
-        to="/manage/docs/new"
-        icon="i-tabler-plus"
-        label="新建文档"
-      />
-    </template>
-
-    <div
-      :class="[
-        'grid min-w-0 gap-4',
-        canReadDocs && 'lg:grid-cols-[minmax(0,1fr)_20rem]',
-      ]"
+    <UAlert
+      v-if="analyticsError"
+      color="error"
+      variant="subtle"
+      icon="i-tabler-alert-circle"
+      title="统计暂时不可用"
+      description="文档阅读不受影响；重试后仍失败时再检查 Docs API。"
     >
-      <div v-if="canReadDocs" class="min-w-0 space-y-4">
-        <section
-          aria-labelledby="pending-docs-title"
-          class="overflow-hidden rounded-xl border border-default bg-default"
-        >
-          <div class="border-b border-default px-4 py-3 sm:px-5">
-            <h2
-              id="pending-docs-title"
-              class="text-sm font-semibold text-highlighted"
-            >
-              待完善文档
-            </h2>
-            <p class="mt-0.5 text-xs text-muted">
-              先处理缺少摘要、标题或路径的内容。
-            </p>
-          </div>
-          <div class="p-4 sm:p-5">
-            <div v-if="showSkeleton" class="grid gap-2">
-              <USkeleton
-                v-for="item in 3"
-                :key="item"
-                class="h-14 rounded-lg"
-              />
-            </div>
-            <div
-              v-else-if="!data?.issues"
-              class="flex flex-col items-start gap-3 rounded-lg bg-error/10 px-3 py-3 text-sm text-error sm:flex-row sm:items-center sm:justify-between"
-            >
-              <span class="inline-flex items-center gap-2">
-                <UIcon name="i-tabler-alert-circle" class="size-4" />
-                待完善文档暂时无法加载
-              </span>
-              <UButton
-                label="重试"
-                icon="i-tabler-refresh"
-                color="error"
-                variant="soft"
-                size="xs"
-                @click="() => refresh()"
-              />
-            </div>
-            <div v-else-if="issueDocs.length" class="divide-y divide-default">
-              <NuxtLink
-                v-for="doc in issueDocs"
-                :key="doc.id"
-                :to="docLink(doc)"
-                class="group grid min-h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-2.5 first:pt-0 last:pb-0"
-              >
-                <span
-                  class="grid size-8 place-items-center rounded-lg bg-warning/10 text-warning"
-                >
-                  <UIcon name="i-tabler-alert-circle" class="size-4" />
-                </span>
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-medium text-highlighted">
-                    {{ doc.title || "未命名文档" }}
-                  </p>
-                  <p class="truncate text-xs text-muted">
-                    {{ doc.collectionTitle }} · {{ issueLabel(doc) }}
-                  </p>
-                </div>
-                <UIcon
-                  name="i-tabler-chevron-right"
-                  class="size-4 text-dimmed transition group-hover:translate-x-0.5"
-                />
-              </NuxtLink>
-            </div>
-            <div
-              v-else
-              class="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2.5 text-sm text-success"
-            >
-              <UIcon name="i-tabler-circle-check" class="size-4" />
-              当前没有待完善的文档
-            </div>
-          </div>
-        </section>
+      <template #actions>
+        <UButton
+          color="error"
+          variant="soft"
+          icon="i-tabler-refresh"
+          label="重试"
+          @click="() => refresh()"
+        />
+      </template>
+    </UAlert>
 
-        <section
-          aria-labelledby="recent-docs-title"
-          class="overflow-hidden rounded-xl border border-default bg-default"
-        >
-          <div class="border-b border-default px-4 py-3 sm:px-5">
-            <h2
-              id="recent-docs-title"
-              class="text-sm font-semibold text-highlighted"
-            >
-              最近更新
-            </h2>
-            <p class="mt-0.5 text-xs text-muted">继续处理近期有变更的文档。</p>
-          </div>
-          <SkeletonList v-if="showSkeleton" :rows="5" class="p-4" />
-          <div
-            v-else-if="!data?.recent"
-            class="flex flex-col items-start gap-3 p-4 text-sm text-error sm:flex-row sm:items-center sm:justify-between sm:px-5"
-          >
-            <span class="inline-flex items-center gap-2">
-              <UIcon name="i-tabler-alert-circle" class="size-4" />
-              最近更新暂时无法加载
-            </span>
-            <UButton
-              label="重试"
-              icon="i-tabler-refresh"
-              color="error"
-              variant="soft"
-              size="xs"
-              @click="() => refresh()"
+    <div v-if="!mounted || (analyticsPending && !analytics?.series.length)" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <USkeleton v-for="item in 4" :key="item" class="h-28 rounded-xl" />
+    </div>
+    <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ManageMetricCard
+        v-for="card in metricCards"
+        :key="card.label"
+        :label="card.label"
+        :value="formatMetricValue(card.value)"
+        :detail="card.detail"
+        :icon="card.icon"
+        :tone="card.tone"
+        data-docs-dashboard-metric
+      />
+    </div>
+
+    <div class="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+      <UCard
+        variant="soft"
+        :class="[dashboardCardClass, 'divide-y-0']"
+        data-docs-dashboard-trend
+        :aria-busy="analyticsPending"
+        :ui="{ header: 'p-5 sm:p-6', body: 'px-5 pb-5 pt-0 sm:px-6 sm:pb-6 sm:pt-0' }"
+      >
+        <template #header>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <h2 class="text-base font-semibold text-highlighted">浏览趋势</h2>
+            <UTabs
+              :model-value="period"
+              :items="periodItems"
+              :content="false"
+              :disabled="!mounted || analyticsPending"
+              size="sm"
+              class="w-fit"
+              aria-label="统计时间范围"
+              @update:model-value="setPeriod"
             />
           </div>
-          <div v-else-if="recentDocs.length" class="divide-y divide-default">
-            <NuxtLink
-              v-for="doc in recentDocs"
-              :key="doc.id"
-              :to="docLink(doc)"
-              class="group grid min-h-14 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 px-4 py-3 transition hover:bg-elevated/40 sm:px-5"
-            >
-              <div class="min-w-0">
-                <p
-                  class="truncate text-sm font-medium text-highlighted group-hover:text-primary"
-                >
-                  {{ doc.title }}
-                </p>
-                <p class="truncate font-mono text-xs text-muted">
-                  /{{ doc.slugPath }}
-                </p>
-              </div>
-              <span class="hidden text-xs text-muted sm:inline">{{
-                statusLabel(doc.status)
-              }}</span>
-              <time
-                class="text-xs tabular-nums text-muted"
-                :datetime="doc.updatedAt"
-                >{{ formatUpdatedAt(doc.updatedAt) }}</time
-              >
-            </NuxtLink>
-          </div>
-          <div v-else class="p-8 text-center text-sm text-muted">
-            还没有文档，先创建第一篇内容。
-          </div>
-        </section>
-      </div>
+        </template>
+        <DashboardTrendChart :points="analytics?.series ?? []" />
+      </UCard>
 
-      <aside class="min-w-0 space-y-4">
-        <section
-          aria-labelledby="workspace-status-title"
-          class="rounded-xl border border-default bg-default p-4"
+      <UCard
+        title="访客趋势"
+        variant="soft"
+        :class="[dashboardCardClass, 'divide-y-0']"
+        data-docs-dashboard-audience
+        :ui="{ header: 'p-5 sm:p-6', body: 'space-y-5 px-5 pb-5 pt-0 sm:px-6 sm:pb-6 sm:pt-0' }"
+      >
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-3xl font-semibold tabular-nums tracking-tight text-highlighted">
+              {{ formatNumber(analytics?.periodUniqueVisitorDays ?? 0) }}
+            </p>
+            <p class="mt-1 text-xs text-muted">访客日</p>
+          </div>
+          <UBadge
+            :color="visitorComparisonColor"
+            variant="soft"
+            :label="visitorComparison"
+          />
+        </div>
+        <DashboardTrendChart
+          :points="analytics?.series ?? []"
+          metric="uniqueVisitorDays"
+          compact
+        />
+        <dl class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-xs text-muted">日均访客日</dt>
+            <dd class="mt-1 text-lg font-semibold tabular-nums text-highlighted">
+              {{ visitorAverage.toFixed(1) }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-muted">单日峰值</dt>
+            <dd class="mt-1 text-lg font-semibold tabular-nums text-highlighted">
+              {{ formatNumber(visitorPeakPoint?.uniqueVisitorDays ?? 0) }}
+            </dd>
+          </div>
+        </dl>
+      </UCard>
+    </div>
+
+    <div class="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+      <UCard
+        title="热门文档"
+        variant="soft"
+        :class="[dashboardCardClass, 'divide-y-0']"
+        data-docs-dashboard-top-documents
+        :ui="{ header: 'p-5 sm:p-6', body: 'p-0 sm:p-0' }"
+      >
+        <div v-if="analytics?.topDocuments.length" class="divide-y divide-default">
+          <NuxtLink
+            v-for="(document, index) in analytics.topDocuments"
+            :key="document.id"
+            :to="publicDocumentLink(document)"
+            class="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-5 py-4 transition hover:bg-accented sm:px-6"
+          >
+            <UBadge color="neutral" variant="soft" :label="String(index + 1)" />
+            <div class="min-w-0 space-y-2">
+              <p class="truncate text-sm font-medium text-highlighted group-hover:text-primary">
+                {{ document.title }}
+              </p>
+              <UProgress :model-value="document.views" :max="topPeak" size="2xs" />
+              <p class="text-xs text-muted">{{ document.uniqueVisitorDays }} 访客日</p>
+            </div>
+            <div class="text-end">
+              <p class="text-lg font-semibold tabular-nums text-highlighted">
+                {{ formatNumber(document.views) }}
+              </p>
+              <p class="text-xs text-dimmed">次浏览</p>
+            </div>
+          </NuxtLink>
+        </div>
+        <div v-else class="p-8 text-center text-sm text-muted">
+          当前周期还没有文档浏览记录。
+        </div>
+      </UCard>
+
+      <div class="space-y-4">
+        <UCard
+          title="流量来源"
+          variant="soft"
+          :class="[dashboardCardClass, 'divide-y-0']"
+          data-docs-dashboard-sources
+          :ui="{ header: 'p-5 sm:p-6', body: 'space-y-4 px-5 pb-5 pt-0 sm:px-6 sm:pb-6 sm:pt-0' }"
         >
-          <div class="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h2
-                id="workspace-status-title"
-                class="text-sm font-semibold text-highlighted"
-              >
-                工作区状态
-              </h2>
-              <p class="mt-0.5 text-xs text-muted">
-                仅反映当前账号可访问的管理数据。
+          <div v-if="analytics?.topSources.length" class="space-y-4">
+            <div v-for="source in analytics.topSources" :key="source.source" class="space-y-2">
+              <div class="flex items-center justify-between gap-3 text-sm">
+                <span class="min-w-0 truncate text-toned">{{ sourceLabel(source.source) }}</span>
+                <span class="shrink-0 font-medium tabular-nums text-highlighted">
+                  {{ formatNumber(source.views) }}
+                </span>
+              </div>
+              <UProgress :model-value="source.views" :max="sourcePeak" size="2xs" />
+            </div>
+          </div>
+          <p v-else class="text-sm text-muted">当前周期还没有可归因的来源。</p>
+        </UCard>
+
+        <UCard
+          title="热门搜索"
+          variant="soft"
+          :class="[dashboardCardClass, 'divide-y-0']"
+          data-docs-dashboard-searches
+          :ui="{ header: 'p-5 sm:p-6', body: 'space-y-4 px-5 pb-5 pt-0 sm:px-6 sm:pb-6 sm:pt-0' }"
+        >
+          <div v-if="analytics?.topSearches.length" class="space-y-4">
+            <div v-for="search in analytics.topSearches" :key="search.query" class="space-y-2">
+              <div class="flex items-center justify-between gap-3 text-sm">
+                <span class="min-w-0 truncate text-toned">{{ search.query }}</span>
+                <span class="shrink-0 font-medium tabular-nums text-highlighted">
+                  {{ formatNumber(search.searches) }}
+                </span>
+              </div>
+              <UProgress :model-value="search.searches" :max="searchPeak" size="2xs" />
+              <p v-if="search.zeroResults" class="text-xs text-warning">
+                {{ search.zeroResults }} 次没有结果
               </p>
             </div>
-            <UBadge
-              v-if="!showSkeleton"
-              :color="workspaceDegraded ? 'warning' : 'success'"
-              variant="soft"
-              :label="workspaceDegraded ? '部分不可用' : '可工作'"
-            />
           </div>
-          <div v-if="showSkeleton" class="grid gap-3">
-            <USkeleton v-for="item in 3" :key="item" class="h-5 rounded-md" />
-          </div>
-          <dl v-else class="grid gap-3 text-sm">
-            <div
-              v-if="canReadDocs"
-              class="flex items-center justify-between gap-3"
-            >
-              <dt class="text-muted">文档管理</dt>
-              <dd
-                class="inline-flex items-center gap-1.5"
-                :class="
-                  documentDataUnavailable ? 'text-warning' : 'text-success'
-                "
-              >
-                <span
-                  class="size-1.5 rounded-full"
-                  :class="documentDataUnavailable ? 'bg-warning' : 'bg-success'"
-                />
-                {{ documentDataUnavailable ? "不可用" : "正常" }}
-              </dd>
-            </div>
-            <div
-              v-if="canManageCollections"
-              class="flex items-center justify-between gap-3"
-            >
-              <dt class="text-muted">文档集</dt>
-              <dd
-                class="font-medium tabular-nums"
-                :class="
-                  collectionDataUnavailable
-                    ? 'text-warning'
-                    : 'text-highlighted'
-                "
-              >
-                {{ collectionDataUnavailable ? "不可用" : collectionCount }}
-              </dd>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <dt class="text-muted">可用操作</dt>
-              <dd class="font-medium tabular-nums text-highlighted">
-                {{ quickActions.length }}
-              </dd>
-            </div>
-          </dl>
-          <UButton
-            v-if="!showSkeleton && workspaceDegraded"
-            label="重新检查"
-            icon="i-tabler-refresh"
-            color="neutral"
-            variant="outline"
-            size="xs"
-            class="mt-4"
-            @click="() => refresh()"
-          />
-        </section>
-
-        <section
-          aria-labelledby="quick-actions-title"
-          class="rounded-xl border border-default bg-default p-4"
-        >
-          <div class="mb-2">
-            <h2
-              id="quick-actions-title"
-              class="text-sm font-semibold text-highlighted"
-            >
-              快捷操作
-            </h2>
-            <p class="mt-0.5 text-xs text-muted">进入常用的内容管理任务。</p>
-          </div>
-          <div class="divide-y divide-default">
-            <NuxtLink
-              v-for="action in quickActions"
-              :key="action.to"
-              :to="action.to"
-              class="group flex items-center gap-3 py-3 first:pt-2 last:pb-0"
-            >
-              <span
-                class="grid size-8 shrink-0 place-items-center rounded-lg bg-elevated text-muted transition group-hover:bg-primary/10 group-hover:text-primary"
-              >
-                <UIcon :name="action.icon" class="size-4" />
-              </span>
-              <span class="min-w-0 flex-1">
-                <span
-                  class="block text-sm font-medium text-highlighted group-hover:text-primary"
-                  >{{ action.label }}</span
-                >
-                <span class="block truncate text-xs text-muted">{{
-                  action.description
-                }}</span>
-              </span>
-              <UIcon
-                name="i-tabler-chevron-right"
-                class="size-4 shrink-0 text-dimmed transition group-hover:translate-x-0.5 group-hover:text-primary"
-              />
-            </NuxtLink>
-          </div>
-        </section>
-      </aside>
+          <p v-else class="text-sm text-muted">当前周期还没有搜索记录。</p>
+        </UCard>
+      </div>
     </div>
-  </YAdminPage>
+  </ManagePage>
 </template>

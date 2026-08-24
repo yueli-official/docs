@@ -10,10 +10,11 @@ import {
   useDocsSettingsProtection,
 } from "~/utils/settings";
 import { createDocsNotifier } from "~/utils/feedback";
+import { normalizeFeaturedCollections } from "~/utils/docsHomeConfig.mjs";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
+import { TabbedSurface } from "@yueli/ui/admin";
 import {
   SettingSection,
-  SettingsLayout,
   SettingsSaveDock,
 } from "@yueli/ui/settings/pattern";
 import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
@@ -34,30 +35,24 @@ const route = useRoute();
 const router = useRouter();
 const saveError = ref("");
 const section = ref<"home" | "footer" | "site">("home");
-const sections = [
+const sectionTabs = [
   {
-    key: "home",
+    value: "home",
     label: "首页",
     icon: "i-tabler-home-cog",
-    description: "首屏文案、快速入口和推荐文档",
   },
   {
-    key: "footer",
+    value: "footer",
     label: "页脚",
     icon: "i-tabler-layout-bottombar",
-    description: "页脚标语、版权与联系入口",
   },
   {
-    key: "site",
+    value: "site",
     label: "基础",
     icon: "i-tabler-adjustments-horizontal",
-    description: "站点名称、描述与支持邮箱",
   },
 ] as const;
-const sectionKeys = sections.map((item) => item.key);
-const activeSection = computed(
-  () => sections.find((item) => item.key === section.value) || sections[0],
-);
+const sectionKeys = sectionTabs.map((item) => item.value);
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
@@ -146,7 +141,9 @@ watch(
       sortOrder: index,
       enabled: link.enabled !== false,
     }));
-    featuredCollections.value = [...config.featuredCollections];
+    featuredCollections.value = normalizeFeaturedCollections(
+      config.featuredCollections,
+    );
     Object.assign(homeCopy, {
       eyebrow: config.homeEyebrow,
       title: config.homeTitle,
@@ -317,12 +314,12 @@ function discardChanges() {
 </script>
 
 <template>
-  <YAdminPage
+  <ManagePage
     id="site-settings"
     title="站点设置"
     icon="i-tabler-settings"
     main-id="manage-main"
-    body-class="mx-auto w-full max-w-screen-2xl"
+    body-class="w-full"
   >
     <div
       v-if="!canManageSiteSettings"
@@ -343,20 +340,20 @@ function discardChanges() {
       </div>
     </div>
 
-    <SettingsLayout
+    <TabbedSurface
       v-else
-      v-model:active-section="section"
-      :title="activeSection.label"
-      :description="activeSection.description"
-      :sections="sections"
-      :show-section-navigation="false"
-      :show-header="false"
-      navigation-label="设置分区"
+      v-model="section"
+      :items="sectionTabs"
+      navigation-label="站点设置"
+      data-manage-surface="site-settings"
     >
-      <SkeletonList v-if="showSkeleton" :rows="8" />
+      <div v-if="showSkeleton" class="p-4 sm:p-5">
+        <SkeletonList :rows="8" />
+      </div>
 
       <UAlert
         v-else-if="homeError"
+        class="m-4 sm:m-5"
         color="error"
         variant="subtle"
         icon="i-tabler-alert-circle"
@@ -364,11 +361,14 @@ function discardChanges() {
         description="站点配置尚未初始化或服务不可用，请先运行开发环境 provision。"
       />
 
-      <template v-else-if="section === 'home' && !homeError">
+      <div
+        v-else-if="section === 'home' && !homeError"
+        class="min-w-0 p-4 sm:p-5"
+      >
         <SettingSection
           title="首页首屏"
           description="控制公开首页的眉标、标题和任务导向说明。"
-          class="mb-5"
+          class="mb-5 rounded-none border-0 bg-transparent p-0 shadow-none sm:p-0"
         >
           <div class="grid gap-4">
             <div class="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
@@ -596,12 +596,13 @@ function discardChanges() {
             </section>
           </aside>
         </div>
-      </template>
+      </div>
 
       <SettingSection
         v-else-if="section === 'footer' && !homeError"
         title="页脚内容"
         description="用于所有文档页面底部的品牌说明与联系信息。"
+        class="rounded-none border-0 bg-transparent p-4 shadow-none sm:p-5"
       >
         <div class="grid gap-4">
           <UFormField label="页脚标语"
@@ -620,6 +621,7 @@ function discardChanges() {
         v-else-if="!homeError"
         title="站点基础"
         description="这些字段用于导航品牌、SEO 描述和支持入口。"
+        class="rounded-none border-0 bg-transparent p-4 shadow-none sm:p-5"
       >
         <div class="grid gap-4 sm:grid-cols-2">
           <UFormField label="站点名称" required
@@ -641,10 +643,10 @@ function discardChanges() {
         :status="saveStatus"
         :error="saveError"
         :messages="docsSettingsSaveMessages"
-        dock-class="lg:left-60"
+        dock-class="lg:left-[16.75rem]"
         @discard="discardChanges"
         @save="save"
       />
-    </SettingsLayout>
-  </YAdminPage>
+    </TabbedSurface>
+  </ManagePage>
 </template>
