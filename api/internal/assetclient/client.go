@@ -21,6 +21,7 @@ type InitOutput struct {
 
 type View struct {
 	ID       string
+	MediaKey string
 	CdnURL   string
 	Size     int64
 	Mime     string

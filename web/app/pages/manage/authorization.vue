@@ -595,11 +595,6 @@ async function publishPolicyChange() {
     policyConfirmOpen.value = false;
     pendingPolicyChange.value = null;
     await refresh();
-    toast.add({
-      title: "权限策略已发布",
-      description: `新增 ${impact.addedBindings} 项绑定，移除 ${impact.removedBindings} 项绑定。`,
-      color: "success",
-    });
   } catch (caught) {
     operationError.value =
       caught instanceof Error ? caught.message : "权限策略发布失败，请重试。";
@@ -644,10 +639,6 @@ async function submitReview() {
     );
     reviewOpen.value = false;
     await refresh();
-    toast.add({
-      title: reviewDecision.value === "approve" ? "申请已批准" : "申请已拒绝",
-      color: "success",
-    });
   } catch (caught) {
     reviewError.value =
       caught instanceof Error ? caught.message : "申请处理失败，请重试。";
@@ -718,7 +709,6 @@ async function grantRole() {
     grantForm.subject = "";
     grantOpen.value = false;
     await refresh();
-    toast.add({ title: "用户角色已添加", color: "success" });
   } catch (caught) {
     toast.add({
       title: "添加用户失败",
@@ -747,7 +737,6 @@ async function revokeGrants(targets: Grant[]) {
     revokeOpen.value = false;
     revokeTargets.value = [];
     revokeError.value = "";
-    toast.add({ title: "用户角色已撤销", color: "success" });
   } catch (caught) {
     revokeError.value = authorizationErrorMessage(caught, targets);
     await refresh();

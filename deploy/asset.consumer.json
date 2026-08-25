@@ -22,6 +22,22 @@
       "variants": [
         { "key": "cover", "width": 800, "height": 600, "mode": "fill", "format": "webp", "quality": 85, "visibility": "public", "metadataPolicy": "strip" }
       ]
+    },
+    {
+      "key": "docs-content-image",
+      "kind": "public-image",
+      "purpose": "文档正文图片",
+      "allowedMimes": ["image/webp"],
+      "maxBytes": 10485760,
+      "maxPixels": 30000000,
+      "visibility": "public",
+      "metadataPolicy": "strip",
+      "keepOriginal": false,
+      "storageClass": "public-media",
+      "variants": [
+        { "key": "inline", "width": 900, "height": 900, "mode": "resize-width", "format": "webp", "quality": 84, "visibility": "public", "metadataPolicy": "strip" },
+        { "key": "content", "width": 1200, "height": 1200, "mode": "resize-width", "format": "webp", "quality": 88, "visibility": "public", "metadataPolicy": "strip" }
+      ]
     }
   ]
 }

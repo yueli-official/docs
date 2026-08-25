@@ -2,6 +2,7 @@
 import { createDocsNotifier } from "~/utils/feedback";
 import { useActionFeedback } from "@yueli/ui/feedback";
 import { ActionFeedbackButton } from "@yueli/ui/feedback/pattern";
+import { AssetImageProcessor } from "@yueli/asset-nuxt/components";
 import type {
   CollectionVersion,
   CollectionVersionsResponse,
@@ -36,6 +37,27 @@ const isSemanticEdit = computed(
 );
 const isNew = computed(() => !isSemanticEdit.value && routeId.value === "new");
 
+function createDraftInstanceId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  const bytes = new Uint8Array(12);
+  globalThis.crypto?.getRandomValues(bytes);
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+const draftInstanceId = ref(
+  isNew.value ? String(route.query.draft ?? "").trim() : "",
+);
+if (import.meta.client && isNew.value && !draftInstanceId.value) {
+  draftInstanceId.value = createDraftInstanceId();
+  const legacyKey = "docs:doc:new";
+  const scopedKey = `docs:doc:new:${draftInstanceId.value}`;
+  const legacyDraft = localStorage.getItem(legacyKey);
+  if (legacyDraft && !localStorage.getItem(scopedKey)) {
+    localStorage.setItem(scopedKey, legacyDraft);
+    localStorage.removeItem(legacyKey);
+  }
+}
+
 function selectedValue(value: unknown) {
   if (value && typeof value === "object" && "value" in value) {
     const option = value as { value?: unknown };
@@ -47,6 +69,12 @@ function selectedValue(value: unknown) {
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
+  if (isNew.value && draftInstanceId.value && !route.query.draft) {
+    void navigateTo(
+      { path: route.path, query: { ...route.query, draft: draftInstanceId.value } },
+      { replace: true },
+    );
+  }
 });
 
 // ── collections list (for dropdown) ───────────────────────────────────────────
@@ -77,6 +105,43 @@ const form = reactive({
   sortOrder: 0,
 });
 const slugTouched = ref(false);
+
+type ImageProcessingRequest = {
+  file: File;
+  resolve: (file: File) => void;
+  reject: (error: Error) => void;
+};
+const imageProcessingRequest = shallowRef<ImageProcessingRequest | null>(null);
+const { uploadDocumentImage } = useDocsUpload();
+const editorComp = ref<{ markSaved: () => void } | null>(null);
+
+function processImage(file: File) {
+  imageProcessingRequest.value?.reject(new Error("已取消上一项图片处理"));
+  return new Promise<File>((resolve, reject) => {
+    imageProcessingRequest.value = { file, resolve, reject };
+  });
+}
+
+function finishImageProcessing(file: File) {
+  const pending = imageProcessingRequest.value;
+  imageProcessingRequest.value = null;
+  pending?.resolve(file);
+}
+
+function cancelImageProcessing() {
+  const pending = imageProcessingRequest.value;
+  imageProcessingRequest.value = null;
+  pending?.reject(new Error("已取消图片处理"));
+}
+
+async function uploadInlineImage(file: File) {
+  const processed = await processImage(file);
+  return uploadDocumentImage(processed, {
+    ...(isNew.value ? { collectionId: form.collectionId } : { documentId: docId.value }),
+  });
+}
+
+onBeforeUnmount(cancelImageProcessing);
 
 function clientSlug(value: string) {
   return value
@@ -421,6 +486,7 @@ async function save() {
         });
       }
       markSaved();
+      editorComp.value?.markSaved();
       const parentSlugPath =
         form.parentId !== ROOT
           ? (findDocSlugPathById(treeData.value?.tree ?? [], form.parentId) ??
@@ -462,6 +528,7 @@ async function save() {
         },
       );
       markSaved();
+      editorComp.value?.markSaved();
       await refreshTree();
       await refresh();
       const savedSlug = res.doc?.slug || form.slug.trim();
@@ -681,12 +748,14 @@ onMounted(() => nextTick(autoGrowTitle));
         </header>
 
         <ContentEditor
+          ref="editorComp"
           v-model="form.content"
           class="[&>div>.rounded-xl]:border-default [&>div>.rounded-xl]:bg-muted [&_[data-slot=content]]:mx-auto [&_[data-slot=content]]:min-h-[28rem] [&_[data-slot=content]]:w-full [&_[data-slot=content]]:px-[1.125rem] [&_[data-slot=content]]:py-6 sm:[&_[data-slot=content]]:min-h-[max(40rem,calc(100svh-19rem))] sm:[&_[data-slot=content]]:px-[clamp(2rem,4vw,3rem)] sm:[&_[data-slot=content]]:py-9"
           draft-key-prefix="docs:doc"
-          :draft-entity-id="isNew ? 'new' : docId"
+          :draft-entity-id="isNew ? draftInstanceId : docId"
           :draft-mode="isNew ? 'create' : 'edit'"
           :has-initial-content="!isNew && !!doc?.content"
+          :image-uploader="uploadInlineImage"
         />
       </section>
     </main>
@@ -941,5 +1010,24 @@ onMounted(() => nextTick(autoGrowTitle));
         </div>
       </template>
     </USlideover>
+
+    <AssetImageProcessor
+      :open="!!imageProcessingRequest"
+      :file="imageProcessingRequest?.file"
+      purpose="content"
+      title="处理文档图片"
+      :fixed-max-output-width="1200"
+      fixed-output-type="image/webp"
+      @update:open="(value) => !value && cancelImageProcessing()"
+      @processed="finishImageProcessing($event.file)"
+      @cancel="cancelImageProcessing"
+      @error="
+        toast.add({
+          title: '图片处理失败',
+          description: $event,
+          color: 'error',
+        })
+      "
+    />
   </div>
 </template>

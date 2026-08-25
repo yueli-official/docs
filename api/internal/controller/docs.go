@@ -154,6 +154,62 @@ func (c *Docs) CreateDoc(ctx context.Context, req *v1.CreateDocReq) (*v1.CreateD
 	return &v1.CreateDocRes{Doc: docView(d)}, nil
 }
 
+func (c *Docs) authorizeImageUpload(ctx context.Context, collectionID, documentID string) error {
+	if documentID != "" {
+		current, err := c.svc.GetDoc(ctx, documentID)
+		if err != nil {
+			return err
+		}
+		if err := ensureDocumentHierarchy(ctx, current.ID, current.CollectionID); err != nil {
+			return err
+		}
+		return requireCapability(
+			ctx,
+			docsauthz.CapabilityDocumentUpdate,
+			docsauthz.DocumentScopeID(current.ID),
+			docsauthz.DocumentResource(current.ID, current.AuthorSub),
+		)
+	}
+	if collectionID == "" {
+		return docserr.InvalidInput("collectionId or documentId is required")
+	}
+	if err := ensureCollectionScope(ctx, collectionID); err != nil {
+		return err
+	}
+	return requireCapability(
+		ctx,
+		docsauthz.CapabilityDocumentCreate,
+		docsauthz.CollectionScopeID(collectionID),
+		authorization.ResourceFacts{},
+	)
+}
+
+func (c *Docs) ImageInit(ctx context.Context, req *v1.ImageInitReq) (*v1.ImageInitRes, error) {
+	if err := c.authorizeImageUpload(ctx, req.CollectionID, req.DocumentID); err != nil {
+		return nil, err
+	}
+	out, err := c.svc.InitDocumentImage(ctx, bearerOf(ctx), req.Filename, req.Mime, req.Size)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ImageInitRes{
+		UploadURL:     out.UploadURL,
+		UploadToken:   out.UploadToken,
+		UploadHeaders: out.UploadHeaders,
+	}, nil
+}
+
+func (c *Docs) ImageFinalize(ctx context.Context, req *v1.ImageFinalizeReq) (*v1.ImageFinalizeRes, error) {
+	if err := c.authorizeImageUpload(ctx, req.CollectionID, req.DocumentID); err != nil {
+		return nil, err
+	}
+	imageURL, err := c.svc.FinalizeDocumentImage(ctx, bearerOf(ctx), req.UploadToken)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ImageFinalizeRes{URL: imageURL}, nil
+}
+
 func (c *Docs) UpdateDoc(ctx context.Context, req *v1.UpdateDocReq) (*v1.UpdateDocRes, error) {
 	current, err := c.svc.GetDoc(ctx, req.ID)
 	if err != nil {

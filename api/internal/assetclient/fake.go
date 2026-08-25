@@ -18,7 +18,7 @@ func (f *Fake) UploadInit(context.Context, string, InitInput) (InitOutput, error
 }
 
 func (f *Fake) Finalize(context.Context, string, string) (View, error) {
-	return View{ID: identifier.MustNew().String(), CdnURL: "https://asset.test/docs/fake.png", Mime: "image/png", Filename: "fake.png"}, nil
+	return View{ID: identifier.MustNew().String(), MediaKey: "docs/fake", CdnURL: "https://asset.test/docs/fake.png", Mime: "image/png", Filename: "fake.png"}, nil
 }
 
 func (f *Fake) Upload(_ context.Context, _ string, in InitInput, data []byte) (View, error) {

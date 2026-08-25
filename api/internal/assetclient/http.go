@@ -85,6 +85,7 @@ func (c *httpClient) Finalize(ctx context.Context, bearer, uploadToken string) (
 	}
 	return View{
 		ID:       j.Get("asset.id").String(),
+		MediaKey: j.Get("asset.mediaKey").String(),
 		CdnURL:   j.Get("asset.cdnUrl").String(),
 		Size:     j.Get("asset.size").Int64(),
 		Mime:     j.Get("asset.mime").String(),

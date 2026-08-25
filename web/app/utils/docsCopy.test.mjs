@@ -195,6 +195,16 @@ test("docs manage keeps low frequency actions out of the primary editor chrome",
   assert.doesNotMatch(docsIndex, /label="更多设置"/);
 });
 
+test("document editor wires image upload and clears the exact local draft after save", () => {
+  const editor = readApp("components/manage/DocEditorWorkbench.vue");
+
+  assert.match(editor, /:image-uploader="uploadInlineImage"/);
+  assert.match(editor, /ref="editorComp"/);
+  assert.match(editor, /editorComp\.value\?\.markSaved\(\)/);
+  assert.match(editor, /draftInstanceId/);
+  assert.doesNotMatch(editor, /:draft-entity-id="isNew \? 'new' : docId"/);
+});
+
 test("quick edit uses a non-empty root parent sentinel for Nuxt UI comboboxes", () => {
   const modal = readApp("components/manage/DocQuickEditModal.vue");
   assert.match(modal, /const ROOT_PARENT_VALUE = "__root__"/);
@@ -305,29 +315,9 @@ test("docs form fields use one border instead of outline and ring focus layers",
   const config = readApp("app.config.ts");
   const css = readApp("assets/css/main.css");
 
-  assert.match(config, /const fieldBorder = 'docs-field-border'/);
-  for (const component of [
-    "input",
-    "inputNumber",
-    "textarea",
-    "select",
-    "selectMenu",
-  ]) {
-    assert.match(
-      config,
-      new RegExp(`${component}: \\{[\\s\\S]*?slots: \\{ base: fieldBorder \\}`),
-    );
-  }
-  assert.match(
-    css,
-    /\.docs-field-border\s*\{[\s\S]*?border:\s*1px solid var\(--ui-border\)/,
-  );
-  assert.match(
-    css,
-    /\.docs-field-border:focus[\s\S]*?border-color:\s*var\(--ui-primary\)/,
-  );
-  assert.match(css, /box-shadow:\s*none !important/);
-  assert.match(css, /outline:\s*none !important/);
+  assert.match(config, /createUiPreset/);
+  assert.doesNotMatch(config, /docs-field-border/);
+  assert.doesNotMatch(css, /\.docs-field-border/);
 });
 
 test("docs site exposes color mode controls in public and manage chrome", () => {
