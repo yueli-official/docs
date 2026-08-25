@@ -48,6 +48,14 @@ const statusItems = [
   { label: "已发布", value: "published" },
   { label: "归档", value: "archived" },
 ];
+const ROOT_PARENT_VALUE = "__root__";
+
+const parentSelection = computed({
+  get: () => state.parentId || ROOT_PARENT_VALUE,
+  set: (value: string) => {
+    state.parentId = value === ROOT_PARENT_VALUE ? "" : value;
+  },
+});
 
 function descendantsOf(id: string) {
   const descendants = new Set<string>();
@@ -68,11 +76,11 @@ function descendantsOf(id: string) {
 }
 
 const parentItems = computed(() => {
-  if (!doc) return [{ label: "顶级文档", value: "" }];
+  if (!doc) return [{ label: "顶级文档", value: ROOT_PARENT_VALUE }];
   const excluded = descendantsOf(doc.id);
   excluded.add(doc.id);
   return [
-    { label: "顶级文档", value: "" },
+    { label: "顶级文档", value: ROOT_PARENT_VALUE },
     ...docs
       .filter(
         (item) =>
@@ -222,7 +230,7 @@ async function save(event: FormSubmitEvent<Schema>) {
           description="父级必须属于相同文档集、版本和语言。"
         >
           <USelectMenu
-            v-model="state.parentId"
+            v-model="parentSelection"
             :items="parentItems"
             value-key="value"
             :search-input="{ placeholder: '搜索父级文档' }"

@@ -192,6 +192,13 @@ test("docs manage keeps low frequency actions out of the primary editor chrome",
   assert.doesNotMatch(docsIndex, /label="更多设置"/);
 });
 
+test("quick edit uses a non-empty root parent sentinel for Nuxt UI comboboxes", () => {
+  const modal = readApp("components/manage/DocQuickEditModal.vue");
+  assert.match(modal, /const ROOT_PARENT_VALUE = "__root__"/);
+  assert.match(modal, /v-model="parentSelection"/);
+  assert.doesNotMatch(modal, /label: "顶级文档", value: ""/);
+});
+
 test("document management uses Nuxt UI Table and keeps bulk actions in the toolbar", () => {
   const page = readApp("pages/manage/docs/index.vue");
   assert.match(page, /import type \{ TableColumn \} from "@nuxt\/ui"/);
