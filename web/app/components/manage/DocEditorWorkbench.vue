@@ -374,19 +374,25 @@ const {
   success: markSaved,
   reset: resetSave,
 } = useActionFeedback();
-const validationError = ref("");
+function showValidationError(description: string) {
+  toast.add({
+    title: "操作失败",
+    description,
+    color: "error",
+    icon: "i-tabler-alert-circle",
+  });
+}
 async function save() {
-  validationError.value = "";
   if (!form.title.trim()) {
-    validationError.value = "请填写标题";
+    showValidationError("请填写标题");
     return;
   }
   if (!form.collectionId) {
-    validationError.value = "请选择文档集";
+    showValidationError("请选择文档集");
     return;
   }
   if (!isNew.value && !form.slug.trim()) {
-    validationError.value = "请填写 URL slug";
+    showValidationError("请填写 URL slug");
     return;
   }
   markSaving();
@@ -622,17 +628,6 @@ onMounted(() => nextTick(autoGrowTitle));
         />
       </div>
     </div>
-
-    <UAlert
-      v-if="validationError"
-      class="mx-auto mt-6 max-w-6xl"
-      color="warning"
-      variant="subtle"
-      icon="i-tabler-alert-triangle"
-      title="请完善文档信息"
-      :description="validationError"
-      role="alert"
-    />
 
     <div
       v-if="!mounted || (!isNew && pending && !doc)"

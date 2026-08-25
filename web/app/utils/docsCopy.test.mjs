@@ -95,6 +95,9 @@ test("document editor uses the shared immersive console seam", () => {
   assert.match(editor, /<UDashboardSidebarToggle/);
   assert.match(editor, /sticky top-0/);
   assert.doesNotMatch(editor, /-mt-(?:5|8|10)|-mx-(?:5|8|10)/);
+  assert.match(editor, /showValidationError\("请填写标题"\)/);
+  assert.match(editor, /title: "操作失败"/);
+  assert.doesNotMatch(editor, /validationError|请完善文档信息/);
 });
 
 test("manage gate resolves Docs capabilities before the server render", () => {
@@ -361,6 +364,8 @@ test("document reader has a fuller reading surface", () => {
   assert.match(page, /md:text-\[2\.3125rem\]/);
   assert.doesNotMatch(page, /lg:text-5xl/);
   assert.match(page, /reading-shell/);
+  assert.match(page, /ContentShareActions/);
+  assert.match(page, /aria-label="分享文档"/);
 });
 
 test("docs comments provide a reader thread and an administrator moderation queue", () => {

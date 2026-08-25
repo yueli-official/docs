@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { ReadingTableOfContents } from "@yueli/ui/navigation/table-of-contents";
+import {
+  ContentShareActions,
+  type ContentShareMessages,
+} from "@yueli/ui/sharing/content-share";
 import type { DocDetailResponse } from "~/types";
 import { createTrafficReplayKey } from "~/utils/traffic-replay-key.mjs";
 import { trafficSource } from "~/utils/traffic-source.mjs";
@@ -114,6 +118,14 @@ const readingContent = computed(() =>
 );
 const toc = computed(() => renderWithToc(readingContent.value).toc);
 const isLeaf = computed(() => !node.value?.children?.length);
+const shareMessages: ContentShareMessages = {
+  weibo: "分享到微博",
+  x: "分享到 X",
+  system: "系统分享",
+  copy: "复制链接",
+  copied: "已复制",
+  copyFailed: "复制失败",
+};
 
 useDiscoveryPage(() => docData.value?.discovery);
 </script>
@@ -126,27 +138,50 @@ useDiscoveryPage(() => docData.value?.discovery);
     >
       <article class="min-w-0">
         <header class="border-b border-default pb-8">
-          <div
-            class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted"
-          >
-            <span
-              class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary"
+          <div class="flex items-start justify-between gap-3">
+            <div
+              class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted"
             >
-              <UIcon
-                :name="collection?.icon || 'i-tabler-book-2'"
-                class="size-3.5"
-              />
-              {{ collection?.title }}
-            </span>
-            <span
-              class="inline-flex items-center gap-1 rounded-md bg-elevated px-2 py-1"
+              <span
+                class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary"
+              >
+                <UIcon
+                  :name="collection?.icon || 'i-tabler-book-2'"
+                  class="size-3.5"
+                />
+                {{ collection?.title }}
+              </span>
+              <span
+                class="inline-flex items-center gap-1 rounded-md bg-elevated px-2 py-1"
+              >
+                <UIcon
+                  :name="isLeaf ? 'i-tabler-file-text' : 'i-tabler-folder'"
+                  class="size-3.5"
+                />
+                {{ isLeaf ? "文档" : "章节" }}
+              </span>
+            </div>
+            <UPopover
+              :content="{ side: 'bottom', align: 'end', sideOffset: 8 }"
             >
-              <UIcon
-                :name="isLeaf ? 'i-tabler-file-text' : 'i-tabler-folder'"
-                class="size-3.5"
+              <UButton
+                icon="i-tabler-share-3"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                square
+                class="-mt-1 shrink-0"
+                aria-label="分享文档"
               />
-              {{ isLeaf ? "文档" : "章节" }}
-            </span>
+              <template #content>
+                <div class="p-2">
+                  <ContentShareActions
+                    :title="node.title"
+                    :messages="shareMessages"
+                  />
+                </div>
+              </template>
+            </UPopover>
           </div>
           <h1
             class="font-display mt-4 text-balance text-[2rem] font-semibold leading-[1.18] text-highlighted md:text-[2.3125rem]"
