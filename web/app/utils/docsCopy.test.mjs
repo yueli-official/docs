@@ -16,6 +16,12 @@ test("homepage separates recommended documents from quick links", () => {
   assert.match(page, /推荐文档/);
   assert.doesNotMatch(page, /推荐入口/);
   assert.doesNotMatch(page, /搜索全部文档/);
+  assert.doesNotMatch(page, /homeConfig\.homeEyebrow/);
+  assert.doesNotMatch(
+    page,
+    /collectionStats|stats\.collectionCount|stats\.docCount/,
+  );
+  assert.doesNotMatch(page, /搜索标题、摘要或正文/);
 });
 
 test("manage navigation keeps one settings entry and moves its workflows into tabs", () => {
@@ -23,8 +29,12 @@ test("manage navigation keeps one settings entry and moves its workflows into ta
   const page = readApp("pages/manage/home.vue");
   assert.match(layout, /YAdminConsoleLayout/);
   assert.match(layout, /<template>\s*<YAdminConsoleLayout/);
-  assert.doesNotMatch(layout, /<template>\s*<ClientOnly>[\s\S]*?<YAdminConsoleLayout/);
+  assert.doesNotMatch(
+    layout,
+    /<template>\s*<ClientOnly>[\s\S]*?<YAdminConsoleLayout/,
+  );
   assert.doesNotMatch(layout, /正在打开[^\n]{0,16}控制台/);
+  assert.match(layout, /search: "搜索控制台"/);
   assert.match(layout, /label: "站点设置"/);
   assert.match(layout, /i-tabler-settings/);
   assert.ok(
@@ -45,6 +55,11 @@ test("manage navigation keeps one settings entry and moves its workflows into ta
   assert.match(page, /value: "footer"/);
   assert.match(page, /value: "site"/);
   assert.doesNotMatch(page, /SettingsLayout/);
+  assert.ok(
+    layout.indexOf('label: "文档"') < layout.indexOf('label: "评论"') &&
+      layout.indexOf('label: "评论"') < layout.indexOf('label: "文档集"'),
+    "评论入口应紧跟文档入口",
+  );
 });
 
 test("Identity BFF downstream configuration stays origin-only", () => {
@@ -67,9 +82,19 @@ test("manage sidebar owns one direct brand link and one account footer", () => {
   assert.match(layout, /show-appearance/);
   assert.match(layout, /trigger-mode/);
   assert.match(layout, /:current-label="currentLabel"/);
+  assert.match(layout, /:immersive="isDocumentEditor"/);
+  assert.match(layout, /route\.path\.startsWith\("\/manage\/docs\/"\)/);
   assert.doesNotMatch(layout, /workspaceMenuItems|UDropdownMenu/);
   assert.doesNotMatch(layout, /secondaryNavigation/);
   assert.doesNotMatch(layout, /UColorModeButton/);
+});
+
+test("document editor uses the shared immersive console seam", () => {
+  const editor = readApp("components/manage/DocEditorWorkbench.vue");
+  assert.match(editor, /data-docs-editor-commandbar/);
+  assert.match(editor, /<UDashboardSidebarToggle/);
+  assert.match(editor, /sticky top-0/);
+  assert.doesNotMatch(editor, /-mt-(?:5|8|10)|-mx-(?:5|8|10)/);
 });
 
 test("manage gate resolves Docs capabilities before the server render", () => {
@@ -130,11 +155,18 @@ test("docs site exposes a dedicated collections directory", () => {
   const home = readApp("pages/index.vue");
   const header = readApp("components/SiteHeader.vue");
 
-  assert.match(page, /全部文档集/);
+  assert.match(page, />\s*文档集\s*</);
   assert.match(page, /filterCollections/);
   assert.match(page, /paginateItems/);
   assert.match(page, /UPagination/);
   assert.match(page, /pageSizeItems/);
+  assert.match(page, /placeholder="搜索文档集"/);
+  assert.doesNotMatch(page, /面包屑|Collection directory/);
+  assert.doesNotMatch(page, /按标题、路径或说明查找文档集/);
+  assert.doesNotMatch(
+    page,
+    /collectionStats|stats\.collectionCount|stats\.docCount/,
+  );
   assert.match(home, /to="\/collections"/);
   assert.match(header, /to="\/collections"/);
 });
@@ -259,6 +291,35 @@ test("docs compiles Tailwind utilities from the public UI package", () => {
   assert.match(css, /@import "@yueli\/ui\/tailwind\.css";/);
 });
 
+test("docs form fields use one border instead of outline and ring focus layers", () => {
+  const config = readApp("app.config.ts");
+  const css = readApp("assets/css/main.css");
+
+  assert.match(config, /const fieldBorder = 'docs-field-border'/);
+  for (const component of [
+    "input",
+    "inputNumber",
+    "textarea",
+    "select",
+    "selectMenu",
+  ]) {
+    assert.match(
+      config,
+      new RegExp(`${component}: \\{[\\s\\S]*?slots: \\{ base: fieldBorder \\}`),
+    );
+  }
+  assert.match(
+    css,
+    /\.docs-field-border\s*\{[\s\S]*?border:\s*1px solid var\(--ui-border\)/,
+  );
+  assert.match(
+    css,
+    /\.docs-field-border:focus[\s\S]*?border-color:\s*var\(--ui-primary\)/,
+  );
+  assert.match(css, /box-shadow:\s*none !important/);
+  assert.match(css, /outline:\s*none !important/);
+});
+
 test("docs site exposes color mode controls in public and manage chrome", () => {
   const header = readApp("components/SiteHeader.vue");
   const manage = readApp("layouts/manage.vue");
@@ -281,12 +342,43 @@ test("collection cover upload uses the shared crop dialog before upload", () => 
 
 test("document reader has a fuller reading surface", () => {
   const page = readApp("pages/[collection]/[...slug].vue");
-  assert.match(page, /阅读进度/);
+  const layout = readApp("layouts/collection.vue");
+  assert.match(page, /ReadingTableOfContents/);
   assert.match(page, /本页目录/);
-  assert.match(page, /下一篇/);
-  assert.match(page, /reading-progress-card/);
+  assert.match(layout, /max-w-\[1400px\]/);
+  assert.doesNotMatch(
+    page,
+    /阅读进度|reading-progress-card|sectionLabel|个小节|面包屑|breadcrumbs|siteBrand/,
+  );
   assert.doesNotMatch(page, /下一篇：/);
   assert.match(page, /md:text-\[2\.3125rem\]/);
   assert.doesNotMatch(page, /lg:text-5xl/);
   assert.match(page, /reading-shell/);
+});
+
+test("docs comments provide a reader thread and an administrator moderation queue", () => {
+  const reader = readApp("pages/[collection]/[...slug].vue");
+  const form = readApp("components/DocumentCommentForm.vue");
+  const comments = readApp("components/DocumentComments.vue");
+  const manage = readApp("pages/manage/comments.vue");
+  const layout = readApp("layouts/manage.vue");
+
+  assert.match(reader, /<DocumentComments/);
+  assert.match(form, /登录后评论/);
+  assert.match(form, /\/api\/v1\/docs\/\$\{props\.documentId\}\/comments/);
+  assert.match(comments, /data-document-comments/);
+  assert.match(comments, /data-comment-thread/);
+  assert.match(comments, /:src="comment\.avatarUrl"/);
+  assert.doesNotMatch(comments, /isMember|label="成员"/);
+  assert.match(manage, /<ManagePage/);
+  assert.match(manage, /data-manage-comments/);
+  assert.match(manage, /批量操作/);
+  for (const heading of ["评论", "来源", "用户", "状态", "评论日期", "操作"]) {
+    assert.match(manage, new RegExp(`>${heading}<`));
+  }
+  assert.match(manage, /:src="comment\.avatarUrl"/);
+  assert.doesNotMatch(manage, /label="成员"/);
+  assert.match(manage, /title="删除评论"/);
+  assert.match(layout, /to: "\/manage\/comments"/);
+  assert.match(layout, /label: "评论"/);
 });

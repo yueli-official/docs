@@ -124,3 +124,4 @@ CREATE INDEX traffic_visitor_markers_resource_idx
 
 CREATE INDEX traffic_baselines_resource_idx
     ON traffic_baselines (instance_key, resource_kind, resource_id);
+

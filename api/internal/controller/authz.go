@@ -120,6 +120,13 @@ func ensureDocumentScope(ctx context.Context, documentID, collectionID string) e
 	return nil
 }
 
+func ensureDocumentHierarchy(ctx context.Context, documentID, collectionID string) error {
+	if err := ensureCollectionScope(ctx, collectionID); err != nil {
+		return err
+	}
+	return ensureDocumentScope(ctx, documentID, collectionID)
+}
+
 func mapAuthorizationError(err error) error {
 	switch {
 	case authorization.Is(err, authorization.ErrorDenied):

@@ -9,6 +9,8 @@ import (
 	"github.com/yueli-official/docs/api/internal/controller"
 	"github.com/yueli-official/docs/api/internal/docsanalytics"
 	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/docscomments"
+	"github.com/yueli-official/docs/api/internal/identityclient"
 	"github.com/yueli-official/docs/api/internal/runtime"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/discovery"
@@ -25,6 +27,8 @@ type Deps struct {
 	DiscoveryCache *discovery.Cache
 	URLResolver    urllifecycle.Resolver
 	Analytics      *docsanalytics.Module
+	Comments       *docscomments.Module
+	Identity       identityclient.Client
 }
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
@@ -58,6 +62,21 @@ func Configure(s *ghttp.Server, d Deps) {
 				grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
 			}
 			grp.Bind(controller.NewAuthorization())
+		})
+	}
+
+	if d.Comments != nil {
+		s.Group("/", func(grp *ghttp.RouterGroup) {
+			grp.Middleware(apiMiddleware.Handle)
+			grp.Bind(controller.NewPublicComments(d.Comments, d.Identity))
+		})
+		s.Group("/", func(grp *ghttp.RouterGroup) {
+			if d.Verifier != nil {
+				grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+			} else {
+				grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+			}
+			grp.Bind(controller.NewComments(d.Comments, d.Identity))
 		})
 	}
 

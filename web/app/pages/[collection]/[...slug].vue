@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ReadingTableOfContents } from "@yueli/ui/navigation/table-of-contents";
 import type { DocDetailResponse } from "~/types";
 import { createTrafficReplayKey } from "~/utils/traffic-replay-key.mjs";
 import { trafficSource } from "~/utils/traffic-source.mjs";
@@ -6,7 +7,6 @@ import { trafficSource } from "~/utils/traffic-source.mjs";
 definePageMeta({ layout: "collection", middleware: "url-lifecycle" });
 const route = useRoute();
 const { call } = useApi();
-const { brand: siteBrand } = useSiteRuntime();
 const collectionSlug = computed(() => route.params.collection as string);
 const locale = computed(() =>
   typeof route.query.locale === "string" ? route.query.locale : "en",
@@ -65,7 +65,11 @@ const recordedDocument = ref("");
 watch(
   () => doc.value?.id,
   (documentID) => {
-    if (!import.meta.client || !documentID || documentID === recordedDocument.value)
+    if (
+      !import.meta.client ||
+      !documentID ||
+      documentID === recordedDocument.value
+    )
       return;
     recordedDocument.value = documentID;
     const viewEvent = {
@@ -93,15 +97,6 @@ const next = computed(() =>
     ? flat.value[idx.value + 1]
     : null,
 );
-const breadcrumbs = computed(() => {
-  const parts = docPath.value.split("/").filter(Boolean);
-  return parts.map((_, index) => {
-    const path = parts.slice(0, index + 1).join("/");
-    const entry = flat.value.find((e) => e.path === path);
-    return { path, title: entry?.node.title || parts[index] };
-  });
-});
-
 function childPath(slug: string) {
   return [docPath.value, slug].filter(Boolean).join("/");
 }
@@ -119,67 +114,16 @@ const readingContent = computed(() =>
 );
 const toc = computed(() => renderWithToc(readingContent.value).toc);
 const isLeaf = computed(() => !node.value?.children?.length);
-const sectionLabel = computed(() =>
-  toc.value.length
-    ? `${toc.value.length} 个小节`
-    : isLeaf.value
-      ? "正文"
-      : "章节",
-);
-const readingProgress = ref(0);
-
-let progressFrame = 0;
-function updateReadingProgress() {
-  if (progressFrame) return;
-  progressFrame = requestAnimationFrame(() => {
-    progressFrame = 0;
-    const article = document.querySelector<HTMLElement>(
-      ".reading-shell article",
-    );
-    if (!article) return;
-    const start = article.offsetTop;
-    const total = Math.max(1, article.scrollHeight - window.innerHeight * 0.7);
-    const scrolled = Math.min(Math.max(window.scrollY - start + 96, 0), total);
-    readingProgress.value = Math.round((scrolled / total) * 100);
-  });
-}
-
-onMounted(() => {
-  updateReadingProgress();
-  window.addEventListener("scroll", updateReadingProgress, { passive: true });
-  window.addEventListener("resize", updateReadingProgress);
-});
-onBeforeUnmount(() => {
-  window.removeEventListener("scroll", updateReadingProgress);
-  window.removeEventListener("resize", updateReadingProgress);
-  if (progressFrame) cancelAnimationFrame(progressFrame);
-});
 
 useDiscoveryPage(() => docData.value?.discovery);
 </script>
 
 <template>
-  <div v-if="node" class="reading-shell">
-    <nav
-      class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted"
-      aria-label="面包屑"
+  <div v-if="node" class="reading-shell" data-reading-shell>
+    <div
+      class="grid gap-12"
+      :class="toc.length ? 'xl:grid-cols-[minmax(0,1fr)_240px]' : ''"
     >
-      <NuxtLink to="/" class="hover:text-primary">{{ siteBrand }}</NuxtLink>
-      <UIcon name="i-tabler-chevron-right" class="size-4" />
-      <NuxtLink :to="docTo()" class="hover:text-primary">{{
-        collection?.title
-      }}</NuxtLink>
-      <template v-for="crumb in breadcrumbs.slice(0, -1)" :key="crumb.path">
-        <UIcon name="i-tabler-chevron-right" class="size-4" />
-        <NuxtLink
-          :to="docTo(crumb.path)"
-          class="line-clamp-1 max-w-48 hover:text-primary"
-          >{{ crumb.title }}</NuxtLink
-        >
-      </template>
-    </nav>
-
-    <div class="grid gap-10 xl:grid-cols-[minmax(0,1fr)_280px]">
       <article class="min-w-0">
         <header class="border-b border-default pb-8">
           <div
@@ -215,14 +159,6 @@ useDiscoveryPage(() => docData.value?.discovery);
           >
             {{ node.excerpt }}
           </p>
-          <div
-            class="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted"
-          >
-            <span class="inline-flex items-center gap-1.5">
-              <UIcon name="i-tabler-list-details" class="size-4 text-primary" />
-              {{ sectionLabel }}
-            </span>
-          </div>
         </header>
 
         <div class="mt-8">
@@ -265,6 +201,16 @@ useDiscoveryPage(() => docData.value?.discovery);
           </div>
         </section>
 
+        <ClientOnly>
+          <DocumentComments v-if="doc" :document-id="doc.id" />
+          <template #fallback>
+            <section class="mt-14 border-t border-default pt-9">
+              <USkeleton class="h-7 w-28 rounded-md" />
+              <USkeleton class="mt-6 h-24 rounded-lg" />
+            </section>
+          </template>
+        </ClientOnly>
+
         <DocNav
           :prev="prev ? { path: prev.path, title: prev.node.title } : undefined"
           :next="next ? { path: next.path, title: next.node.title } : undefined"
@@ -273,62 +219,14 @@ useDiscoveryPage(() => docData.value?.discovery);
         />
       </article>
 
-      <aside class="hidden xl:block">
-        <div class="sticky top-24 space-y-4">
-          <section class="rounded-lg border border-default bg-default p-4">
-            <div class="mb-3 flex items-center justify-between gap-3">
-              <h2 class="text-sm font-semibold text-highlighted">本页目录</h2>
-              <UIcon name="i-tabler-list-details" class="size-4 text-muted" />
-            </div>
-            <TableOfContents
-              v-if="toc.length"
-              :items="toc"
-              :show-title="false"
-            />
-            <p v-else class="text-sm leading-6 text-muted">
-              这页没有可跳转的小节。
-            </p>
-          </section>
-
-          <section
-            class="reading-progress-card rounded-lg border border-default bg-default p-4"
-          >
-            <div class="flex items-center justify-between gap-3">
-              <span
-                class="flex items-center gap-2 text-sm font-semibold text-highlighted"
-              >
-                <UIcon name="i-tabler-progress" class="size-4 text-primary" />
-                阅读进度
-              </span>
-              <span class="font-mono text-sm text-primary"
-                >{{ readingProgress }}%</span
-              >
-            </div>
-            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-elevated">
-              <div
-                class="h-full rounded-full bg-primary transition-[width]"
-                :style="{ width: `${readingProgress}%` }"
-              />
-            </div>
-            <p class="mt-2 text-xs text-muted">{{ sectionLabel }}</p>
-          </section>
-
-          <NuxtLink
-            v-if="next"
-            :to="docTo(next.path)"
-            class="group block rounded-lg border border-primary/20 bg-primary/5 p-4 transition hover:border-primary/40 hover:bg-primary/10"
-          >
-            <span
-              class="flex items-center gap-2 text-xs font-medium text-primary"
-            >
-              <UIcon name="i-tabler-arrow-right" class="size-4" />
-              下一篇
-            </span>
-            <span
-              class="mt-2 line-clamp-2 text-sm font-semibold text-highlighted transition group-hover:text-primary"
-              >{{ next.node.title }}</span
-            >
-          </NuxtLink>
+      <aside v-if="toc.length" class="hidden xl:block">
+        <div class="sticky top-24">
+          <ReadingTableOfContents
+            :items="toc"
+            title="本页目录"
+            :min-level="2"
+            :max-level="4"
+          />
         </div>
       </aside>
     </div>

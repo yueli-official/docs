@@ -23,6 +23,23 @@
 }
 .dark {
   color-scheme: dark;
+  --ui-primary: var(--ui-color-primary-400);
+}
+
+/* Docs form fields use a single semantic border for focus. Nuxt UI's default
+   outline + inset ring stack is intentionally removed at the consumer theme
+   seam so public and management inputs share the same quiet interaction. */
+.docs-field-border {
+  border: 1px solid var(--ui-border) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.docs-field-border:focus,
+.docs-field-border:focus-visible {
+  border-color: var(--ui-primary) !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

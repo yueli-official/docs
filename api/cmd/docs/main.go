@@ -25,10 +25,12 @@ import (
 	"github.com/yueli-official/docs/api/internal/docsanalytics"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
 	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/docscomments"
 	"github.com/yueli-official/docs/api/internal/docsdiscovery"
 	"github.com/yueli-official/docs/api/internal/docssearch"
 	"github.com/yueli-official/docs/api/internal/docstraffic"
 	"github.com/yueli-official/docs/api/internal/docsurls"
+	"github.com/yueli-official/docs/api/internal/identityclient"
 	"github.com/yueli-official/docs/api/internal/runtime"
 	"github.com/yueli-official/docs/api/internal/server"
 )
@@ -121,6 +123,8 @@ func main() {
 		panic(err)
 	}
 	defer authDB.Close()
+	commentsModule := docscomments.New(docscomments.NewPostgres(authDB))
+	identityProfiles := identityclient.NewHTTP(appconfig.IdentityBaseURL(ctx))
 	auditJournal, err := docsaudit.New(ctx, authDB, appconfig.SiteSlug(ctx))
 	if err != nil {
 		panic(err)
@@ -206,6 +210,8 @@ func main() {
 		Verifier: verifier, Catalog: cat, Authorization: authorizationService,
 		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
 		URLResolver: urlLifecycle.Resolver(), Analytics: analyticsModule,
+		Comments: commentsModule,
+		Identity: identityProfiles,
 	})
 	g.Log().Info(ctx, "docs-service starting")
 	s.Run()
@@ -271,6 +277,7 @@ func exportOpenAPI(ctx context.Context) {
 		Catalog: cat, Authorization: authorizationService,
 		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
 		URLResolver: urlLifecycle.Resolver(), Analytics: analyticsModule,
+		Comments: docscomments.New(docscomments.NewMemory()),
 	})
 	handled, err := runtime.ExportOpenAPIIfRequested(s)
 	if err != nil {

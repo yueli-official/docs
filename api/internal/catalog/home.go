@@ -21,23 +21,9 @@ func (s *Service) GetHomeConfig(ctx context.Context) (*model.HomeConfig, error) 
 }
 
 func (s *Service) UpdateHomeConfig(ctx context.Context, cfg *model.HomeConfig) (*model.HomeConfig, error) {
-	if cfg == nil {
-		return nil, gerror.New("docs site configuration is required")
-	}
-	clean := &model.HomeConfig{
-		QuickLinks:          sanitizeHomeQuickLinks(cfg.QuickLinks),
-		FeaturedCollections: sanitizeFeaturedCollections(cfg.FeaturedCollections),
-		HomeEyebrow:         strings.TrimSpace(cfg.HomeEyebrow),
-		HomeTitle:           strings.TrimSpace(cfg.HomeTitle),
-		HomeSubtitle:        strings.TrimSpace(cfg.HomeSubtitle),
-		SiteTitle:           strings.TrimSpace(cfg.SiteTitle),
-		SiteDescription:     strings.TrimSpace(cfg.SiteDescription),
-		SupportEmail:        strings.TrimSpace(cfg.SupportEmail),
-		FooterTagline:       strings.TrimSpace(cfg.FooterTagline),
-		FooterCopyright:     strings.TrimSpace(cfg.FooterCopyright),
-	}
-	if clean.HomeEyebrow == "" || clean.HomeTitle == "" || clean.HomeSubtitle == "" || clean.SiteTitle == "" || clean.SiteDescription == "" || clean.FooterTagline == "" || clean.FooterCopyright == "" {
-		return nil, gerror.New("docs homepage, site, and footer content must be configured")
+	clean, err := normalizeHomeConfig(cfg)
+	if err != nil {
+		return nil, err
 	}
 	var auditHook dao.TransactionHook
 	if s.audit != nil {
@@ -53,6 +39,28 @@ func (s *Service) UpdateHomeConfig(ctx context.Context, cfg *model.HomeConfig) (
 		return nil, err
 	}
 	return s.dao.GetHomeConfig(ctx)
+}
+
+func normalizeHomeConfig(cfg *model.HomeConfig) (*model.HomeConfig, error) {
+	if cfg == nil {
+		return nil, gerror.New("docs site configuration is required")
+	}
+	clean := &model.HomeConfig{
+		QuickLinks:          sanitizeHomeQuickLinks(cfg.QuickLinks),
+		FeaturedCollections: sanitizeFeaturedCollections(cfg.FeaturedCollections),
+		HomeEyebrow:         strings.TrimSpace(cfg.HomeEyebrow),
+		HomeTitle:           strings.TrimSpace(cfg.HomeTitle),
+		HomeSubtitle:        strings.TrimSpace(cfg.HomeSubtitle),
+		SiteTitle:           strings.TrimSpace(cfg.SiteTitle),
+		SiteDescription:     strings.TrimSpace(cfg.SiteDescription),
+		SupportEmail:        strings.TrimSpace(cfg.SupportEmail),
+		FooterTagline:       strings.TrimSpace(cfg.FooterTagline),
+		FooterCopyright:     strings.TrimSpace(cfg.FooterCopyright),
+	}
+	if clean.HomeTitle == "" || clean.HomeSubtitle == "" || clean.SiteTitle == "" || clean.SiteDescription == "" || clean.FooterTagline == "" {
+		return nil, gerror.New("docs homepage, site, and footer content must be configured")
+	}
+	return clean, nil
 }
 
 func sanitizeHomeQuickLinks(in []*model.HomeQuickLink) []*model.HomeQuickLink {

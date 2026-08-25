@@ -238,3 +238,46 @@ export interface DashboardOverview {
   topSources: DashboardTrafficSource[];
   topSearches: DashboardSearchQuery[];
 }
+
+export interface CommentView {
+  id: string;
+  parentId?: string;
+  authorName: string;
+  avatarUrl?: string;
+  content: string;
+  createdAt: string;
+  replies?: CommentView[];
+}
+
+export interface CommentListResponse {
+  items: CommentView[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export type CommentStatus = "approved" | "pending" | "spam" | "trash";
+
+export interface CommentAdminView {
+  id: string;
+  documentId: string;
+  documentTitle: string;
+  collectionSlug: string;
+  versionKey: string;
+  slugPath: string;
+  locale: string;
+  parentId?: string;
+  authorName: string;
+  avatarUrl?: string;
+  userSub: string;
+  content: string;
+  status: CommentStatus;
+  createdAt: string;
+}
+
+export interface ManageCommentsResponse {
+  items: CommentAdminView[];
+  total: number;
+  page: number;
+  size: number;
+}

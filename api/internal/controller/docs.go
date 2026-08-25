@@ -23,6 +23,9 @@ func (c *Docs) ListDocs(ctx context.Context, req *v1.ListDocsReq) (*v1.ListDocsR
 	if locale == "" {
 		locale = "en"
 	}
+	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
+		return nil, err
+	}
 	items, err := c.svc.ListDocs(ctx, req.CollectionID, req.Version, locale)
 	if err != nil {
 		return nil, err
@@ -106,7 +109,7 @@ func (c *Docs) GetDoc(ctx context.Context, req *v1.GetDocReq) (*v1.GetDocRes, er
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureDocumentScope(ctx, d.ID, d.CollectionID); err != nil {
+	if err := ensureDocumentHierarchy(ctx, d.ID, d.CollectionID); err != nil {
 		return nil, err
 	}
 	if err := requireCapability(
@@ -156,7 +159,7 @@ func (c *Docs) UpdateDoc(ctx context.Context, req *v1.UpdateDocReq) (*v1.UpdateD
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+	if err := ensureDocumentHierarchy(ctx, current.ID, current.CollectionID); err != nil {
 		return nil, err
 	}
 	if err := requireCapability(
@@ -190,7 +193,7 @@ func (c *Docs) PublishDoc(ctx context.Context, req *v1.PublishDocReq) (*v1.Publi
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+	if err := ensureDocumentHierarchy(ctx, current.ID, current.CollectionID); err != nil {
 		return nil, err
 	}
 	if err := requireCapability(
@@ -211,7 +214,7 @@ func (c *Docs) ArchiveDoc(ctx context.Context, req *v1.ArchiveDocReq) (*v1.Archi
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+	if err := ensureDocumentHierarchy(ctx, current.ID, current.CollectionID); err != nil {
 		return nil, err
 	}
 	if err := requireCapability(
@@ -232,7 +235,7 @@ func (c *Docs) DeleteDoc(ctx context.Context, req *v1.DeleteDocReq) (*v1.DeleteD
 	if err != nil {
 		return nil, err
 	}
-	if err := ensureDocumentScope(ctx, current.ID, current.CollectionID); err != nil {
+	if err := ensureDocumentHierarchy(ctx, current.ID, current.CollectionID); err != nil {
 		return nil, err
 	}
 	if err := requireCapability(

@@ -35,8 +35,8 @@ const currentPath = computed(() => {
 
 <template>
   <div class="flex min-h-dvh flex-col bg-default text-default">
-    <SiteHeader />
-    <div class="mx-auto flex w-full max-w-screen-xl flex-1 gap-8 px-4 py-8">
+    <SiteHeader width-class="max-w-[1400px]" />
+    <div class="mx-auto flex w-full max-w-[1400px] flex-1 gap-8 px-4 py-8">
       <aside class="hidden w-64 shrink-0 lg:block">
         <div
           class="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto pb-8"
@@ -165,7 +165,7 @@ const currentPath = computed(() => {
         </div>
       </template>
     </UDrawer>
-    <SiteFooter />
+    <SiteFooter width-class="max-w-[1400px]" />
     <BackToTop target-id="public-main" label="返回顶部" />
   </div>
 </template>

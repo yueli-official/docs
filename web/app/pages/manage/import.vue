@@ -28,6 +28,10 @@ const errorMessage = ref("");
 const confirmError = ref("");
 const batch = ref<DocsImportBatch | null>(null);
 const summary = ref<DocsImportSummary | null>(null);
+const mounted = ref(false);
+onMounted(() => {
+  mounted.value = true;
+});
 
 const canUpload = computed(() =>
   Boolean(
@@ -66,6 +70,9 @@ const {
   },
 );
 const recentImports = computed(() => historyData.value?.items ?? []);
+const showHistoryLoading = computed(
+  () => !mounted.value || historyPending.value,
+);
 
 const summaryCards = computed(() => {
   const s = summary.value;
@@ -371,7 +378,7 @@ async function confirmImport() {
               @click="() => refreshHistory()"
             />
           </div>
-          <div v-if="historyPending" class="grid gap-2 p-4">
+          <div v-if="showHistoryLoading" class="grid gap-2 p-4">
             <USkeleton v-for="item in 4" :key="item" class="h-14 rounded-lg" />
           </div>
           <div

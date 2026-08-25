@@ -33,8 +33,22 @@ import (
 	"github.com/yueli-official/docs/api/internal/assetclient"
 	"github.com/yueli-official/docs/api/internal/catalog"
 	"github.com/yueli-official/docs/api/internal/dao"
+	"github.com/yueli-official/docs/api/internal/docscomments"
+	"github.com/yueli-official/docs/api/internal/identityclient"
 	"github.com/yueli-official/docs/api/internal/server"
 )
+
+type staticIdentityProfiles map[string]identityclient.PublicUser
+
+func (profiles staticIdentityProfiles) GetMany(_ context.Context, userKeys []string) map[string]identityclient.PublicUser {
+	result := make(map[string]identityclient.PublicUser, len(userKeys))
+	for _, userKey := range userKeys {
+		if profile, ok := profiles[userKey]; ok {
+			result[userKey] = profile
+		}
+	}
+	return result
+}
 
 func envOr(k, def string) string {
 	if v := os.Getenv(k); v != "" {
@@ -231,6 +245,109 @@ func TestAuthorizationApplicationFlow(t *testing.T) {
 		defer revoked.Close()
 		t.Assert(revoked.StatusCode, http.StatusOK)
 		t.Assert(gjson.New(revoked.ReadAllString()).Get("grant.id").String(), grantID)
+	})
+}
+
+func TestDocumentCommentsFlow(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		priv, err := rsa.GenerateKey(rand.Reader, 2048)
+		t.AssertNil(err)
+		store := docscomments.NewMemory()
+		store.SeedDocument(docscomments.Document{
+			ID:    "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+			Title: "安装与首次运行", CollectionSlug: "quickstart",
+			VersionKey: "default", SlugPath: "install", Locale: "zh-CN",
+		})
+		comments := docscomments.New(store)
+		memberSub := "22222222-2222-4222-8222-222222222222"
+		s := g.Server(t.Name())
+		s.SetAddr("127.0.0.1:0")
+		server.Configure(s, server.Deps{
+			Verifier: mustVerifier(t, priv), Authorization: mustAuthorization(t, testSub),
+			Comments: comments,
+			Identity: staticIdentityProfiles{
+				memberSub: {
+					UserKey: memberSub, DisplayName: "测试评论者",
+					Avatar: &identityclient.MediaRef{MediaKey: "comment-avatar"},
+				},
+			},
+		})
+		s.SetDumpRouterMap(false)
+		s.Start()
+		defer s.Shutdown()
+
+		ctx := context.Background()
+		documentID := "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+		anonymous := g.Client()
+		anonymous.SetPrefix(prefix(s))
+		client := func(sub string) *gclient.Client {
+			value := g.Client()
+			value.SetPrefix(prefix(s))
+			value.SetHeader("Authorization", "Bearer "+signToken(t, priv, sub, time.Now().Add(time.Hour)))
+			return value
+		}
+
+		unauthorized, err := anonymous.Post(ctx, "/api/v1/docs/"+documentID+"/comments", g.Map{"content": "hello"})
+		t.AssertNil(err)
+		defer unauthorized.Close()
+		t.Assert(unauthorized.StatusCode, http.StatusUnauthorized)
+
+		created, err := client(memberSub).Post(ctx, "/api/v1/docs/"+documentID+"/comments", g.Map{"content": "这篇文档很有帮助"})
+		t.AssertNil(err)
+		defer created.Close()
+		t.Assert(created.StatusCode, http.StatusOK)
+		createdJSON := gjson.New(created.ReadAllString())
+		commentID := createdJSON.Get("comment.id").String()
+		t.AssertNE(commentID, "")
+		t.Assert(createdJSON.Get("comment.authorName").String(), "测试评论者")
+		t.Assert(createdJSON.Get("comment.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail")
+
+		replied, err := client(memberSub).Post(ctx, "/api/v1/docs/"+documentID+"/comments", g.Map{
+			"content": "补充一个细节", "parentId": commentID,
+		})
+		t.AssertNil(err)
+		defer replied.Close()
+		t.Assert(replied.StatusCode, http.StatusOK)
+		replyID := gjson.New(replied.ReadAllString()).Get("comment.id").String()
+
+		listed, err := anonymous.Get(ctx, "/api/v1/docs/"+documentID+"/comments")
+		t.AssertNil(err)
+		defer listed.Close()
+		t.Assert(listed.StatusCode, http.StatusOK)
+		listedJSON := gjson.New(listed.ReadAllString())
+		t.Assert(listedJSON.Get("total").Int(), 1)
+		t.Assert(listedJSON.Get("items.0.authorName").String(), "测试评论者")
+		t.Assert(listedJSON.Get("items.0.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail")
+		t.Assert(listedJSON.Get("items.0.replies.0.id").String(), replyID)
+
+		forbidden, err := client(memberSub).Get(ctx, "/api/v1/manage/comments")
+		t.AssertNil(err)
+		defer forbidden.Close()
+		t.Assert(forbidden.StatusCode, http.StatusForbidden)
+
+		managed, err := client(testSub).Get(ctx, "/api/v1/manage/comments", g.Map{"status": "approved"})
+		t.AssertNil(err)
+		defer managed.Close()
+		t.Assert(managed.StatusCode, http.StatusOK)
+		managedJSON := gjson.New(managed.ReadAllString())
+		t.Assert(managedJSON.Get("total").Int(), 2)
+		t.Assert(managedJSON.Get("items.0.authorName").String(), "测试评论者")
+		t.Assert(managedJSON.Get("items.0.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail")
+
+		moderated, err := client(testSub).Patch(ctx, "/api/v1/manage/comments/"+replyID, g.Map{"status": "spam"})
+		t.AssertNil(err)
+		defer moderated.Close()
+		t.Assert(moderated.StatusCode, http.StatusOK)
+
+		listed, err = anonymous.Get(ctx, "/api/v1/docs/"+documentID+"/comments")
+		t.AssertNil(err)
+		defer listed.Close()
+		t.Assert(len(gjson.New(listed.ReadAllString()).Get("items.0.replies").Array()), 0)
+
+		deleted, err := client(testSub).Delete(ctx, "/api/v1/manage/comments/"+commentID)
+		t.AssertNil(err)
+		defer deleted.Close()
+		t.Assert(deleted.StatusCode, http.StatusOK)
 	})
 }
 

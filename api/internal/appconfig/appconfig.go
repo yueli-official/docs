@@ -89,6 +89,13 @@ func LoadJWKS(ctx context.Context) JWKS {
 	}
 }
 
+func IdentityBaseURL(ctx context.Context) string {
+	return strings.TrimRight(
+		g.Cfg().MustGet(ctx, "docs.identity.baseUrl", "http://localhost:8081").String(),
+		"/",
+	)
+}
+
 func BuildAssetClient(ctx context.Context) assetclient.Client {
 	base := g.Cfg().MustGet(ctx, "docs.assetService.baseUrl", "http://localhost:8082").String()
 	return assetclient.NewHTTP(base, AssetNamespace(ctx), AssetSpace(ctx))

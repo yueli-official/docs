@@ -12,10 +12,7 @@ export function requiredEnv(name: string): string {
   return value;
 }
 
-export async function expectNoHorizontalOverflow(
-  page: Page,
-  label = "页面",
-) {
+export async function expectNoHorizontalOverflow(page: Page, label = "页面") {
   const measurement = await page.evaluate(() => {
     const viewportWidth = window.innerWidth;
     const documentWidth = Math.max(
@@ -88,8 +85,11 @@ export async function loginE2EWithCredentials(
       window.localStorage.setItem("nuxt-color-mode", value);
     }, colorMode);
   }
+  const authenticationOrigin =
+    process.env.DOCS_E2E_ACCOUNT_URL?.trim() ||
+    requiredEnv("DOCS_E2E_IDENTITY_URL");
   const response = await context.request.post(
-    `${requiredEnv("DOCS_E2E_IDENTITY_URL")}/api/v1/auth/login`,
+    `${authenticationOrigin}/api/v1/auth/login`,
     {
       data: {
         email: credentials.email,
@@ -152,20 +152,12 @@ export async function ensureRegisteredE2EIdentity(
     `identity registration failed with HTTP ${registration.status()}`,
   ).toBeTruthy();
   await registrationContext.close();
-  return loginE2EWithCredentials(
-    browser,
-    credentials,
-    {},
-    undefined,
-    siteURL,
-  );
+  return loginE2EWithCredentials(browser, credentials, {}, undefined, siteURL);
 }
 
 export async function settleNuxt(page: Page) {
   await page.waitForLoadState("load", { timeout: 30_000 });
-  await page
-    .locator('[data-docs-hydrated="true"]')
-    .waitFor({ state: "attached", timeout: 30_000 });
+  await page.waitForLoadState("networkidle", { timeout: 30_000 });
   await page.waitForFunction(
     async () => {
       const root = document.querySelector("#__nuxt");
@@ -185,12 +177,9 @@ export async function settleNuxt(page: Page) {
 export function capturePageFailures(page: Page): string[] {
   const failures: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error")
-      failures.push(`console: ${message.text()}`);
+    if (message.type() === "error") failures.push(`console: ${message.text()}`);
   });
-  page.on("pageerror", (error) =>
-    failures.push(`pageerror: ${error.message}`),
-  );
+  page.on("pageerror", (error) => failures.push(`pageerror: ${error.message}`));
   page.on("response", (response) => {
     if (response.status() >= 400)
       failures.push(`http ${response.status()}: ${response.url()}`);

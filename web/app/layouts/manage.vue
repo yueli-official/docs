@@ -9,6 +9,7 @@ const route = useRoute();
 const { brand: siteBrand } = useSiteRuntime();
 const sidebarOpen = ref(false);
 const { can, isAdministrator } = useMe();
+const isDocumentEditor = computed(() => route.path.startsWith("/manage/docs/"));
 
 const currentLabel = computed(() => {
   if (route.path === "/manage") return "控制台";
@@ -17,13 +18,14 @@ const currentLabel = computed(() => {
   if (route.path.startsWith("/manage/import")) return "批量导入";
   if (route.path.startsWith("/manage/home")) return "站点设置";
   if (route.path.startsWith("/manage/assets")) return "资源策略";
+  if (route.path.startsWith("/manage/comments")) return "评论";
   if (route.path.startsWith("/manage/authorization")) return "权限与申请";
   return "控制台";
 });
 
 const messages: AdminShellMessages = {
   skipToContent: "跳到主要内容",
-  search: "搜索后台",
+  search: "搜索控制台",
   searchPlaceholder: "搜索页面与常用操作",
   currentLocation: "当前位置",
 };
@@ -51,6 +53,17 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
           icon: "i-tabler-file-text",
           to: "/manage/docs",
           active: isActive("/manage/docs"),
+          onSelect: closeSidebar,
+        },
+      ]
+    : []),
+  ...(isAdministrator.value
+    ? [
+        {
+          label: "评论",
+          icon: "i-tabler-messages",
+          to: "/manage/comments",
+          active: isActive("/manage/comments"),
           onSelect: closeSidebar,
         },
       ]
@@ -131,6 +144,16 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
                 label: "管理文档",
                 icon: "i-tabler-file-text",
                 to: "/manage/docs",
+              },
+            ]
+          : []),
+        ...(isAdministrator.value
+          ? [
+              {
+                id: "comments",
+                label: "评论",
+                icon: "i-tabler-messages",
+                to: "/manage/comments",
               },
             ]
           : []),
@@ -232,6 +255,7 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
     brand-to="/"
     :context-label="siteBrand"
     :current-label="currentLabel"
+    :immersive="isDocumentEditor"
     back-to-top-label="返回顶部"
     data-docs-manage-shell
   >

@@ -12,11 +12,9 @@ import {
 import { createDocsNotifier } from "~/utils/feedback";
 import { normalizeFeaturedCollections } from "~/utils/docsHomeConfig.mjs";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
+import { ActionFeedbackButton } from "@yueli/ui/feedback/pattern";
 import { TabbedSurface } from "@yueli/ui/admin";
-import {
-  SettingSection,
-  SettingsSaveDock,
-} from "@yueli/ui/settings/pattern";
+import { SettingSection } from "@yueli/ui/settings/pattern";
 import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
 import type {
   CollectionList,
@@ -321,6 +319,36 @@ function discardChanges() {
     main-id="manage-main"
     body-class="w-full"
   >
+    <template #actions>
+      <div
+        v-if="canManageSiteSettings"
+        class="flex items-center gap-2"
+        data-settings-header-actions
+      >
+        <UButton
+          v-if="settingsState.dirty.value"
+          :label="docsSettingsSaveMessages.discard"
+          color="neutral"
+          variant="ghost"
+          :disabled="saveStatus === 'pending'"
+          @click="discardChanges"
+        />
+        <ActionFeedbackButton
+          :status="saveStatus"
+          :idle-label="docsSettingsSaveMessages.save"
+          :pending-label="docsSettingsSaveMessages.savePending"
+          :success-label="docsSettingsSaveMessages.saveSuccess"
+          :disabled="
+            !settingsState.dirty.value ||
+            saveStatus === 'pending' ||
+            showSkeleton ||
+            Boolean(homeError)
+          "
+          @click="save"
+        />
+      </div>
+    </template>
+
     <div
       v-if="!canManageSiteSettings"
       class="rounded-lg border border-default bg-default p-8"
@@ -366,22 +394,16 @@ function discardChanges() {
         class="min-w-0 p-4 sm:p-5"
       >
         <SettingSection
-          title="首页首屏"
-          description="控制公开首页的眉标、标题和任务导向说明。"
+          title="首页文案"
           class="mb-5 rounded-none border-0 bg-transparent p-0 shadow-none sm:p-0"
         >
-          <div class="grid gap-4">
-            <div class="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)]">
-              <UFormField label="眉标"
-                ><UInput v-model="homeCopy.eyebrow" class="w-full"
-              /></UFormField>
-              <UFormField label="首页标题"
-                ><UInput v-model="homeCopy.title" class="w-full"
-              /></UFormField>
-            </div>
-            <UFormField label="首页介绍"
-              ><UTextarea v-model="homeCopy.subtitle" :rows="3" class="w-full"
-            /></UFormField>
+          <div class="grid gap-4 md:grid-cols-2">
+            <UFormField label="标题">
+              <UInput v-model="homeCopy.title" class="w-full" />
+            </UFormField>
+            <UFormField label="简介">
+              <UInput v-model="homeCopy.subtitle" class="w-full" />
+            </UFormField>
           </div>
         </SettingSection>
 
@@ -638,15 +660,6 @@ function discardChanges() {
           /></UFormField>
         </div>
       </SettingSection>
-      <SettingsSaveDock
-        :dirty="settingsState.dirty.value"
-        :status="saveStatus"
-        :error="saveError"
-        :messages="docsSettingsSaveMessages"
-        dock-class="lg:left-[16.75rem]"
-        @discard="discardChanges"
-        @save="save"
-      />
     </TabbedSurface>
   </ManagePage>
 </template>

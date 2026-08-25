@@ -659,6 +659,17 @@ function openDoc(docOrId: ManagedDoc | string) {
   navigateTo(docManageRoute(doc.collectionSlug, doc.slugPath));
 }
 
+function publicDocRoute(doc: ManagedDoc) {
+  const path = `/${encodeURIComponent(doc.collectionSlug)}/${doc.slugPath
+    .map(encodeURIComponent)
+    .join("/")}`;
+  const query = new URLSearchParams({
+    ...(doc.versionKey ? { version: doc.versionKey } : {}),
+    ...(doc.locale && doc.locale !== "en" ? { locale: doc.locale } : {}),
+  }).toString();
+  return query ? `${path}?${query}` : path;
+}
+
 function addChild(doc: ManagedDoc) {
   if (!canCreateDocs.value) return;
   navigateTo(
@@ -1183,8 +1194,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     enableHiding: false,
     meta: {
       class: {
-        th: "w-28 text-right",
-        td: "w-28 text-right",
+        th: "w-32 text-right",
+        td: "w-32 text-right",
       },
     },
   },
@@ -1518,15 +1529,20 @@ const docColumns = computed(() =>
 
           <template #actions-cell="{ row }">
             <div class="flex justify-end gap-1">
-              <UTooltip v-if="canCreateDocs" text="添加子文档">
+              <UTooltip
+                v-if="row.original.status === 'published'"
+                text="查看公开文档"
+              >
                 <UButton
-                  icon="i-tabler-file-plus"
+                  :to="publicDocRoute(row.original)"
+                  target="_blank"
+                  rel="noopener"
+                  icon="i-tabler-external-link"
                   color="neutral"
                   variant="ghost"
                   size="xs"
                   square
-                  :aria-label="`添加子文档：${row.original.title}`"
-                  @click="addChild(row.original)"
+                  :aria-label="`查看公开文档：${row.original.title}`"
                 />
               </UTooltip>
               <UTooltip v-if="canUpdateDocs" text="快速编辑">
@@ -1540,15 +1556,31 @@ const docColumns = computed(() =>
                   @click="openQuickEdit(row.original)"
                 />
               </UTooltip>
-              <UTooltip v-if="canUpdateDocs" text="完整编辑">
+              <UTooltip v-if="canUpdateDocs" text="编辑文档">
                 <UButton
+                  :to="
+                    docManageRoute(
+                      row.original.collectionSlug,
+                      row.original.slugPath,
+                    )
+                  "
                   icon="i-tabler-file-pencil"
                   color="neutral"
                   variant="ghost"
                   size="xs"
                   square
-                  :aria-label="`完整编辑：${row.original.title}`"
-                  @click="openDoc(row.original)"
+                  :aria-label="`编辑文档：${row.original.title}`"
+                />
+              </UTooltip>
+              <UTooltip v-if="canCreateDocs" text="添加子文档">
+                <UButton
+                  icon="i-tabler-file-plus"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  :aria-label="`添加子文档：${row.original.title}`"
+                  @click="addChild(row.original)"
                 />
               </UTooltip>
             </div>
