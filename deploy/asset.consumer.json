@@ -20,7 +20,7 @@
       "keepOriginal": true,
       "storageClass": "public-media",
       "variants": [
-        { "key": "cover", "width": 800, "height": 600, "mode": "fill", "format": "webp", "quality": 85, "visibility": "public", "metadataPolicy": "strip" }
+        { "key": "cover", "width": 256, "height": 256, "mode": "fill", "format": "webp", "quality": 85, "visibility": "public", "metadataPolicy": "strip" }
       ]
     },
     {

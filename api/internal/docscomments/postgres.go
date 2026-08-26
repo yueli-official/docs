@@ -170,6 +170,10 @@ WHERE `+where, arguments...).Scan(&total); err != nil {
 	arguments = append(arguments, query.Size, (query.Page-1)*query.Size)
 	limitPlaceholder := fmt.Sprintf("$%d", len(arguments)-1)
 	offsetPlaceholder := fmt.Sprintf("$%d", len(arguments))
+	order := "comment.created_at DESC, comment.id DESC"
+	if query.SortOrder == "asc" {
+		order = "comment.created_at ASC, comment.id ASC"
+	}
 	rows, err := store.db.QueryContext(ctx, documentPathsCTE+`
 SELECT `+qualifiedCommentColumns+`,
        doc.id::text, doc.title, collection.slug, version.key,
@@ -180,7 +184,7 @@ JOIN collections collection ON collection.id = doc.collection_id
 JOIN collection_versions version ON version.id = doc.version_id
 LEFT JOIN doc_paths paths ON paths.id = doc.id
 WHERE `+where+`
-ORDER BY comment.created_at DESC, comment.id DESC
+ORDER BY `+order+`
 LIMIT `+limitPlaceholder+` OFFSET `+offsetPlaceholder, arguments...)
 	if err != nil {
 		return nil, 0, err

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
   CollectionPagination,
+  CollectionSortHeader,
   CollectionTableToolbar,
 } from "@yueli/ui/collection/pattern";
+import { useMinimumLoading } from "@yueli/ui/feedback";
 import { createDocsNotifier } from "~/utils/feedback";
 import type {
   CommentAdminView,
@@ -18,11 +20,11 @@ const toast = createDocsNotifier(useToast());
 const query = ref("");
 const searchInput = ref("");
 const status = ref<CommentStatus | "all">("all");
+const sortOrder = ref<"asc" | "desc">("desc");
 const page = ref(1);
 const size = ref(20);
 const selected = ref<string[]>([]);
 const busy = ref("");
-const emphasizedDelete = ref("");
 const batchAction = ref<CommentStatus | "">("");
 const batchBusy = ref(false);
 const deleteOpen = ref(false);
@@ -31,10 +33,10 @@ const mounted = ref(false);
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
 const statusItems = [
-  { label: "全部状态", value: "all" },
+  { label: "全部评论", value: "all" },
   { label: "待审核", value: "pending" },
   { label: "已通过", value: "approved" },
-  { label: "垃圾", value: "spam" },
+  { label: "垃圾评论", value: "spam" },
   { label: "回收站", value: "trash" },
 ];
 const sizeItems = [20, 50, 100].map((value) => ({
@@ -61,7 +63,7 @@ const statusMeta: Record<
   },
   pending: { label: "待审核", color: "warning", icon: "i-tabler-clock" },
   spam: {
-    label: "垃圾",
+    label: "垃圾评论",
     color: "error",
     icon: "i-tabler-alert-triangle",
   },
@@ -76,7 +78,7 @@ watch(searchInput, (value) => {
     selected.value = [];
   }, 300);
 });
-watch([status, size], () => {
+watch([status, sortOrder, size], () => {
   page.value = 1;
   selected.value = [];
 });
@@ -94,20 +96,24 @@ const { data, pending, error, refresh } = await useAsyncData(
       query: {
         status: status.value === "all" ? undefined : status.value,
         q: query.value || undefined,
+        sortBy: "createdAt",
+        sortOrder: sortOrder.value,
         page: page.value,
         size: size.value,
       },
     }),
   {
     server: false,
-    watch: [query, status, page, size],
+    watch: [query, status, sortOrder, page, size],
     default: () => ({ items: [], total: 0, page: 1, size: 20 }),
   },
 );
 
 const items = computed(() => data.value?.items ?? []);
 const total = computed(() => data.value?.total ?? 0);
-const showSkeleton = computed(() => !mounted.value || pending.value);
+const showSkeleton = useMinimumLoading(
+  computed(() => !mounted.value || pending.value),
+);
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(total.value / size.value)),
 );
@@ -189,9 +195,41 @@ function askDelete(comment: CommentAdminView) {
   deleteTarget.value = comment;
   deleteOpen.value = true;
 }
+function rowActionItems(comment: CommentAdminView) {
+  const moderation =
+    comment.status === "spam" || comment.status === "trash"
+      ? {
+          label: "恢复评论",
+          icon: "i-tabler-restore",
+          disabled: busy.value === comment.id,
+          onSelect: () => void setCommentStatus(comment.id, "approved"),
+        }
+      : {
+          label: "标记为垃圾",
+          icon: "i-tabler-alert-triangle",
+          disabled: busy.value === comment.id,
+          onSelect: () => void setCommentStatus(comment.id, "spam"),
+        };
+  return [
+    [moderation],
+    [
+      {
+        label: "删除",
+        icon: "i-tabler-trash",
+        class: "text-muted data-[highlighted]:text-error",
+        disabled: busy.value === comment.id,
+        onSelect: () => askDelete(comment),
+      },
+    ],
+  ];
+}
 
 function reloadComments() {
   void refresh();
+}
+
+function changeDateSort() {
+  sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
 }
 
 function closeDelete() {
@@ -233,14 +271,6 @@ function authorInitial(name: string) {
   return (name || "?").charAt(0).toUpperCase();
 }
 
-function emphasizeDelete(id: string) {
-  emphasizedDelete.value = id;
-}
-
-function clearDeleteEmphasis(id: string) {
-  if (emphasizedDelete.value === id) emphasizedDelete.value = "";
-}
-
 function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "未记录";
@@ -250,6 +280,7 @@ function formatDate(value: string) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   }).format(date);
 }
 </script>
@@ -279,7 +310,7 @@ function formatDate(value: string) {
             v-model="status"
             :items="statusItems"
             value-key="value"
-            aria-label="评论状态"
+            aria-label="评论范围"
             size="sm"
             class="w-32"
           />
@@ -349,7 +380,7 @@ function formatDate(value: string) {
       <template v-else>
         <div class="border-b border-default px-4 py-2.5 sm:px-5">
           <div
-            class="grid grid-cols-[1.5rem_minmax(0,1fr)_6.5rem] items-center gap-3 text-xs font-medium text-muted lg:grid-cols-[1.5rem_minmax(14rem,1.3fr)_minmax(9rem,0.8fr)_9rem_5.5rem_8.5rem_8.5rem]"
+            class="grid grid-cols-[1.5rem_minmax(0,1fr)_6.5rem] items-center gap-3 text-xs font-medium text-muted lg:grid-cols-[1.5rem_minmax(16rem,1.4fr)_minmax(10rem,0.8fr)_10rem_8.5rem_6.5rem]"
           >
             <UCheckbox
               :model-value="allSelected"
@@ -359,8 +390,13 @@ function formatDate(value: string) {
             <span>评论</span>
             <span class="hidden lg:block">来源</span>
             <span class="hidden lg:block">用户</span>
-            <span class="hidden lg:block">状态</span>
-            <span class="hidden lg:block">评论日期</span>
+            <CollectionSortHeader
+              class="hidden lg:inline-flex"
+              label="评论日期"
+              :active="true"
+              :sort-order="sortOrder"
+              @sort="changeDateSort"
+            />
             <span class="text-right">操作</span>
           </div>
         </div>
@@ -368,7 +404,7 @@ function formatDate(value: string) {
           <article
             v-for="comment in items"
             :key="comment.id"
-            class="grid min-w-0 grid-cols-[1.5rem_minmax(0,1fr)_6.5rem] items-start gap-3 px-4 py-3 sm:px-5 lg:grid-cols-[1.5rem_minmax(14rem,1.3fr)_minmax(9rem,0.8fr)_9rem_5.5rem_8.5rem_8.5rem] lg:items-center"
+            class="grid min-w-0 grid-cols-[1.5rem_minmax(0,1fr)_6.5rem] items-start gap-3 px-4 py-3 sm:px-5 lg:grid-cols-[1.5rem_minmax(16rem,1.4fr)_minmax(10rem,0.8fr)_10rem_8.5rem_6.5rem] lg:items-center"
             data-manage-comment-row
           >
             <UCheckbox
@@ -382,6 +418,15 @@ function formatDate(value: string) {
               >
                 {{ comment.content }}
               </p>
+              <UBadge
+                v-if="comment.status !== 'approved'"
+                :label="statusMeta[comment.status].label"
+                :color="statusMeta[comment.status].color"
+                :icon="statusMeta[comment.status].icon"
+                variant="subtle"
+                size="sm"
+                class="mt-1.5 shrink-0"
+              />
               <div
                 class="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-muted lg:hidden"
               >
@@ -395,13 +440,6 @@ function formatDate(value: string) {
                 <span class="truncate font-medium text-highlighted">
                   {{ comment.authorName }}
                 </span>
-                <UBadge
-                  :label="statusMeta[comment.status].label"
-                  :color="statusMeta[comment.status].color"
-                  :icon="statusMeta[comment.status].icon"
-                  variant="subtle"
-                  size="sm"
-                />
                 <span v-if="comment.parentId" class="text-dimmed">回复</span>
                 <span class="text-dimmed">·</span>
                 <time :datetime="comment.createdAt">
@@ -440,14 +478,6 @@ function formatDate(value: string) {
                 <p v-if="comment.parentId" class="text-xs text-dimmed">回复</p>
               </div>
             </div>
-            <div class="hidden lg:flex lg:items-center">
-              <UBadge
-                :label="statusMeta[comment.status].label"
-                :color="statusMeta[comment.status].color"
-                :icon="statusMeta[comment.status].icon"
-                variant="subtle"
-              />
-            </div>
             <div class="hidden text-xs text-muted lg:flex lg:items-center">
               <time :datetime="comment.createdAt">
                 {{ formatDate(comment.createdAt) }}
@@ -477,56 +507,17 @@ function formatDate(value: string) {
                 :loading="busy === comment.id"
                 @click="setCommentStatus(comment.id, 'approved')"
               />
-              <UButton
-                v-if="comment.status !== 'spam'"
-                class="sm:hidden"
-                icon="i-tabler-alert-triangle"
-                aria-label="标记为垃圾"
-                color="warning"
-                variant="soft"
-                size="xs"
-                square
-                :loading="busy === comment.id"
-                @click="setCommentStatus(comment.id, 'spam')"
-              />
-              <UButton
-                v-if="comment.status !== 'spam'"
-                class="hidden sm:inline-flex"
-                label="标记为垃圾"
-                icon="i-tabler-alert-triangle"
-                color="warning"
-                variant="soft"
-                size="xs"
-                :loading="busy === comment.id"
-                @click="setCommentStatus(comment.id, 'spam')"
-              />
-              <UButton
-                :icon="
-                  busy === comment.id ? 'i-tabler-loader-2' : 'i-tabler-trash'
-                "
-                :aria-label="`删除 ${comment.authorName} 的评论`"
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                square
-                :loading="busy === comment.id"
-                class="transition-colors"
-                :style="{
-                  color:
-                    emphasizedDelete === comment.id
-                      ? 'var(--ui-error)'
-                      : 'var(--ui-text-dimmed)',
-                  backgroundColor:
-                    emphasizedDelete === comment.id
-                      ? 'color-mix(in oklab, var(--ui-error) 10%, transparent)'
-                      : undefined,
-                }"
-                @mouseenter="emphasizeDelete(comment.id)"
-                @mouseleave="clearDeleteEmphasis(comment.id)"
-                @focus="emphasizeDelete(comment.id)"
-                @blur="clearDeleteEmphasis(comment.id)"
-                @click="askDelete(comment)"
-              />
+              <UDropdownMenu :items="rowActionItems(comment)">
+                <UButton
+                  icon="i-tabler-dots-vertical"
+                  :aria-label="`评论操作：${comment.authorName || '用户'}`"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  square
+                  :loading="busy === comment.id"
+                />
+              </UDropdownMenu>
             </div>
           </article>
         </div>

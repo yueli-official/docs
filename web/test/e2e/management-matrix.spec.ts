@@ -301,7 +301,7 @@ export function registerManagementSuite(product: string) {
         }
       });
 
-      test("文档设置收纳辅助编辑信息", async ({ browser }, testInfo) => {
+      test("文档编辑器使用共享停靠检查器", async ({ browser }, testInfo) => {
         const context = await loginE2E(
           browser,
           { viewport: { width: 1440, height: 900 } },
@@ -321,17 +321,50 @@ export function registerManagementSuite(product: string) {
           await page.getByRole("button", { name: "文档设置" }).click();
           const settings = page.getByRole("dialog", { name: "文档设置" });
           await expect(settings).toBeVisible();
-          await expect(
-            settings.getByRole("heading", { name: "摘要与链接" }),
-          ).toBeVisible();
-          await expect(
-            settings.getByRole("heading", { name: "归属与路径" }),
-          ).toBeVisible();
-          await expect(
-            settings.getByRole("heading", { name: "搜索优化" }),
-          ).toBeVisible();
+          await expect(page.locator("[data-docs-editor-inspector]")).toHaveAttribute(
+            "data-inspector-mode",
+            "docked",
+          );
+          await expect(settings.getByRole("tab", { name: "内容", exact: true })).toBeVisible();
+          await expect(settings.getByRole("tab", { name: "组织", exact: true })).toBeVisible();
+          await expect(settings.getByRole("tab", { name: "搜索", exact: true })).toBeVisible();
+          await expect(settings.getByLabel("父文档")).toBeVisible();
+          await expect(page.getByLabel("摘要")).toBeVisible();
+          await page.getByLabel("文档标题").pressSequentially(" ");
+          await page.getByLabel("文档标题").press("Backspace");
+
+          const inspectorBox = await page
+            .locator(".y-editor-inspector-surface")
+            .boundingBox();
+          expect(inspectorBox?.width || 0).toBeGreaterThanOrEqual(390);
+          expect(inspectorBox?.width || 0).toBeLessThanOrEqual(410);
+          await settings.getByRole("tab", { name: "组织", exact: true }).click();
+          await expect(settings.getByLabel("排序")).toBeVisible();
+          await expect(settings.getByLabel("翻译关联键")).toBeVisible();
+          await settings.getByRole("tab", { name: "搜索", exact: true }).click();
+          await expect(settings.getByLabel("SEO 标题")).toBeVisible();
+          await page.waitForTimeout(250);
           await page.screenshot({
             path: testInfo.outputPath("document-settings-desktop.png"),
+            fullPage: false,
+          });
+
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.reload({ waitUntil: "networkidle" });
+          await page.getByRole("button", { name: "文档设置" }).click();
+          await expect(page.locator("[data-docs-editor-inspector]")).toHaveAttribute(
+            "data-inspector-mode",
+            "overlay",
+          );
+          await page.waitForTimeout(250);
+          const mobileInspector = await page
+            .locator(".y-editor-inspector-surface")
+            .boundingBox();
+          expect(mobileInspector?.x || 0).toBeLessThanOrEqual(1);
+          expect(mobileInspector?.width || 0).toBeGreaterThanOrEqual(389);
+          await expectNoHorizontalOverflow(page, "Docs 移动端文档设置");
+          await page.screenshot({
+            path: testInfo.outputPath("document-settings-mobile.png"),
             fullPage: false,
           });
           expect(failures).toEqual([]);
@@ -360,7 +393,6 @@ export function registerManagementSuite(product: string) {
             "评论",
             "来源",
             "用户",
-            "状态",
             "评论日期",
             "操作",
           ]) {
@@ -368,6 +400,20 @@ export function registerManagementSuite(product: string) {
               comments.getByText(heading, { exact: true }).first(),
             ).toBeVisible();
           }
+          const dateSort = comments.getByRole("button", {
+            name: /评论日期/u,
+          });
+          await Promise.all([
+            page.waitForResponse((response) => {
+              const url = new URL(response.url());
+              return (
+                url.pathname === "/api/v1/manage/comments" &&
+                url.searchParams.get("sortBy") === "createdAt" &&
+                url.searchParams.get("sortOrder") === "asc"
+              );
+            }),
+            dateSort.click(),
+          ]);
           const firstComment = comments.locator("article").first();
           await expect(firstComment).toContainText("测试管理员");
           await expect(
@@ -376,6 +422,12 @@ export function registerManagementSuite(product: string) {
           await expect(
             firstComment.getByText("成员", { exact: true }),
           ).toHaveCount(0);
+          await expect(
+            comments.getByText("状态", { exact: true }),
+          ).toHaveCount(0);
+          await firstComment.getByRole("button", { name: /评论操作：/u }).click();
+          await expect(page.getByRole("menu")).toBeVisible();
+          await page.keyboard.press("Escape");
           await page.screenshot({
             path: testInfo.outputPath("comments-desktop.png"),
             fullPage: false,

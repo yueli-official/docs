@@ -57,10 +57,12 @@ type AdminComment struct {
 }
 
 type AdminQuery struct {
-	Status Status
-	Q      string
-	Page   int
-	Size   int
+	Status    Status
+	Q         string
+	SortBy    string
+	SortOrder string
+	Page      int
+	Size      int
 }
 
 type AdminResult struct {
@@ -182,7 +184,18 @@ func (module *Module) Manage(
 ) (*AdminResult, error) {
 	query.Page, query.Size = normalizePage(query.Page, query.Size)
 	query.Q = strings.TrimSpace(query.Q)
+	query.SortBy = strings.TrimSpace(query.SortBy)
+	if query.SortBy == "" {
+		query.SortBy = "createdAt"
+	}
+	query.SortOrder = strings.ToLower(strings.TrimSpace(query.SortOrder))
+	if query.SortOrder == "" {
+		query.SortOrder = "desc"
+	}
 	if query.Status != "" && !validStatus(query.Status) {
+		return nil, ErrInvalidInput
+	}
+	if query.SortBy != "createdAt" || (query.SortOrder != "asc" && query.SortOrder != "desc") {
 		return nil, ErrInvalidInput
 	}
 	items, total, err := module.store.AdminComments(ctx, query)

@@ -88,3 +88,44 @@ func TestDocumentCommentsRejectInvalidOrMissingTargets(t *testing.T) {
 		t.Fatalf("invalid status error = %v", err)
 	}
 }
+
+func TestManageCommentsSortsByCreatedAtInBothDirections(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemory()
+	store.SeedDocument(Document{ID: "doc-1", Title: "安装"})
+	module := New(store)
+	now := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
+	module.clock = func() time.Time {
+		now = now.Add(time.Minute)
+		return now
+	}
+
+	first, err := module.Create(ctx, "doc-1", "member-1", "甲", "第一条", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := module.Create(ctx, "doc-1", "member-2", "乙", "第二条", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ascending, err := module.Manage(ctx, AdminQuery{
+		SortBy: "createdAt", SortOrder: "asc", Page: 1, Size: 20,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ascending.Items) != 2 || ascending.Items[0].Comment.ID != first.ID {
+		t.Fatalf("ascending order = %+v", ascending.Items)
+	}
+
+	descending, err := module.Manage(ctx, AdminQuery{
+		SortBy: "createdAt", SortOrder: "desc", Page: 1, Size: 20,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(descending.Items) != 2 || descending.Items[0].Comment.ID != second.ID {
+		t.Fatalf("descending order = %+v", descending.Items)
+	}
+}

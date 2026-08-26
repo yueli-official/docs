@@ -77,7 +77,9 @@ func (controller *Comments) ManageComments(
 		return nil, err
 	}
 	result, err := controller.comments.Manage(ctx, docscomments.AdminQuery{
-		Status: docscomments.Status(req.Status), Q: req.Q, Page: req.Page, Size: req.Size,
+		Status: docscomments.Status(req.Status), Q: req.Q,
+		SortBy: req.SortBy, SortOrder: req.SortOrder,
+		Page: req.Page, Size: req.Size,
 	})
 	if err != nil {
 		return nil, mapCommentError(err, "comments")

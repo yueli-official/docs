@@ -2127,6 +2127,23 @@
             "format": "int",
             "type": "integer"
           },
+          "sortBy": {
+            "default": "createdAt",
+            "enum": [
+              "createdAt"
+            ],
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "default": "desc",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "format": "string",
+            "type": "string"
+          },
           "status": {
             "format": "string",
             "type": "string"
@@ -5589,6 +5606,31 @@
             "in": "query",
             "name": "q",
             "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "default": "createdAt",
+              "enum": [
+                "createdAt"
+              ],
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
               "format": "string",
               "type": "string"
             }

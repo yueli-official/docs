@@ -187,9 +187,6 @@ const normalizedFormSlug = computed(() => clientSlug(form.slug));
 const canSave = computed(() =>
   Boolean(form.title.trim() && normalizedFormSlug.value),
 );
-const formPublicPath = computed(() =>
-  normalizedFormSlug.value ? `/${normalizedFormSlug.value}` : "",
-);
 
 function clientSlug(value: string) {
   return value
@@ -644,17 +641,6 @@ async function doDelete() {
               />
             </UFormField>
 
-            <div
-              class="rounded-lg border border-default bg-elevated/35 px-3 py-2"
-            >
-              <div class="flex items-center justify-between gap-3">
-                <span class="text-xs font-medium text-muted">路径预览</span>
-                <span class="truncate font-mono text-sm text-default">{{
-                  formPublicPath || "/..."
-                }}</span>
-              </div>
-            </div>
-
             <UFormField label="描述">
               <UTextarea v-model="form.description" :rows="3" class="w-full" />
             </UFormField>
@@ -671,94 +657,75 @@ async function doDelete() {
               @clear-cover="form.cover = ''"
             />
           </div>
-
-          <template v-if="current">
-            <USeparator />
-            <div class="space-y-3">
-              <p
-                class="text-xs font-semibold uppercase tracking-wide text-muted"
-              >
-                危险操作
-              </p>
-              <div class="rounded-lg border border-error/30 bg-error/5 p-3">
-                <div
-                  v-if="!confirmingDelete"
-                  class="flex items-center justify-between gap-3"
-                >
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium text-highlighted">
-                      删除文档集
-                    </p>
-                    <p class="mt-0.5 text-xs text-muted">
-                      会连同该集下所有文档一并删除，不可恢复。
-                    </p>
-                  </div>
-                  <UButton
-                    label="删除"
-                    icon="i-tabler-trash"
-                    color="error"
-                    variant="soft"
-                    class="shrink-0"
-                    @click="
-                      () => {
-                        confirmingDelete = true;
-                      }
-                    "
-                  />
-                </div>
-                <div v-else>
-                  <p class="text-sm text-highlighted">
-                    确定删除「{{
-                      current.title
-                    }}」？此集下所有文档将一并删除，不可恢复。
-                  </p>
-                  <div class="mt-3 flex justify-end gap-2">
-                    <UButton
-                      label="取消"
-                      color="neutral"
-                      variant="ghost"
-                      size="sm"
-                      @click="
-                        () => {
-                          confirmingDelete = false;
-                        }
-                      "
-                    />
-                    <UButton
-                      label="确认删除"
-                      icon="i-tabler-trash"
-                      color="error"
-                      size="sm"
-                      :loading="deletingBusy"
-                      @click="doDelete"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
         </div>
       </template>
 
       <template #footer>
-        <div class="flex w-full justify-end gap-2">
-          <UButton
-            label="取消"
-            color="neutral"
-            variant="outline"
-            @click="
-              () => {
-                open = false;
-              }
-            "
-          />
-          <UButton
-            :label="current ? '保存' : '创建'"
-            icon="i-tabler-check"
-            :loading="saving"
-            :disabled="!canSave"
-            @click="save"
-          />
+        <div class="flex w-full items-center justify-between gap-4">
+          <UPopover
+            v-if="current"
+            v-model:open="confirmingDelete"
+            :content="{ side: 'top', align: 'start', sideOffset: 10 }"
+            :ui="{ content: 'w-80 p-4' }"
+          >
+            <UButton
+              label="删除文档集"
+              icon="i-tabler-trash"
+              color="neutral"
+              variant="ghost"
+              class="text-muted hover:text-error"
+            />
+            <template #content>
+              <p class="text-sm font-semibold text-highlighted">
+                删除「{{ current.title }}」？
+              </p>
+              <p class="mt-1 text-xs leading-5 text-muted">
+                该文档集及其全部文档会被永久删除。
+              </p>
+              <div class="mt-4 flex justify-end gap-2">
+                <UButton
+                  label="取消"
+                  color="neutral"
+                  variant="ghost"
+                  size="sm"
+                  @click="
+                    () => {
+                      confirmingDelete = false;
+                    }
+                  "
+                />
+                <UButton
+                  label="确认删除"
+                  icon="i-tabler-trash"
+                  color="error"
+                  size="sm"
+                  :loading="deletingBusy"
+                  @click="doDelete"
+                />
+              </div>
+            </template>
+          </UPopover>
+          <span v-else aria-hidden="true" />
+
+          <div class="flex shrink-0 justify-end gap-2">
+            <UButton
+              label="取消"
+              color="neutral"
+              variant="outline"
+              @click="
+                () => {
+                  open = false;
+                }
+              "
+            />
+            <UButton
+              :label="current ? '保存' : '创建'"
+              icon="i-tabler-check"
+              :loading="saving"
+              :disabled="!canSave"
+              @click="save"
+            />
+          </div>
         </div>
       </template>
     </USlideover>
@@ -766,11 +733,47 @@ async function doDelete() {
       v-model:open="coverCropOpen"
       :file="coverCropFile"
       title="裁剪文档集封面"
-      :aspect-ratio="3 / 2"
-      :output-width="600"
-      :output-height="400"
-      output-type="image/jpeg"
+      :aspect-ratio="1"
+      :output-width="256"
+      :output-height="256"
+      output-type="image/webp"
+      :quality="0.85"
       @cropped="onCroppedCover"
-    />
+    >
+      <template #controls="{ sourceSize, outputSize }">
+        <section class="rounded-xl border border-default bg-default p-4">
+          <h3 class="text-sm font-semibold text-highlighted">输出规格</h3>
+          <dl class="mt-3 divide-y divide-default text-sm">
+            <div class="flex items-center justify-between gap-4 py-2">
+              <dt class="text-muted">使用位置</dt>
+              <dd class="text-right text-default">首页与文档集列表</dd>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-2">
+              <dt class="text-muted">裁剪比例</dt>
+              <dd class="tabular-nums text-default">1:1</dd>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-2">
+              <dt class="text-muted">输出尺寸</dt>
+              <dd class="tabular-nums text-default">
+                {{ outputSize?.width || 256 }} × {{ outputSize?.height || 256 }} px
+              </dd>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-2">
+              <dt class="text-muted">输出格式</dt>
+              <dd class="text-default">WebP</dd>
+            </div>
+            <div
+              v-if="sourceSize"
+              class="flex items-center justify-between gap-4 pt-2"
+            >
+              <dt class="text-muted">原图尺寸</dt>
+              <dd class="tabular-nums text-default">
+                {{ sourceSize.width }} × {{ sourceSize.height }} px
+              </dd>
+            </div>
+          </dl>
+        </section>
+      </template>
+    </AssetImageCropper>
   </ManagePage>
 </template>

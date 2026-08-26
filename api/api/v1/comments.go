@@ -55,11 +55,13 @@ type CreateDocumentCommentRes struct {
 }
 
 type ManageCommentsReq struct {
-	g.Meta `path:"/api/v1/manage/comments" method:"get" tags:"comments" summary:"List comments for moderation"`
-	Status string `json:"status" in:"query"`
-	Q      string `json:"q" in:"query"`
-	Page   int    `json:"page" in:"query" d:"1"`
-	Size   int    `json:"size" in:"query" d:"20"`
+	g.Meta    `path:"/api/v1/manage/comments" method:"get" tags:"comments" summary:"List comments for moderation"`
+	Status    string `json:"status" in:"query"`
+	Q         string `json:"q" in:"query"`
+	SortBy    string `json:"sortBy" in:"query" d:"createdAt" v:"in:createdAt"`
+	SortOrder string `json:"sortOrder" in:"query" d:"desc" v:"in:asc,desc"`
+	Page      int    `json:"page" in:"query" d:"1"`
+	Size      int    `json:"size" in:"query" d:"20"`
 }
 
 type ManageCommentsRes struct {

@@ -174,21 +174,32 @@ test("docs site exposes a dedicated collections directory", () => {
   assert.match(header, /to="\/collections"/);
 });
 
-test("docs manage keeps low frequency actions out of the primary editor chrome", () => {
+test("document editor exposes frequent properties and lifecycle actions", () => {
   const editor = readApp("components/manage/DocEditorWorkbench.vue");
-  const publishControl = editor.slice(
-    editor.indexOf("发布控制"),
-    editor.indexOf("公开链接"),
-  );
-  const settingsStatus = editor.slice(
-    editor.indexOf("状态操作"),
-    editor.indexOf("SEO 标题"),
-  );
 
-  assert.doesNotMatch(publishControl, /label="转回草稿"/);
-  assert.doesNotMatch(publishControl, /label="归档"/);
-  assert.match(settingsStatus, /label="转回草稿"/);
-  assert.match(settingsStatus, /label="归档"/);
+  assert.match(editor, /import \{ EditorInspector \} from "@yueli\/ui\/admin"/);
+  assert.match(editor, /<EditorInspector/);
+  assert.match(editor, /data-docs-editor-workspace/);
+  assert.match(editor, /data-docs-inspector-content/);
+  assert.match(editor, /data-docs-inspector-organization/);
+  assert.match(editor, /data-docs-inspector-seo/);
+  assert.match(editor, /xl:pr-\[27rem\]/);
+  assert.match(editor, /label: "内容", value: "content", icon: "i-tabler-stack-2"/);
+  assert.match(editor, /label: "组织", value: "organization", icon: "i-tabler-arrows-sort"/);
+  assert.match(editor, /label: "搜索", value: "seo", icon: "i-tabler-search"/);
+  assert.match(editor, /data-docs-lifecycle-actions/);
+  assert.match(editor, /label="摘要"/);
+  assert.match(editor, /label="文档集"/);
+  assert.match(editor, /label="父文档"/);
+  assert.match(editor, /label="版本"/);
+  assert.match(editor, /label="语言"/);
+  assert.match(editor, /label: "转为草稿"/);
+  assert.match(editor, /label: "归档"/);
+  assert.doesNotMatch(editor, /data-docs-editor-properties/);
+  assert.doesNotMatch(editor, /<USlideover/);
+  assert.doesNotMatch(editor, /状态操作|低频生命周期动作/);
+  assert.doesNotMatch(editor, /<h2[^>]*>摘要与链接<\/h2>/);
+  assert.doesNotMatch(editor, /<h2[^>]*>归属与路径<\/h2>/);
 
   const docsIndex = readApp("pages/manage/docs/index.vue");
   assert.doesNotMatch(docsIndex, /selectedDocMoreItems/);
@@ -334,10 +345,57 @@ test("docs site exposes color mode controls in public and manage chrome", () => 
 
 test("collection cover upload uses the shared crop dialog before upload", () => {
   const page = readApp("pages/manage/collections.vue");
+  const visualAsset = readApp("components/ManageVisualAssetField.vue");
+  const iconPicker = readApp("components/ManageIconPicker.vue");
+  const assetDeclaration = JSON.parse(
+    readFileSync(resolve(root, "../../deploy/asset.consumer.json"), "utf8"),
+  );
+  const coverProfile = assetDeclaration.profiles.find(
+    (profile) => profile.key === "docs-collection-cover",
+  );
+
   assert.match(page, /AssetImageCropper/);
   assert.match(page, /onCroppedCover/);
   assert.match(page, /CollectionTableToolbar/);
   assert.doesNotMatch(page, /CollectionToolbar,/);
+  assert.doesNotMatch(page, /路径预览|危险操作/);
+  assert.match(page, /:aspect-ratio="1"/);
+  assert.match(page, /:output-width="256"/);
+  assert.match(page, /:output-height="256"/);
+  assert.match(page, /output-type="image\/webp"/);
+  assert.match(visualAsset, /aspect-square/);
+  assert.match(visualAsset, /1:1 · 256 × 256 · WebP/);
+  assert.match(visualAsset, /data-cover-column/);
+  assert.match(visualAsset, /data-icon-column/);
+  assert.match(visualAsset, /i-tabler-info-circle/);
+  assert.ok(
+    visualAsset.indexOf("data-cover-preview") <
+      visualAsset.indexOf("data-cover-actions") &&
+      visualAsset.indexOf("data-cover-actions") <
+        visualAsset.indexOf("data-cover-link"),
+  );
+  assert.doesNotMatch(visualAsset, /aspect-\[16\/9\]/);
+  assert.doesNotMatch(visualAsset, /:help="coverSpec"/);
+  assert.doesNotMatch(iconPicker, /iconQuery|搜索图标|<UInput/);
+  assert.match(iconPicker, /grid size-9 place-items-center p-0/);
+  assert.deepEqual(coverProfile.variants, [
+    {
+      key: "cover",
+      width: 256,
+      height: 256,
+      mode: "fill",
+      format: "webp",
+      quality: 85,
+      visibility: "public",
+      metadataPolicy: "strip",
+    },
+  ]);
+
+  const footer = page.slice(page.indexOf("<template #footer>"));
+  assert.ok(
+    footer.indexOf("删除文档集") < footer.indexOf('label="取消"') &&
+      footer.indexOf('label="取消"') < footer.indexOf(":label=\"current ? '保存' : '创建'\""),
+  );
 });
 
 test("document reader has a fuller reading surface", () => {
@@ -375,11 +433,21 @@ test("docs comments provide a reader thread and an administrator moderation queu
   assert.match(manage, /<ManagePage/);
   assert.match(manage, /data-manage-comments/);
   assert.match(manage, /批量操作/);
-  for (const heading of ["评论", "来源", "用户", "状态", "评论日期", "操作"]) {
+  for (const heading of ["评论", "来源", "用户", "操作"]) {
     assert.match(manage, new RegExp(`>${heading}<`));
   }
+  assert.match(manage, /label="评论日期"/);
+  assert.doesNotMatch(manage, />状态<\/span>/);
   assert.match(manage, /:src="comment\.avatarUrl"/);
   assert.doesNotMatch(manage, /label="成员"/);
+  assert.match(manage, /v-if="comment\.status !== 'approved'"/);
+  assert.match(manage, /rowActionItems\(comment\)/);
+  assert.match(manage, /<UDropdownMenu/);
+  assert.match(manage, /<CollectionSortHeader/);
+  assert.match(manage, /sortBy:\s*"createdAt"/);
+  assert.match(manage, /sortOrder:\s*sortOrder\.value/);
+  assert.match(manage, /useMinimumLoading/);
+  assert.doesNotMatch(manage, /<UButton[\s\S]{0,160}label="标记为垃圾"/);
   assert.match(manage, /title="删除评论"/);
   assert.match(layout, /to: "\/manage\/comments"/);
   assert.match(layout, /label: "评论"/);

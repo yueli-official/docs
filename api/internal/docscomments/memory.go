@@ -117,6 +117,9 @@ func (store *Memory) AdminComments(
 		})
 	}
 	sort.Slice(items, func(left, right int) bool {
+		if query.SortOrder == "asc" {
+			return items[left].Comment.CreatedAt.Before(items[right].Comment.CreatedAt)
+		}
 		return items[left].Comment.CreatedAt.After(items[right].Comment.CreatedAt)
 	})
 	total := len(items)

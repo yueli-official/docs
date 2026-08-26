@@ -21,14 +21,8 @@ const props = withDefaults(defineProps<{
 }>(), { modelValue: '', disabled: false, compact: false })
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
-const iconQuery = ref('')
 const currentIcon = computed(() => props.modelValue || 'i-tabler-stack-2')
 const iconOptions = computed(() => props.iconOptions?.length ? props.iconOptions : defaultIcons)
-const filteredIcons = computed(() => {
-  const query = iconQuery.value.trim().toLowerCase()
-  if (!query) return iconOptions.value
-  return iconOptions.value.filter(item => item.label.toLowerCase().includes(query) || item.value.toLowerCase().includes(query))
-})
 
 function chooseIcon(value: string) {
   if (!props.disabled) emit('update:modelValue', value)
@@ -41,15 +35,16 @@ function chooseIcon(value: string) {
       <p class="text-xs font-medium text-muted">图标</p>
       <span class="truncate font-mono text-xs text-muted">{{ currentIcon }}</span>
     </div>
-    <UInput v-model="iconQuery" icon="i-tabler-search" placeholder="搜索图标" :size="compact ? 'xs' : 'sm'" :disabled="disabled" />
-    <div class="grid auto-rows-[2rem] justify-start gap-1.5" :class="compact ? 'max-h-48 grid-cols-[repeat(6,2rem)] overflow-y-auto' : 'grid-cols-[repeat(auto-fill,2rem)]'">
-      <UTooltip v-for="item in filteredIcons" :key="item.value" :text="item.label">
+    <div class="grid auto-rows-[2.25rem] justify-start gap-1.5" :class="compact ? 'max-h-48 grid-cols-[repeat(6,2.25rem)] overflow-y-auto' : 'grid-cols-[repeat(auto-fill,2.25rem)]'">
+      <UTooltip v-for="item in iconOptions" :key="item.value" :text="item.label">
         <UButton
           :icon="item.value"
           :color="currentIcon === item.value ? 'primary' : 'neutral'"
           :variant="currentIcon === item.value ? 'soft' : 'outline'"
           size="sm"
           square
+          class="grid size-9 place-items-center p-0"
+          :ui="{ leadingIcon: 'mx-auto size-4 shrink-0' }"
           :aria-label="`选择${item.label}`"
           :aria-pressed="currentIcon === item.value"
           :disabled="disabled"

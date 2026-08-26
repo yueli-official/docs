@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { createDocsNotifier } from "~/utils/feedback";
+import { EditorInspector } from "@yueli/ui/admin";
 import { useActionFeedback } from "@yueli/ui/feedback";
 import { ActionFeedbackButton } from "@yueli/ui/feedback/pattern";
 import { AssetImageProcessor } from "@yueli/asset-nuxt/components";
@@ -431,6 +432,34 @@ async function setStatus(status: "draft" | "published" | "archived") {
     busy.value = "";
   }
 }
+const lifecycleMenuItems = computed(() => {
+  const items = [];
+  if (form.status === "archived") {
+    items.push({
+      label: "发布",
+      icon: "i-tabler-rocket",
+      disabled: Boolean(busy.value),
+      onSelect: () => void setStatus("published"),
+    });
+  }
+  if (form.status !== "draft") {
+    items.push({
+      label: "转为草稿",
+      icon: "i-tabler-pencil",
+      disabled: Boolean(busy.value),
+      onSelect: () => void setStatus("draft"),
+    });
+  }
+  if (form.status !== "archived") {
+    items.push({
+      label: "归档",
+      icon: "i-tabler-archive",
+      disabled: Boolean(busy.value),
+      onSelect: () => void setStatus("archived"),
+    });
+  }
+  return [items];
+});
 
 // ── save ───────────────────────────────────────────────────────────────────────
 const {
@@ -453,6 +482,8 @@ async function save() {
     return;
   }
   if (!form.collectionId) {
+    settingsSection.value = "content";
+    settingsOpen.value = true;
     showValidationError("请选择文档集");
     return;
   }
@@ -554,8 +585,18 @@ async function save() {
   }
 }
 
-// ── settings drawer ────────────────────────────────────────────────────────────
+// ── settings inspector ─────────────────────────────────────────────────────────
+type SettingsSection = "content" | "organization" | "seo";
 const settingsOpen = ref(false);
+const settingsSection = ref<SettingsSection>("content");
+const settingsTabs = [
+  { label: "内容", value: "content", icon: "i-tabler-stack-2" },
+  { label: "组织", value: "organization", icon: "i-tabler-arrows-sort" },
+  { label: "搜索", value: "seo", icon: "i-tabler-search" },
+];
+function toggleSettings() {
+  settingsOpen.value = !settingsOpen.value;
+}
 const {
   status: copyStatus,
   success: markCopied,
@@ -567,12 +608,6 @@ async function copyText(value: string) {
   try {
     await navigator.clipboard.writeText(value);
     markCopied();
-    // feedback-contract: clipboard writes have no persistent visible result outside the current control
-    toast.add({
-      title: "公开链接已复制",
-      color: "success",
-      icon: "i-tabler-copy-check",
-    });
   } catch {
     markCopyFailed();
     toast.add({
@@ -591,6 +626,18 @@ function previewDoc() {
 defineShortcuts({
   meta_s: { usingInput: true, handler: () => save() },
   ctrl_s: { usingInput: true, handler: () => save() },
+  "meta_,": {
+    usingInput: true,
+    handler: () => {
+      settingsOpen.value = !settingsOpen.value;
+    },
+  },
+  "ctrl_,": {
+    usingInput: true,
+    handler: () => {
+      settingsOpen.value = !settingsOpen.value;
+    },
+  },
 });
 
 // ── title auto-grow ────────────────────────────────────────────────────────────
@@ -638,16 +685,6 @@ onMounted(() => nextTick(autoGrowTitle));
         >
           {{ isNew ? "新建文档" : "文档编辑" }}
         </span>
-        <template v-if="!isNew && doc">
-          <span class="hidden h-5 w-px bg-accented sm:block" />
-          <UBadge
-            class="hidden sm:inline-flex"
-            :color="sm.color"
-            :icon="sm.icon"
-            :label="sm.label"
-            variant="subtle"
-          />
-        </template>
       </div>
 
       <div class="flex shrink-0 items-center gap-1.5">
@@ -666,24 +703,48 @@ onMounted(() => nextTick(autoGrowTitle));
         <UTooltip text="文档设置">
           <UButton
             icon="i-tabler-adjustments-horizontal"
-            color="neutral"
-            variant="ghost"
+            :color="settingsOpen ? 'primary' : 'neutral'"
+            :variant="settingsOpen ? 'soft' : 'ghost'"
             square
             class="size-11 sm:size-8"
             aria-label="文档设置"
-            @click="void (settingsOpen = true)"
+            :aria-pressed="settingsOpen"
+            @click="toggleSettings"
           />
         </UTooltip>
-        <UButton
-          v-if="!isNew && doc && form.status !== 'published'"
-          label="发布"
-          icon="i-tabler-rocket"
-          color="primary"
-          variant="soft"
-          class="min-h-11 sm:min-h-8"
-          :loading="busy === 'published'"
-          @click="setStatus('published')"
-        />
+        <div v-if="!isNew && doc" data-docs-lifecycle-actions>
+          <UFieldGroup v-if="form.status === 'draft'" size="sm">
+            <UButton
+              label="发布"
+              icon="i-tabler-rocket"
+              color="primary"
+              variant="soft"
+              class="min-h-11 sm:min-h-8"
+              :loading="busy === 'published'"
+              @click="setStatus('published')"
+            />
+            <UDropdownMenu :items="lifecycleMenuItems">
+              <UButton
+                icon="i-tabler-chevron-down"
+                color="primary"
+                variant="soft"
+                class="min-h-11 sm:min-h-8"
+                aria-label="更多发布操作"
+              />
+            </UDropdownMenu>
+          </UFieldGroup>
+          <UDropdownMenu v-else :items="lifecycleMenuItems">
+            <UButton
+              :label="sm.label"
+              :icon="sm.icon"
+              trailing-icon="i-tabler-chevron-down"
+              color="neutral"
+              variant="soft"
+              class="min-h-11 sm:min-h-8"
+              :loading="Boolean(busy)"
+            />
+          </UDropdownMenu>
+        </div>
         <ActionFeedbackButton
           :status="saveStatus"
           :idle-label="isNew ? '创建' : '保存'"
@@ -707,7 +768,9 @@ onMounted(() => nextTick(autoGrowTitle));
 
     <main
       v-else
-      class="px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:px-8 lg:pt-10"
+      class="px-4 pb-12 pt-6 transition-[padding] duration-200 ease-out sm:px-6 sm:pb-16 sm:pt-8 lg:px-8 lg:pt-10"
+      :class="settingsOpen ? 'xl:pr-[27rem]' : ''"
+      data-docs-editor-workspace
     >
       <section
         class="mx-auto w-full max-w-6xl rounded-xl bg-default p-3 shadow-sm sm:rounded-2xl sm:p-4 lg:p-6"
@@ -741,10 +804,36 @@ onMounted(() => nextTick(autoGrowTitle));
               aria-label="文档永久链接"
               @input="slugTouched = true"
             />
+            <UTooltip
+              v-if="!isNew"
+              :text="copyStatus === 'success' ? '已复制' : '复制公开链接'"
+            >
+              <UButton
+                :icon="copyStatus === 'success' ? 'i-tabler-check' : 'i-tabler-copy'"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                square
+                :aria-label="copyStatus === 'success' ? '公开链接已复制' : '复制公开链接'"
+                :disabled="!publicDocUrl"
+                @click="copyText(publicDocUrl)"
+              />
+            </UTooltip>
             <span class="hidden shrink-0 text-dimmed sm:inline">
               {{ contentText.length }} 字符
             </span>
           </div>
+
+          <UFormField label="摘要" class="mt-4">
+            <UTextarea
+              v-model="form.excerpt"
+              autoresize
+              :rows="2"
+              :maxrows="4"
+              placeholder="用于搜索结果、集合页和分享预览"
+              class="w-full"
+            />
+          </UFormField>
         </header>
 
         <ContentEditor
@@ -760,71 +849,38 @@ onMounted(() => nextTick(autoGrowTitle));
       </section>
     </main>
 
-    <!-- settings slideover: collection · parent · status -->
-    <USlideover
+    <EditorInspector
       v-model:open="settingsOpen"
       title="文档设置"
-      description="归属、发布与搜索设置"
-      :ui="{
-        content: 'w-full max-w-2xl bg-default',
-        header: 'bg-default',
-        body: 'bg-muted p-4 sm:p-5',
-        footer: 'bg-default',
-      }"
     >
-      <template #body>
-        <div class="space-y-5">
-          <section
-            class="space-y-4 rounded-lg bg-default p-4 ring-1 ring-default"
-          >
-            <h2 class="text-sm font-semibold text-highlighted">摘要与链接</h2>
-            <UFormField label="摘要">
-              <UTextarea
-                v-model="form.excerpt"
-                autoresize
-                :rows="3"
-                placeholder="用于搜索结果、集合页和分享预览"
-                class="w-full"
-              />
-            </UFormField>
-            <div v-if="!isNew" class="space-y-2">
-              <div class="flex items-center justify-between gap-3">
-                <p class="text-xs font-medium text-muted">公开链接</p>
-                <UTooltip
-                  :text="copyStatus === 'success' ? '已复制' : '复制公开链接'"
-                >
-                  <UButton
-                    :icon="
-                      copyStatus === 'success'
-                        ? 'i-tabler-check'
-                        : 'i-tabler-copy'
-                    "
-                    color="neutral"
-                    variant="ghost"
-                    size="xs"
-                    square
-                    :aria-label="
-                      copyStatus === 'success'
-                        ? '公开链接已复制'
-                        : '复制公开链接'
-                    "
-                    :disabled="!publicDocUrl"
-                    @click="copyText(publicDocUrl)"
-                  />
-                </UTooltip>
-              </div>
-              <p
-                class="truncate rounded-md bg-elevated px-3 py-2 font-mono text-xs text-default"
-              >
-                {{ publicDocUrl || "发布后生成" }}
-              </p>
-            </div>
-          </section>
+      <template #default="{ docked }">
+        <div
+          class="min-w-0"
+          data-docs-editor-inspector
+          :data-inspector-mode="docked ? 'docked' : 'overlay'"
+        >
+          <UTabs
+            v-model="settingsSection"
+            :items="settingsTabs"
+            :content="false"
+            value-key="value"
+            variant="pill"
+            color="neutral"
+            class="w-full"
+            :ui="{
+              list: 'w-full rounded-xl bg-elevated/70 p-1',
+              indicator: 'rounded-lg bg-default ring-1 ring-default shadow-xs',
+              trigger: 'min-h-9 flex-1 justify-center gap-2 rounded-lg data-[state=active]:text-highlighted',
+              leadingIcon: 'size-4.5 shrink-0',
+            }"
+            data-docs-inspector-tabs
+          />
 
           <section
-            class="space-y-5 rounded-lg bg-default p-4 ring-1 ring-default"
+            v-if="settingsSection === 'content'"
+            class="mt-5 space-y-5"
+            data-docs-inspector-content
           >
-            <h2 class="text-sm font-semibold text-highlighted">归属与路径</h2>
             <UFormField label="文档集" required>
               <USelectMenu
                 v-if="isNew"
@@ -832,25 +888,26 @@ onMounted(() => nextTick(autoGrowTitle));
                 :items="colOptions"
                 value-key="value"
                 placeholder="选择文档集"
+                aria-label="选择文档集"
                 :search-input="{ placeholder: '搜索文档集…' }"
                 class="w-full"
                 @update:model-value="onCollectionChange"
               />
-              <p
+              <UInput
                 v-else
-                class="rounded-lg bg-elevated px-3 py-2 text-sm text-default"
-              >
-                {{ collectionTitle || form.collectionId }}
-              </p>
+                :model-value="collectionTitle || form.collectionId"
+                disabled
+                class="w-full"
+              />
             </UFormField>
 
-            <!-- parent doc (optional) -->
-            <UFormField label="父文档" help="留空则为顶级文档">
+            <UFormField label="父文档">
               <USelectMenu
                 v-model="form.parentId"
                 :items="parentOptions"
                 value-key="value"
                 placeholder="选择父文档"
+                aria-label="选择父文档"
                 :search-input="{ placeholder: '搜索标题或路径…' }"
                 class="w-full"
               />
@@ -862,34 +919,38 @@ onMounted(() => nextTick(autoGrowTitle));
                 :items="versionOptions"
                 value-key="value"
                 placeholder="默认版本"
+                aria-label="选择文档版本"
                 :search-input="{ placeholder: '搜索版本…' }"
                 class="w-full"
                 @update:model-value="form.versionId = selectedValue($event)"
               />
             </UFormField>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-              <UFormField label="语言">
-                <USelectMenu
-                  :model-value="form.locale"
-                  :items="localeOptions"
-                  value-key="value"
-                  class="w-full"
-                  @update:model-value="
-                    form.locale = selectedValue($event) || 'en'
-                  "
-                />
-              </UFormField>
+            <UFormField label="语言">
+              <USelectMenu
+                :model-value="form.locale"
+                :items="localeOptions"
+                value-key="value"
+                aria-label="选择文档语言"
+                class="w-full"
+                @update:model-value="form.locale = selectedValue($event) || 'en'"
+              />
+            </UFormField>
+          </section>
 
-              <UFormField label="排序" help="同级文档按数值从小到大排列">
-                <UInput
-                  v-model.number="form.sortOrder"
-                  type="number"
-                  min="0"
-                  class="w-full"
-                />
-              </UFormField>
-            </div>
+          <section
+            v-else-if="settingsSection === 'organization'"
+            class="mt-5 space-y-5"
+            data-docs-inspector-organization
+          >
+            <UFormField label="排序" help="同级文档按数值从小到大排列">
+              <UInput
+                v-model.number="form.sortOrder"
+                type="number"
+                min="0"
+                class="w-full"
+              />
+            </UFormField>
 
             <UFormField
               label="翻译关联键"
@@ -901,77 +962,13 @@ onMounted(() => nextTick(autoGrowTitle));
                 class="w-full"
               />
             </UFormField>
-
-            <UFormField
-              label="URL slug"
-              required
-              help="同一父文档下唯一；保存后公开链接同步更新"
-            >
-              <UInput
-                v-model="form.slug"
-                icon="i-tabler-link"
-                placeholder="overview"
-                class="w-full"
-                @input="slugTouched = true"
-              />
-            </UFormField>
-          </section>
-
-          <!-- status (edit mode only; new docs start as draft) -->
-          <section
-            v-if="!isNew"
-            class="space-y-3 rounded-lg bg-default p-4 ring-1 ring-default"
-          >
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <p class="text-sm font-semibold text-highlighted">状态操作</p>
-                <p class="text-xs text-muted">低频生命周期动作</p>
-              </div>
-              <UBadge
-                :color="sm.color"
-                :icon="sm.icon"
-                :label="sm.label"
-                variant="subtle"
-              />
-            </div>
-            <div class="grid gap-2">
-              <UButton
-                v-if="form.status !== 'published'"
-                label="发布"
-                icon="i-tabler-rocket"
-                color="primary"
-                variant="soft"
-                block
-                :loading="busy === 'published'"
-                @click="setStatus('published')"
-              />
-              <UButton
-                v-if="form.status !== 'draft'"
-                label="转回草稿"
-                icon="i-tabler-pencil"
-                color="neutral"
-                variant="outline"
-                block
-                :loading="busy === 'draft'"
-                @click="setStatus('draft')"
-              />
-              <UButton
-                v-if="form.status !== 'archived'"
-                label="归档"
-                icon="i-tabler-archive"
-                color="warning"
-                variant="soft"
-                block
-                :loading="busy === 'archived'"
-                @click="setStatus('archived')"
-              />
-            </div>
           </section>
 
           <section
-            class="space-y-4 rounded-lg bg-default p-4 ring-1 ring-default"
+            v-else
+            class="mt-5 space-y-5"
+            data-docs-inspector-seo
           >
-            <h2 class="text-sm font-semibold text-highlighted">搜索优化</h2>
             <UFormField label="SEO 标题">
               <UInput
                 v-model="form.seoTitle"
@@ -992,13 +989,13 @@ onMounted(() => nextTick(autoGrowTitle));
         </div>
       </template>
 
-      <template #footer>
+      <template #footer="{ close }">
         <div class="flex w-full justify-end gap-2">
           <UButton
             label="完成"
             color="neutral"
             variant="outline"
-            @click="void (settingsOpen = false)"
+            @click="close"
           />
           <ActionFeedbackButton
             :status="saveStatus"
@@ -1009,7 +1006,7 @@ onMounted(() => nextTick(autoGrowTitle));
           />
         </div>
       </template>
-    </USlideover>
+    </EditorInspector>
 
     <AssetImageProcessor
       :open="!!imageProcessingRequest"
