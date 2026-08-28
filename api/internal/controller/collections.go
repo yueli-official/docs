@@ -111,6 +111,44 @@ func (c *Collections) DeleteCollection(ctx context.Context, req *v1.DeleteCollec
 	return &v1.DeleteCollectionRes{Deleted: true}, nil
 }
 
+func (c *Collections) CloneCollectionRelease(ctx context.Context, req *v1.CloneCollectionReleaseReq) (*v1.CloneCollectionReleaseRes, error) {
+	if err := ensureCollectionScope(ctx, req.ID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(ctx, docsauthz.CapabilityCollectionManage, docsauthz.CollectionScopeID(req.ID), authorization.ResourceFacts{}); err != nil {
+		return nil, err
+	}
+	author, err := subject(ctx)
+	if err != nil {
+		return nil, err
+	}
+	collection, err := c.svc.CloneCollectionAsRelease(ctx, author, bearerOf(ctx), catalog.CloneCollectionReleaseInput{
+		SourceCollectionID: req.ID, SourceSemanticVersion: req.SourceSemanticVersion,
+		TargetSemanticVersion: req.TargetSemanticVersion, Title: req.Title, Slug: req.Slug,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureCollectionScope(ctx, collection.ID); err != nil {
+		return nil, err
+	}
+	return &v1.CloneCollectionReleaseRes{Collection: collectionView(collection)}, nil
+}
+
+func (c *Collections) InitializeCollectionRelease(ctx context.Context, req *v1.InitializeCollectionReleaseReq) (*v1.InitializeCollectionReleaseRes, error) {
+	if err := ensureCollectionScope(ctx, req.ID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(ctx, docsauthz.CapabilityCollectionManage, docsauthz.CollectionScopeID(req.ID), authorization.ResourceFacts{}); err != nil {
+		return nil, err
+	}
+	collection, err := c.svc.InitializeCollectionRelease(ctx, req.ID, req.SemanticVersion)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.InitializeCollectionReleaseRes{Collection: collectionView(collection)}, nil
+}
+
 func (c *Collections) GetManageCollectionTree(ctx context.Context, req *v1.GetManageCollectionTreeReq) (*v1.GetManageCollectionTreeRes, error) {
 	col, tree, err := c.svc.ManageDocTree(ctx, req.Slug, req.Version, req.Locale)
 	if err != nil {

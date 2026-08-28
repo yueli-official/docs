@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   ManageEmpty,
-  ManageIconPicker,
   ManageRepeaterRow,
   SkeletonList,
 } from "~/utils/manageComponents";
@@ -13,7 +12,8 @@ import { createDocsNotifier } from "~/utils/feedback";
 import { normalizeFeaturedCollections } from "~/utils/docsHomeConfig.mjs";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
 import { ActionFeedbackButton } from "@yueli/ui/feedback/pattern";
-import { TabbedSurface } from "@yueli/ui/admin";
+import { AdminIconPicker, AdminRowActions, TabbedSurface } from "@yueli/ui/admin";
+import type { AdminRowActionItem } from "@yueli/ui/admin";
 import { SettingSection } from "@yueli/ui/settings/pattern";
 import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
 import type {
@@ -104,6 +104,8 @@ const {
 } = useActionFeedback();
 const initialized = ref(false);
 const activeIconPickerLinkId = ref("");
+const featuredPickerOpen = ref(false);
+const featuredSearch = ref("");
 let quickLinkDraftSequence = 0;
 const settingsState = useVueSettingsWorkflow({
   snapshot: () => ({
@@ -252,14 +254,88 @@ function quickLinkActionItems(link: HomeQuickLink, index: number) {
   ];
 }
 
-function toggleFeatured(slug: string) {
-  featuredCollections.value = featuredCollections.value.includes(slug)
-    ? featuredCollections.value.filter((item) => item !== slug)
-    : [...featuredCollections.value, slug];
+const collectionBySlug = computed(
+  () => new Map(collections.value.map((item) => [item.slug, item] as const)),
+);
+const selectedFeaturedCollections = computed(() =>
+  featuredCollections.value.map((slug) => {
+    const collection = collectionBySlug.value.get(slug);
+    return {
+      slug,
+      title: collection?.title || slug,
+      icon: collection?.icon || "i-tabler-stack-2",
+    };
+  }),
+);
+const availableFeaturedCollections = computed(() => {
+  const selected = new Set(featuredCollections.value);
+  const keyword = featuredSearch.value.trim().toLocaleLowerCase();
+  return collections.value.filter((collection) => {
+    if (selected.has(collection.slug)) return false;
+    if (!keyword) return true;
+    return [collection.title, collection.slug, collection.description]
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(keyword);
+  });
+});
+
+function openFeaturedPicker() {
+  featuredSearch.value = "";
+  featuredPickerOpen.value = true;
 }
 
-function collectionTitle(slug: string) {
-  return collections.value.find((item) => item.slug === slug)?.title || slug;
+function closeFeaturedPicker() {
+  featuredPickerOpen.value = false;
+}
+
+function addFeatured(slug: string) {
+  if (!featuredCollections.value.includes(slug)) {
+    featuredCollections.value = [...featuredCollections.value, slug];
+  }
+}
+
+function removeFeatured(slug: string) {
+  featuredCollections.value = featuredCollections.value.filter(
+    (item) => item !== slug,
+  );
+}
+
+function moveFeatured(index: number, direction: -1 | 1) {
+  const target = index + direction;
+  if (target < 0 || target >= featuredCollections.value.length) return;
+  const next = [...featuredCollections.value];
+  [next[index], next[target]] = [next[target]!, next[index]!];
+  featuredCollections.value = next;
+}
+
+function featuredCollectionActionItems(
+  slug: string,
+  index: number,
+): AdminRowActionItem[] {
+  return [
+    {
+      id: "move-up",
+      label: "上移",
+      icon: "i-tabler-arrow-up",
+      disabled: index === 0,
+      onSelect: () => moveFeatured(index, -1),
+    },
+    {
+      id: "move-down",
+      label: "下移",
+      icon: "i-tabler-arrow-down",
+      disabled: index === featuredCollections.value.length - 1,
+      onSelect: () => moveFeatured(index, 1),
+    },
+    {
+      id: "remove",
+      label: "移除",
+      icon: "i-tabler-trash",
+      tone: "danger",
+      onSelect: () => removeFeatured(slug),
+    },
+  ];
 }
 
 function quickLinkTarget(link: HomeQuickLink) {
@@ -395,7 +471,7 @@ function discardChanges() {
       >
         <SettingSection
           title="首页文案"
-          class="mb-5 rounded-none border-0 bg-transparent p-0 shadow-none sm:p-0"
+          class="mb-5"
         >
           <div class="grid gap-4 md:grid-cols-2">
             <UFormField label="标题">
@@ -408,18 +484,8 @@ function discardChanges() {
         </SettingSection>
 
         <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-          <section class="min-w-0 rounded-lg border border-default bg-default">
-            <div
-              class="flex flex-wrap items-center justify-between gap-3 border-b border-default bg-elevated/35 px-4 py-3"
-            >
-              <div>
-                <h2 class="text-sm font-semibold text-highlighted">
-                  快速入口配置
-                </h2>
-                <p class="mt-0.5 text-xs text-muted">
-                  配置首页入口卡片的标题、路径和展示状态。
-                </p>
-              </div>
+          <SettingSection title="快速入口配置">
+            <template #actions>
               <UButton
                 icon="i-tabler-plus"
                 label="添加入口"
@@ -427,9 +493,8 @@ function discardChanges() {
                 variant="soft"
                 @click="addQuickLink"
               />
-            </div>
+            </template>
 
-            <div class="p-4">
               <ManageEmpty
                 v-if="!quickLinks.length"
                 icon="i-tabler-route"
@@ -461,7 +526,7 @@ function discardChanges() {
                           aria-label="选择入口图标"
                         />
                         <template #content>
-                          <ManageIconPicker
+                          <AdminIconPicker
                             :model-value="link.icon"
                             compact
                             @update:model-value="
@@ -543,123 +608,156 @@ function discardChanges() {
                   </div>
                 </ManageRepeaterRow>
               </div>
-            </div>
-          </section>
+          </SettingSection>
 
           <aside class="space-y-5 xl:sticky xl:top-20 xl:self-start">
-            <section class="rounded-lg border border-default bg-default">
-              <div class="border-b border-default bg-elevated/35 px-4 py-3">
-                <h2 class="text-sm font-semibold text-highlighted">推荐文档</h2>
-                <p class="mt-0.5 text-xs text-muted">
-                  选择首页展示的文档集，右侧顺序按选择顺序生成。
-                </p>
-              </div>
-              <div class="grid gap-2 p-4">
-                <button
-                  v-for="collection in collections"
-                  :key="collection.id"
-                  type="button"
-                  class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition"
-                  :class="
-                    featuredCollections.includes(collection.slug)
-                      ? 'border-primary/40 bg-primary/10 text-primary'
-                      : 'border-default bg-elevated/35 text-default hover:border-primary/30'
-                  "
-                  @click="toggleFeatured(collection.slug)"
+            <SettingSection title="推荐文档">
+              <template #actions>
+                <UButton
+                  label="添加文档"
+                  icon="i-tabler-plus"
+                  color="neutral"
+                  variant="soft"
+                  size="sm"
+                  @click="openFeaturedPicker"
+                />
+              </template>
+
+              <ManageEmpty
+                v-if="!selectedFeaturedCollections.length"
+                icon="i-tabler-star"
+                text="还没有推荐文档"
+              />
+              <div v-else class="space-y-2">
+                <div
+                  v-for="(collection, index) in selectedFeaturedCollections"
+                  :key="collection.slug"
+                  :data-featured-collection="collection.slug"
+                  class="flex min-w-0 items-center gap-3 rounded-lg border border-default bg-default px-3 py-2.5"
                 >
-                  <span class="flex min-w-0 items-center gap-3">
-                    <span
-                      class="grid size-8 shrink-0 place-items-center rounded-md bg-default text-primary ring-1 ring-default"
-                    >
-                      <UIcon
-                        :name="collection.icon || 'i-tabler-stack-2'"
-                        class="size-4"
-                      />
+                  <span
+                    class="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary"
+                  >
+                    <UIcon :name="collection.icon" class="size-4" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-medium text-highlighted">
+                      {{ collection.title }}
                     </span>
-                    <span class="min-w-0">
-                      <span class="block truncate text-sm font-medium">{{
-                        collection.title
-                      }}</span>
-                      <span class="block truncate font-mono text-xs opacity-70"
-                        >/{{ collection.slug }}</span
-                      >
+                    <span class="block truncate text-xs text-muted">
+                      /{{ collection.slug }}
                     </span>
                   </span>
-                  <UIcon
-                    :name="
-                      featuredCollections.includes(collection.slug)
-                        ? 'i-tabler-circle-check'
-                        : 'i-tabler-circle'
-                    "
-                    class="size-5 shrink-0"
+                  <AdminRowActions
+                    :label="`${collection.title} 的排序与移除操作`"
+                    :items="featuredCollectionActionItems(collection.slug, index)"
                   />
-                </button>
-              </div>
-            </section>
-
-            <section class="rounded-lg border border-default bg-default p-4">
-              <div class="flex items-center justify-between gap-3">
-                <h2 class="text-sm font-semibold text-highlighted">展示顺序</h2>
-                <UIcon name="i-tabler-list-numbers" class="size-5 text-muted" />
-              </div>
-              <div v-if="featuredCollections.length" class="mt-3 space-y-2">
-                <div
-                  v-for="(slug, index) in featuredCollections"
-                  :key="slug"
-                  class="flex items-center justify-between gap-3 rounded-md bg-elevated px-3 py-2 text-sm"
-                >
-                  <span class="truncate"
-                    >{{ index + 1 }}. {{ collectionTitle(slug) }}</span
-                  >
-                  <span class="font-mono text-xs text-muted">/{{ slug }}</span>
                 </div>
               </div>
-              <p v-else class="mt-3 text-sm text-muted">还没有选择推荐文档。</p>
-            </section>
+            </SettingSection>
           </aside>
         </div>
       </div>
 
-      <SettingSection
-        v-else-if="section === 'footer' && !homeError"
-        title="页脚内容"
-        description="用于所有文档页面底部的品牌说明与联系信息。"
-        class="rounded-none border-0 bg-transparent p-4 shadow-none sm:p-5"
-      >
-        <div class="grid gap-4">
-          <UFormField label="页脚标语"
-            ><UInput v-model="footerForm.tagline" class="w-full"
-          /></UFormField>
-          <UFormField label="版权信息"
-            ><UInput
-              v-model="footerForm.copyright"
-              placeholder="© 2026 Yueli"
-              class="w-full"
-          /></UFormField>
-        </div>
-      </SettingSection>
+      <div v-else-if="section === 'footer' && !homeError" class="p-4 sm:p-5">
+        <SettingSection title="页脚内容">
+          <div class="grid gap-4">
+            <UFormField label="页脚标语"
+              ><UInput v-model="footerForm.tagline" class="w-full"
+            /></UFormField>
+            <UFormField label="版权信息"
+              ><UInput
+                v-model="footerForm.copyright"
+                placeholder="© 2026 Yueli"
+                class="w-full"
+            /></UFormField>
+          </div>
+        </SettingSection>
+      </div>
 
-      <SettingSection
-        v-else-if="!homeError"
-        title="站点基础"
-        description="这些字段用于导航品牌、SEO 描述和支持入口。"
-        class="rounded-none border-0 bg-transparent p-4 shadow-none sm:p-5"
-      >
-        <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField label="站点名称" required
-            ><UInput v-model="siteForm.title" class="w-full"
-          /></UFormField>
-          <UFormField label="支持邮箱"
-            ><UInput
-              v-model="siteForm.supportEmail"
-              type="email"
-              class="w-full"
-          /></UFormField>
-          <UFormField label="站点描述" class="sm:col-span-2"
-            ><UTextarea v-model="siteForm.description" :rows="3" class="w-full"
-          /></UFormField>
-        </div>
-      </SettingSection>
+      <div v-else-if="!homeError" class="p-4 sm:p-5">
+        <SettingSection title="站点基础">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <UFormField label="站点名称" required
+              ><UInput v-model="siteForm.title" class="w-full"
+            /></UFormField>
+            <UFormField label="支持邮箱"
+              ><UInput
+                v-model="siteForm.supportEmail"
+                type="email"
+                class="w-full"
+            /></UFormField>
+            <UFormField label="站点描述" class="sm:col-span-2"
+              ><UTextarea v-model="siteForm.description" :rows="3" class="w-full"
+            /></UFormField>
+          </div>
+        </SettingSection>
+      </div>
     </TabbedSurface>
+
+    <UModal v-model:open="featuredPickerOpen" title="添加推荐文档">
+      <template #body>
+        <div class="space-y-4">
+          <UInput
+            v-model="featuredSearch"
+            icon="i-tabler-search"
+            placeholder="搜索文档集"
+            autofocus
+            class="w-full"
+          />
+
+          <div
+            v-if="availableFeaturedCollections.length"
+            class="max-h-80 divide-y divide-default overflow-y-auto rounded-lg border border-default"
+          >
+            <div
+              v-for="collection in availableFeaturedCollections"
+              :key="collection.id"
+              :data-featured-candidate="collection.slug"
+              class="flex min-w-0 items-center gap-3 px-3 py-2.5"
+            >
+              <span
+                class="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary"
+              >
+                <UIcon
+                  :name="collection.icon || 'i-tabler-stack-2'"
+                  class="size-4"
+                />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm font-medium text-highlighted">
+                  {{ collection.title }}
+                </span>
+                <span class="block truncate text-xs text-muted">
+                  /{{ collection.slug }}
+                </span>
+              </span>
+              <UButton
+                label="添加"
+                color="neutral"
+                variant="soft"
+                size="xs"
+                @click="addFeatured(collection.slug)"
+              />
+            </div>
+          </div>
+          <ManageEmpty
+            v-else
+            icon="i-tabler-search-off"
+            :text="featuredSearch ? '没有匹配的文档集' : '所有文档集都已添加'"
+          />
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex w-full justify-end">
+          <UButton
+            label="完成"
+            color="neutral"
+            variant="outline"
+            @click="closeFeaturedPicker"
+          />
+        </div>
+      </template>
+    </UModal>
   </ManagePage>
 </template>

@@ -76,7 +76,7 @@ type Store interface {
 	PublishedDocument(context.Context, string) (Document, bool, error)
 	Comment(context.Context, string) (*Comment, error)
 	Insert(context.Context, *Comment) error
-	ApprovedTop(context.Context, string, int, int) ([]*Comment, int, error)
+	ApprovedTop(context.Context, string, bool, int, int) ([]*Comment, int, error)
 	ApprovedReplies(context.Context, []string) (map[string][]*Comment, error)
 	AdminComments(context.Context, AdminQuery) ([]*AdminComment, int, error)
 	SetStatus(context.Context, string, Status, time.Time) (*Comment, error)
@@ -95,6 +95,7 @@ func New(store Store) *Module {
 func (module *Module) List(
 	ctx context.Context,
 	documentID string,
+	ascending bool,
 	page int,
 	size int,
 ) ([]*Thread, int, int, int, error) {
@@ -106,7 +107,7 @@ func (module *Module) List(
 	if !exists || document.ID == "" {
 		return nil, 0, page, size, ErrDocumentNotFound
 	}
-	top, total, err := module.store.ApprovedTop(ctx, documentID, size, (page-1)*size)
+	top, total, err := module.store.ApprovedTop(ctx, documentID, ascending, size, (page-1)*size)
 	if err != nil {
 		return nil, 0, page, size, err
 	}

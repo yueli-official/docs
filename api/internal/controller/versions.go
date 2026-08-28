@@ -28,7 +28,10 @@ func (c *Versions) ListCollectionVersions(ctx context.Context, req *v1.ListColle
 }
 
 func (c *Versions) CreateCollectionVersion(ctx context.Context, req *v1.CreateCollectionVersionReq) (*v1.CreateCollectionVersionRes, error) {
-	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.CollectionScopeID(req.CollectionID), authorization.ResourceFacts{}); err != nil {
 		return nil, err
 	}
 	v, err := c.svc.CreateVersion(ctx, catalog.CreateVersionInput{
@@ -42,6 +45,27 @@ func (c *Versions) CreateCollectionVersion(ctx context.Context, req *v1.CreateCo
 		return nil, err
 	}
 	return &v1.CreateCollectionVersionRes{Version: versionView(v)}, nil
+}
+
+func (c *Versions) UpdateCollectionVersion(ctx context.Context, req *v1.UpdateCollectionVersionReq) (*v1.UpdateCollectionVersionRes, error) {
+	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
+		return nil, err
+	}
+	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.CollectionScopeID(req.CollectionID), authorization.ResourceFacts{}); err != nil {
+		return nil, err
+	}
+	value, err := c.svc.UpdateVersion(ctx, catalog.UpdateVersionInput{
+		CollectionID: req.CollectionID,
+		VersionID:    req.VersionID,
+		Label:        req.Label,
+		Status:       req.Status,
+		IsDefault:    req.IsDefault,
+		SortOrder:    req.SortOrder,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &v1.UpdateCollectionVersionRes{Version: versionView(value)}, nil
 }
 
 func versionView(m *model.CollectionVersion) *v1.CollectionVersionView {

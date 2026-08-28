@@ -32,6 +32,8 @@ func (p *PG) InsertDocWithHook(ctx context.Context, m *model.Doc, hook Transacti
 		"status":          nz(m.Status, "draft"),
 		"locale":          nz(m.Locale, "en"),
 		"translation_key": nz(m.TranslationKey, m.ID),
+		"badge_text":      m.BadgeText,
+		"badge_icon":      m.BadgeIcon,
 		"sort_order":      m.SortOrder,
 		"author_sub":      m.AuthorSub,
 	}
@@ -88,7 +90,7 @@ func (p *PG) PublishedDocsByIDs(ctx context.Context, ids []string) ([]*model.Doc
 	var out []*model.Doc
 	err := p.db.Model(tDocs+" d").Ctx(ctx).
 		InnerJoin("collection_versions v", "v.id=d.version_id").
-		WhereIn("d.id", ids).Where("d.status", "published").Where("v.status", "published").
+		WhereIn("d.id", ids).Where("d.status", "published").WhereIn("v.status", []string{"published", "archived"}).
 		Where("d.deleted_at IS NULL").Fields("d.*").Scan(&out)
 	return out, err
 }
@@ -137,6 +139,40 @@ func (p *PG) GetPublishedDocByCollectionPath(ctx context.Context, collectionID, 
 	return current, nil
 }
 
+func (p *PG) GetPublishedDocByLogicalKey(ctx context.Context, collectionID, versionID, locale, translationKey string) (*model.Doc, error) {
+	var out *model.Doc
+	err := p.db.Model(tDocs).Ctx(ctx).
+		Where("collection_id", collectionID).
+		Where("version_id", versionID).
+		Where("locale", locale).
+		Where("translation_key", translationKey).
+		Where("status", "published").
+		WhereNull("deleted_at").
+		Limit(1).
+		Scan(&out)
+	return out, err
+}
+
+func (p *PG) GetDocPath(ctx context.Context, id string) (string, error) {
+	value, err := p.db.GetValue(ctx, `
+WITH RECURSIVE ancestors AS (
+    SELECT id, parent_id, slug, slug::text AS slug_path
+    FROM docs
+    WHERE id = ?::uuid AND deleted_at IS NULL
+    UNION ALL
+    SELECT parent.id, parent.parent_id, parent.slug,
+           (parent.slug || '/' || child.slug_path)::text
+    FROM docs parent
+    JOIN ancestors child ON child.parent_id = parent.id
+    WHERE parent.deleted_at IS NULL
+)
+SELECT slug_path FROM ancestors WHERE parent_id IS NULL LIMIT 1`, id)
+	if err != nil {
+		return "", err
+	}
+	return value.String(), nil
+}
+
 // UpdateDoc overwrites the mutable fields of an existing doc.
 func (p *PG) UpdateDoc(ctx context.Context, m *model.Doc) error {
 	return p.UpdateDocWithHook(ctx, m, nil)
@@ -155,6 +191,8 @@ func (p *PG) UpdateDocWithHook(ctx context.Context, m *model.Doc, hook Transacti
 			"status":          m.Status,
 			"locale":          m.Locale,
 			"translation_key": m.TranslationKey,
+			"badge_text":      m.BadgeText,
+			"badge_icon":      m.BadgeIcon,
 			"sort_order":      m.SortOrder,
 			"parent_id":       nilIfEmpty(m.ParentID),
 			"updated_at":      gtime.Now(),

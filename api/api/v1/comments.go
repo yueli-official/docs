@@ -32,6 +32,7 @@ type CommentAdminView struct {
 type ListDocumentCommentsReq struct {
 	g.Meta     `path:"/api/v1/docs/{documentId}/comments" method:"get" tags:"comments" summary:"List approved document comments"`
 	DocumentID string `json:"documentId" in:"path" v:"required"`
+	SortOrder  string `json:"sortOrder" in:"query" d:"asc" v:"in:asc,desc"`
 	Page       int    `json:"page" in:"query" d:"1"`
 	Size       int    `json:"size" in:"query" d:"20"`
 }

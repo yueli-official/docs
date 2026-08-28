@@ -53,6 +53,7 @@ func (store *Memory) Insert(_ context.Context, comment *Comment) error {
 func (store *Memory) ApprovedTop(
 	_ context.Context,
 	documentID string,
+	ascending bool,
 	limit int,
 	offset int,
 ) ([]*Comment, int, error) {
@@ -65,6 +66,15 @@ func (store *Memory) ApprovedTop(
 		}
 	}
 	sort.Slice(comments, func(left, right int) bool {
+		if comments[left].CreatedAt.Equal(comments[right].CreatedAt) {
+			if ascending {
+				return comments[left].ID < comments[right].ID
+			}
+			return comments[left].ID > comments[right].ID
+		}
+		if ascending {
+			return comments[left].CreatedAt.Before(comments[right].CreatedAt)
+		}
 		return comments[left].CreatedAt.After(comments[right].CreatedAt)
 	})
 	return pageComments(comments, limit, offset), len(comments), nil

@@ -3,6 +3,7 @@ package catalog
 import (
 	"context"
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/yueli-official/docs/api/internal/dao"
@@ -11,6 +12,8 @@ import (
 	"github.com/yueli-official/docs/api/internal/model"
 	"github.com/yueli-official/foundation/go/identifier"
 )
+
+var documentBadgeIconPattern = regexp.MustCompile(`^i-tabler-[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // CreateDocInput carries the caller-supplied fields for a new doc.
 type CreateDocInput struct {
@@ -24,6 +27,8 @@ type CreateDocInput struct {
 	SEODescription string
 	Locale         string
 	TranslationKey string
+	BadgeText      string
+	BadgeIcon      string
 	SortOrder      int
 }
 
@@ -39,6 +44,8 @@ type PatchDocInput struct {
 	Locale         *string
 	VersionID      *string
 	TranslationKey *string
+	BadgeText      *string
+	BadgeIcon      *string
 	SortOrder      *int
 	ParentID       *string
 }
@@ -57,10 +64,11 @@ func (s *Service) CreateDoc(ctx context.Context, authorSub string, in CreateDocI
 	if col == nil {
 		return nil, docserr.NotFound(in.CollectionID)
 	}
-	locale := in.Locale
-	if locale == "" {
-		locale = "en"
+	localeValue, err := s.ResolveLocale(ctx, in.CollectionID, in.Locale, true)
+	if err != nil {
+		return nil, err
 	}
+	locale := localeValue.Locale
 	versionID := in.VersionID
 	if versionID == "" {
 		v, err := s.ResolveVersion(ctx, in.CollectionID, "", false)
@@ -68,6 +76,13 @@ func (s *Service) CreateDoc(ctx context.Context, authorSub string, in CreateDocI
 			return nil, err
 		}
 		versionID = v.ID
+	}
+	version, err := s.dao.GetCollectionVersionByID(ctx, versionID)
+	if err != nil {
+		return nil, err
+	}
+	if version == nil || version.CollectionID != in.CollectionID {
+		return nil, docserr.InvalidInput("version must belong to the selected collection")
 	}
 	translationKey := in.TranslationKey
 	if translationKey == "" {
@@ -93,8 +108,13 @@ func (s *Service) CreateDoc(ctx context.Context, authorSub string, in CreateDocI
 		SEODescription: in.SEODescription,
 		Locale:         locale,
 		TranslationKey: translationKey,
+		BadgeText:      strings.TrimSpace(in.BadgeText),
+		BadgeIcon:      strings.TrimSpace(in.BadgeIcon),
 		SortOrder:      in.SortOrder,
 		AuthorSub:      authorSub,
+	}
+	if err := validateDocumentBadge(m.BadgeText, m.BadgeIcon); err != nil {
+		return nil, err
 	}
 	if err := s.validateDocParent(ctx, m, m.ParentID); err != nil {
 		return nil, err
@@ -127,9 +147,11 @@ func (s *Service) GetPublishedDocByPath(ctx context.Context, collectionSlug, ver
 	if col == nil {
 		return nil, docserr.NotFound(collectionSlug)
 	}
-	if locale == "" {
-		locale = "en"
+	localeValue, err := s.ResolveLocale(ctx, col.ID, locale, true)
+	if err != nil {
+		return nil, err
 	}
+	locale = localeValue.Locale
 	version, err := s.ResolveVersion(ctx, col.ID, versionKey, true)
 	if err != nil {
 		return nil, err
@@ -146,9 +168,6 @@ func (s *Service) GetPublishedDocByPath(ctx context.Context, collectionSlug, ver
 
 // SearchPublishedDocs returns published docs matching q, optionally scoped to a collection.
 func (s *Service) SearchPublishedDocs(ctx context.Context, collectionSlug, versionKey, locale, q string) (*model.SearchResult, error) {
-	if locale == "" {
-		locale = "en"
-	}
 	collectionID := ""
 	versionID := ""
 	if collectionSlug != "" {
@@ -160,11 +179,18 @@ func (s *Service) SearchPublishedDocs(ctx context.Context, collectionSlug, versi
 			return nil, docserr.NotFound(collectionSlug)
 		}
 		collectionID = col.ID
+		localeValue, err := s.ResolveLocale(ctx, col.ID, locale, true)
+		if err != nil {
+			return nil, err
+		}
+		locale = localeValue.Locale
 		version, err := s.ResolveVersion(ctx, col.ID, versionKey, true)
 		if err != nil {
 			return nil, err
 		}
 		versionID = version.ID
+	} else if locale == "" {
+		locale = "en"
 	}
 	if s.search == nil {
 		return nil, errors.New("docs search module is not configured")
@@ -213,11 +239,15 @@ func (s *Service) SearchPublishedDocs(ctx context.Context, collectionSlug, versi
 
 // ListDocs returns all non-deleted docs in the given collection + locale.
 func (s *Service) ListDocs(ctx context.Context, collectionID, versionKey, locale string) ([]*model.Doc, error) {
+	localeValue, err := s.ResolveLocale(ctx, collectionID, locale, false)
+	if err != nil {
+		return nil, err
+	}
 	version, err := s.ResolveVersion(ctx, collectionID, versionKey, false)
 	if err != nil {
 		return nil, err
 	}
-	return s.dao.ListDocsByCollection(ctx, collectionID, version.ID, locale)
+	return s.dao.ListDocsByCollection(ctx, collectionID, version.ID, localeValue.Locale)
 }
 
 // UpdateDoc overwrites every mutable field on an existing doc.
@@ -308,7 +338,19 @@ func (s *Service) patchDoc(
 		d.VersionID = *in.VersionID
 	}
 	if in.TranslationKey != nil {
-		d.TranslationKey = *in.TranslationKey
+		d.TranslationKey = strings.TrimSpace(*in.TranslationKey)
+		if d.TranslationKey == "" {
+			return nil, docserr.InvalidInput("translation key cannot be empty")
+		}
+	}
+	if in.BadgeText != nil {
+		d.BadgeText = strings.TrimSpace(*in.BadgeText)
+	}
+	if in.BadgeIcon != nil {
+		d.BadgeIcon = strings.TrimSpace(*in.BadgeIcon)
+	}
+	if err := validateDocumentBadge(d.BadgeText, d.BadgeIcon); err != nil {
+		return nil, err
 	}
 	if in.SortOrder != nil {
 		d.SortOrder = *in.SortOrder
@@ -320,6 +362,18 @@ func (s *Service) patchDoc(
 		}
 		d.ParentID = parentID
 	}
+	version, err := s.dao.GetCollectionVersionByID(ctx, d.VersionID)
+	if err != nil {
+		return nil, err
+	}
+	if version == nil || version.CollectionID != d.CollectionID {
+		return nil, docserr.InvalidInput("version must belong to the selected collection")
+	}
+	localeValue, err := s.ResolveLocale(ctx, d.CollectionID, d.Locale, true)
+	if err != nil {
+		return nil, docserr.InvalidInput("locale must be enabled for the selected collection")
+	}
+	d.Locale = localeValue.Locale
 	if (in.VersionID != nil || in.Locale != nil) && d.ParentID != "" {
 		if err := s.validateDocParent(ctx, d, d.ParentID); err != nil {
 			return nil, err
@@ -334,6 +388,19 @@ func (s *Service) patchDoc(
 		return nil, err
 	}
 	return s.dao.GetDocByID(ctx, id)
+}
+
+func validateDocumentBadge(text, icon string) error {
+	if text != "" && icon != "" {
+		return docserr.InvalidInput("document badge must use text or icon, not both")
+	}
+	if len([]rune(text)) > 24 {
+		return docserr.InvalidInput("document badge text must be 24 characters or fewer")
+	}
+	if icon != "" && !documentBadgeIconPattern.MatchString(icon) {
+		return docserr.InvalidInput("document badge icon must be a Tabler icon")
+	}
+	return nil
 }
 
 func (s *Service) validateDocParent(ctx context.Context, doc *model.Doc, parentID string) error {
@@ -424,9 +491,11 @@ func (s *Service) PublicDocTree(ctx context.Context, collectionSlug, versionKey,
 	if col == nil {
 		return nil, nil, docserr.NotFound(collectionSlug)
 	}
-	if locale == "" {
-		locale = "en"
+	localeValue, err := s.ResolveLocale(ctx, col.ID, locale, true)
+	if err != nil {
+		return nil, nil, err
 	}
+	locale = localeValue.Locale
 	version, err := s.ResolveVersion(ctx, col.ID, versionKey, true)
 	if err != nil {
 		return nil, nil, err
@@ -447,9 +516,11 @@ func (s *Service) ManageDocTree(ctx context.Context, collectionSlug, versionKey,
 	if col == nil {
 		return nil, nil, docserr.NotFound(collectionSlug)
 	}
-	if locale == "" {
-		locale = "en"
+	localeValue, err := s.ResolveLocale(ctx, col.ID, locale, false)
+	if err != nil {
+		return nil, nil, err
 	}
+	locale = localeValue.Locale
 	version, err := s.ResolveVersion(ctx, col.ID, versionKey, false)
 	if err != nil {
 		return nil, nil, err

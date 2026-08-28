@@ -2,14 +2,18 @@ package model
 
 // Collection is a tutorial set that groups related docs.
 type Collection struct {
-	ID           string `json:"id" orm:"id"`
-	Slug         string `json:"slug" orm:"slug"`
-	Title        string `json:"title" orm:"title"`
-	Description  string `json:"description" orm:"description"`
-	CoverAssetID string `json:"coverAssetId" orm:"cover_asset_id"`
-	CoverURL     string `json:"coverUrl" orm:"cover_url"`
-	Icon         string `json:"icon" orm:"icon"`
-	SortOrder    int    `json:"sortOrder" orm:"sort_order"`
-	AuthorSub    string `json:"authorSub" orm:"author_sub"`
-	DocCount     int    `json:"docCount" orm:"-"`
+	ID                      string `json:"id" orm:"id"`
+	Slug                    string `json:"slug" orm:"slug"`
+	Title                   string `json:"title" orm:"title"`
+	Description             string `json:"description" orm:"description"`
+	CoverAssetID            string `json:"coverAssetId" orm:"cover_asset_id"`
+	CoverURL                string `json:"coverUrl" orm:"cover_url"`
+	Icon                    string `json:"icon" orm:"icon"`
+	SortOrder               int    `json:"sortOrder" orm:"sort_order"`
+	AuthorSub               string `json:"authorSub" orm:"author_sub"`
+	ReleaseFamilyID         string `json:"releaseFamilyId" orm:"release_family_id"`
+	ReleaseFamilyName       string `json:"releaseFamilyName" orm:"release_family_name"`
+	SemanticVersion         string `json:"semanticVersion" orm:"semantic_version"`
+	DerivedFromCollectionID string `json:"derivedFromCollectionId" orm:"derived_from_collection_id"`
+	DocCount                int    `json:"docCount" orm:"-"`
 }

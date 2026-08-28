@@ -293,6 +293,30 @@ func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, b
 	if err != nil {
 		return err
 	}
+	localeSet := map[string]struct{}{}
+	for _, item := range items {
+		localeSet[item.Locale] = struct{}{}
+	}
+	for locale := range localeSet {
+		existing, err := s.dao.GetCollectionLocale(ctx, batch.CollectionID, locale)
+		if err != nil {
+			return err
+		}
+		if existing != nil {
+			continue
+		}
+		if _, err := s.UpsertLocale(ctx, UpsertLocaleInput{
+			CollectionID: batch.CollectionID,
+			Locale:       locale,
+			Label:        locale,
+			HTMLLang:     locale,
+			Direction:    "ltr",
+			Enabled:      true,
+			SortOrder:    100,
+		}); err != nil {
+			return err
+		}
+	}
 	assets, err := s.dao.ListImportAssets(ctx, batch.ID)
 	if err != nil {
 		return err

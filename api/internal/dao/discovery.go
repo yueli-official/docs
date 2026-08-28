@@ -24,7 +24,13 @@ pages AS (
            collection.title,
            collection.description,
            collection.cover_url AS image_url,
-           ?::text AS locale,
+           COALESCE((
+               SELECT locale.locale FROM collection_locales locale
+               WHERE locale.collection_id = collection.id
+                 AND locale.is_default = true
+                 AND locale.enabled = true
+               LIMIT 1
+           ), ?::text) AS locale,
            collection.updated_at
     FROM collections collection
     WHERE EXISTS (
@@ -33,15 +39,15 @@ pages AS (
         WHERE doc.collection_id = collection.id
           AND doc.status = 'published'
           AND doc.deleted_at IS NULL
-          AND version.status = 'published'
+          AND version.status IN ('published', 'archived')
     )
     UNION ALL
     SELECT 'doc:' || doc.id::text,
            '/' || collection.slug || '/' || path.slug_path ||
            CASE
-               WHEN doc.locale <> ? AND NOT version.is_default
+               WHEN doc.locale <> COALESCE(default_locale.locale, ?) AND NOT version.is_default
                    THEN CHR(63) || 'locale=' || doc.locale || CHR(38) || 'version=' || version.key
-               WHEN doc.locale <> ?
+               WHEN doc.locale <> COALESCE(default_locale.locale, ?)
                    THEN CHR(63) || 'locale=' || doc.locale
                WHEN NOT version.is_default
                    THEN CHR(63) || 'version=' || version.key
@@ -57,9 +63,13 @@ pages AS (
     JOIN doc_paths path ON path.id = doc.id
     JOIN collections collection ON collection.id = doc.collection_id
     JOIN collection_versions version ON version.id = doc.version_id
+    LEFT JOIN collection_locales default_locale
+      ON default_locale.collection_id = collection.id
+     AND default_locale.is_default = true
+     AND default_locale.enabled = true
     WHERE doc.status = 'published'
       AND doc.deleted_at IS NULL
-      AND version.status = 'published'
+      AND version.status IN ('published', 'archived')
 )
 SELECT * FROM pages
 WHERE ? || path > ?

@@ -1,18 +1,31 @@
 <script setup lang="ts">
 import { rootSectionCountLabel } from "~/utils/docsManual.mjs";
+import type { CollectionVariantsResponse } from "~/types";
 
 definePageMeta({ layout: "collection", middleware: "url-lifecycle" });
 const route = useRoute();
 const { brand: siteBrand } = useSiteRuntime();
 const slug = computed(() => route.params.collection as string);
+const { call } = useApi();
+const { data: variantData } = await useAsyncData(
+  () => `collection-variants-${slug.value}`,
+  () => call<CollectionVariantsResponse>(`/api/v1/collections/${slug.value}/variants`),
+  { watch: [slug] },
+);
+const defaultLocale = computed(() =>
+  variantData.value?.locales.find((item) => item.isDefault)?.locale || "en",
+);
 const locale = computed(() =>
-  typeof route.query.locale === "string" ? route.query.locale : "en",
+  typeof route.query.locale === "string" ? route.query.locale : defaultLocale.value,
+);
+const currentLocale = computed(() =>
+  variantData.value?.locales.find((item) => item.locale === locale.value),
 );
 const version = computed(() =>
   typeof route.query.version === "string" ? route.query.version : "",
 );
 const routeQuery = computed(() => ({
-  ...(locale.value !== "en" ? { locale: locale.value } : {}),
+  ...(locale.value !== defaultLocale.value ? { locale: locale.value } : {}),
   ...(version.value ? { version: version.value } : {}),
 }));
 function docTo(path: string) {
@@ -40,25 +53,36 @@ useSeoMeta({
   title: () => collection.value?.title || slug.value,
   description: () => collection.value?.description || undefined,
 });
+useHead(() => ({
+  htmlAttrs: {
+    lang: currentLocale.value?.htmlLang || locale.value,
+    dir: currentLocale.value?.direction || "ltr",
+  },
+}));
 </script>
 
 <template>
   <div class="min-w-0 space-y-10 overflow-x-hidden">
     <header class="border-b border-default pb-8">
-      <nav
-        class="mb-5 flex items-center gap-2 text-sm text-muted"
-        aria-label="面包屑"
+      <div
+        class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
       >
-        <NuxtLink
-          to="/"
-          class="inline-flex items-center gap-1 hover:text-primary"
-        >
-          <UIcon name="i-tabler-home" class="size-4" />
-          {{ siteBrand }}
-        </NuxtLink>
-        <UIcon name="i-tabler-chevron-right" class="size-4" />
-        <span class="line-clamp-1 text-default">{{ collection?.title }}</span>
-      </nav>
+        <nav class="flex items-center gap-2 text-sm text-muted" aria-label="面包屑">
+          <NuxtLink
+            to="/"
+            class="inline-flex items-center gap-1 hover:text-primary"
+          >
+            <UIcon name="i-tabler-home" class="size-4" />
+            {{ siteBrand }}
+          </NuxtLink>
+          <UIcon name="i-tabler-chevron-right" class="size-4" />
+          <span class="line-clamp-1 text-default">{{ collection?.title }}</span>
+        </nav>
+        <DocumentVariantSwitcher
+          class="shrink-0 sm:justify-end"
+          :collection-slug="slug"
+        />
+      </div>
 
       <div class="min-w-0 max-w-[72ch]">
         <p

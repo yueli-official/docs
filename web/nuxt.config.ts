@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   ],
   modules: ['@nuxt/ui', '@yueli/ui', '@yueli/nuxt-runtime', '@yueli/discovery-nuxt'],
   icon: {
-    provider: 'none',
+    provider: 'server',
     fallbackToApi: false,
     serverBundle: { collections: ['tabler'] },
     clientBundle: {

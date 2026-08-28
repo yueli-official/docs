@@ -29,8 +29,15 @@ func (controller *PublicComments) ListDocumentComments(
 	ctx context.Context,
 	req *v1.ListDocumentCommentsReq,
 ) (*v1.ListDocumentCommentsRes, error) {
+	order := strings.ToLower(strings.TrimSpace(req.SortOrder))
+	if order == "" {
+		order = "asc"
+	}
+	if order != "asc" && order != "desc" {
+		return nil, docserr.InvalidInput("unsupported public comment sortOrder")
+	}
 	threads, total, page, size, err := controller.comments.List(
-		ctx, req.DocumentID, req.Page, req.Size,
+		ctx, req.DocumentID, order == "asc", req.Page, req.Size,
 	)
 	if err != nil {
 		return nil, mapCommentError(err, req.DocumentID)

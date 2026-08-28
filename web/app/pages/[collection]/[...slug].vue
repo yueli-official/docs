@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { ReadingTableOfContents } from "@yueli/ui/navigation/table-of-contents";
-import {
-  ContentShareActions,
-  type ContentShareMessages,
-} from "@yueli/ui/sharing/content-share";
-import type { DocDetailResponse } from "~/types";
+import type { CollectionVariantsResponse, DocDetailResponse } from "~/types";
 import { createTrafficReplayKey } from "~/utils/traffic-replay-key.mjs";
 import { trafficSource } from "~/utils/traffic-source.mjs";
 
@@ -12,14 +8,25 @@ definePageMeta({ layout: "collection", middleware: "url-lifecycle" });
 const route = useRoute();
 const { call } = useApi();
 const collectionSlug = computed(() => route.params.collection as string);
+const { data: variantData } = await useAsyncData(
+  () => `collection-variants-${collectionSlug.value}`,
+  () => call<CollectionVariantsResponse>(`/api/v1/collections/${collectionSlug.value}/variants`),
+  { watch: [collectionSlug] },
+);
+const defaultLocale = computed(() =>
+  variantData.value?.locales.find((item) => item.isDefault)?.locale || "en",
+);
 const locale = computed(() =>
-  typeof route.query.locale === "string" ? route.query.locale : "en",
+  typeof route.query.locale === "string" ? route.query.locale : defaultLocale.value,
+);
+const currentLocale = computed(() =>
+  variantData.value?.locales.find((item) => item.locale === locale.value),
 );
 const version = computed(() =>
   typeof route.query.version === "string" ? route.query.version : "",
 );
 const routeQuery = computed(() => ({
-  ...(locale.value !== "en" ? { locale: locale.value } : {}),
+  ...(locale.value !== defaultLocale.value ? { locale: locale.value } : {}),
   ...(version.value ? { version: version.value } : {}),
 }));
 function docTo(path = "") {
@@ -118,16 +125,13 @@ const readingContent = computed(() =>
 );
 const toc = computed(() => renderWithToc(readingContent.value).toc);
 const isLeaf = computed(() => !node.value?.children?.length);
-const shareMessages: ContentShareMessages = {
-  weibo: "分享到微博",
-  x: "分享到 X",
-  system: "系统分享",
-  copy: "复制链接",
-  copied: "已复制",
-  copyFailed: "复制失败",
-};
-
 useDiscoveryPage(() => docData.value?.discovery);
+useHead(() => ({
+  htmlAttrs: {
+    lang: currentLocale.value?.htmlLang || locale.value,
+    dir: currentLocale.value?.direction || "ltr",
+  },
+}));
 </script>
 
 <template>
@@ -138,7 +142,9 @@ useDiscoveryPage(() => docData.value?.discovery);
     >
       <article class="min-w-0">
         <header class="border-b border-default pb-8">
-          <div class="flex items-start justify-between gap-3">
+          <div
+            class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+          >
             <div
               class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted"
             >
@@ -161,32 +167,18 @@ useDiscoveryPage(() => docData.value?.discovery);
                 {{ isLeaf ? "文档" : "章节" }}
               </span>
             </div>
-            <UPopover
-              :content="{ side: 'bottom', align: 'end', sideOffset: 8 }"
-            >
-              <UButton
-                icon="i-tabler-share-3"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                square
-                class="-mt-1 shrink-0"
-                aria-label="分享文档"
-              />
-              <template #content>
-                <div class="p-2">
-                  <ContentShareActions
-                    :title="node.title"
-                    :messages="shareMessages"
-                  />
-                </div>
-              </template>
-            </UPopover>
+            <DocumentVariantSwitcher
+              class="sm:justify-end"
+              :collection-slug="collectionSlug"
+              :translation-key="doc?.translationKey || node.translationKey"
+            />
           </div>
           <h1
-            class="font-display mt-4 text-balance text-[2rem] font-semibold leading-[1.18] text-highlighted md:text-[2.3125rem]"
+            class="font-display mt-4 flex flex-wrap items-center gap-3 text-balance text-[2rem] font-semibold leading-[1.18] text-highlighted md:text-[2.3125rem]"
           >
-            {{ node.title }}
+            <span>{{ node.title }}</span>
+            <UIcon v-if="node.badgeIcon" :name="node.badgeIcon" class="size-7 shrink-0 text-primary" />
+            <UBadge v-else-if="node.badgeText" :label="node.badgeText" color="neutral" variant="soft" size="md" />
           </h1>
           <p
             v-if="node.excerpt"
@@ -226,6 +218,8 @@ useDiscoveryPage(() => docData.value?.discovery);
               >
                 <UIcon name="i-tabler-file-text" class="size-4" />
                 {{ c.title }}
+                <UIcon v-if="c.badgeIcon" :name="c.badgeIcon" class="size-4 text-primary" />
+                <UBadge v-else-if="c.badgeText" :label="c.badgeText" color="neutral" variant="soft" size="xs" />
               </span>
               <span
                 v-if="c.excerpt"
@@ -236,22 +230,14 @@ useDiscoveryPage(() => docData.value?.discovery);
           </div>
         </section>
 
-        <ClientOnly>
-          <DocumentComments v-if="doc" :document-id="doc.id" />
-          <template #fallback>
-            <section class="mt-14 border-t border-default pt-9">
-              <USkeleton class="h-7 w-28 rounded-md" />
-              <USkeleton class="mt-6 h-24 rounded-lg" />
-            </section>
-          </template>
-        </ClientOnly>
-
         <DocNav
           :prev="prev ? { path: prev.path, title: prev.node.title } : undefined"
           :next="next ? { path: next.path, title: next.node.title } : undefined"
           :collection="collectionSlug"
           :query="routeQuery"
         />
+
+        <DocumentComments v-if="doc" :document-id="doc.id" />
       </article>
 
       <aside v-if="toc.length" class="hidden xl:block">

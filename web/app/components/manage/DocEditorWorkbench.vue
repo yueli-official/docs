@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { createDocsNotifier } from "~/utils/feedback";
 import { EditorInspector } from "@yueli/ui/admin";
+import { AdminIconPicker } from "@yueli/ui/admin";
 import { useActionFeedback } from "@yueli/ui/feedback";
 import { ActionFeedbackButton } from "@yueli/ui/feedback/pattern";
 import { AssetImageProcessor } from "@yueli/asset-nuxt/components";
 import type {
+  CollectionLocale,
+  CollectionLocalesResponse,
   CollectionVersion,
   CollectionVersionsResponse,
   CollectionView,
@@ -42,7 +45,9 @@ function createDraftInstanceId() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
   const bytes = new Uint8Array(12);
   globalThis.crypto?.getRandomValues(bytes);
-  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }
 
 const draftInstanceId = ref(
@@ -72,7 +77,10 @@ onMounted(() => {
   mounted.value = true;
   if (isNew.value && draftInstanceId.value && !route.query.draft) {
     void navigateTo(
-      { path: route.path, query: { ...route.query, draft: draftInstanceId.value } },
+      {
+        path: route.path,
+        query: { ...route.query, draft: draftInstanceId.value },
+      },
       { replace: true },
     );
   }
@@ -100,10 +108,23 @@ const form = reactive({
   seoTitle: "",
   seoDescription: "",
   status: "draft",
-  locale: "en",
+  locale: "",
   versionId: "",
   translationKey: "",
+  badgeText: "",
+  badgeIcon: "",
   sortOrder: 0,
+});
+const badgeMode = ref<"none" | "text" | "icon">("none");
+const badgeModeItems = [
+  { label: "不显示", value: "none" },
+  { label: "文字", value: "text" },
+  { label: "图标", value: "icon" },
+];
+watch(badgeMode, (mode) => {
+  if (mode !== "text") form.badgeText = "";
+  if (mode !== "icon") form.badgeIcon = "";
+  if (mode === "icon" && !form.badgeIcon) form.badgeIcon = "i-tabler-sparkles";
 });
 const slugTouched = ref(false);
 
@@ -138,7 +159,9 @@ function cancelImageProcessing() {
 async function uploadInlineImage(file: File) {
   const processed = await processImage(file);
   return uploadDocumentImage(processed, {
-    ...(isNew.value ? { collectionId: form.collectionId } : { documentId: docId.value }),
+    ...(isNew.value
+      ? { collectionId: form.collectionId }
+      : { documentId: docId.value }),
   });
 }
 
@@ -187,6 +210,7 @@ function onCollectionChange(value: unknown) {
   if (newId !== form.collectionId) {
     form.parentId = ROOT;
     form.versionId = "";
+    form.locale = "";
   }
   form.collectionId = newId;
 }
@@ -214,10 +238,36 @@ const versionOptions = computed(() =>
     description: v.key,
   })),
 );
-const localeOptions = [
-  { label: "English", value: "en" },
-  { label: "简体中文", value: "zh-CN" },
-];
+const { data: localesData } = await useAsyncData(
+  () => `doc-editor-locales-${treeCollectionId.value}`,
+  () =>
+    treeCollectionId.value
+      ? call<CollectionLocalesResponse>(
+          `/api/v1/manage/collections/${treeCollectionId.value}/locales`,
+        )
+      : Promise.resolve({ items: [] as CollectionLocale[] }),
+  {
+    watch: [treeCollectionId],
+    server: false,
+    default: () => ({ items: [] as CollectionLocale[] }),
+  },
+);
+const locales = computed(() => localesData.value?.items ?? []);
+const defaultLocale = computed(
+  () =>
+    locales.value.find((item) => item.isDefault)?.locale ??
+    locales.value[0]?.locale ??
+    "en",
+);
+const localeOptions = computed(() =>
+  locales.value
+    .filter((item) => item.enabled || item.locale === form.locale)
+    .map((item) => ({
+      label: item.isDefault ? `${item.label}（默认）` : item.label,
+      value: item.locale,
+      description: item.locale,
+    })),
+);
 const selectedVersion = computed(
   () =>
     versions.value.find((v) => v.id === form.versionId) ??
@@ -236,16 +286,27 @@ watch(
   { immediate: true },
 );
 
+watch(
+  locales,
+  (items) => {
+    if (!items.length) return;
+    if (items.some((item) => item.locale === form.locale)) return;
+    form.locale =
+      items.find((item) => item.isDefault)?.locale ?? items[0]!.locale;
+  },
+  { immediate: true },
+);
+
 // ── tree for parent dropdown ───────────────────────────────────────────────────
 const { data: treeDocsData, refresh: refreshTree } = await useAsyncData(
   () =>
-    `doc-editor-docs-${treeCollectionId.value}-${selectedVersionKey.value || "default"}-${form.locale || "en"}`,
+    `doc-editor-docs-${treeCollectionId.value}-${selectedVersionKey.value || "default"}-${form.locale || defaultLocale.value}`,
   () =>
     treeCollectionId.value
       ? call<{ items: DocDetail[] }>("/api/v1/docs", {
           query: {
             collectionId: treeCollectionId.value,
-            locale: form.locale || "en",
+            locale: form.locale || defaultLocale.value,
             ...(selectedVersionKey.value
               ? { version: selectedVersionKey.value }
               : {}),
@@ -318,9 +379,16 @@ watch(
       form.seoTitle = doc.value.seoTitle || "";
       form.seoDescription = doc.value.seoDescription || "";
       form.status = doc.value.status || "draft";
-      form.locale = doc.value.locale || "en";
+      form.locale = doc.value.locale || defaultLocale.value;
       form.versionId = doc.value.versionId || "";
       form.translationKey = doc.value.translationKey || "";
+      form.badgeText = doc.value.badgeText || "";
+      form.badgeIcon = doc.value.badgeIcon || "";
+      badgeMode.value = form.badgeIcon
+        ? "icon"
+        : form.badgeText
+          ? "text"
+          : "none";
       form.sortOrder = doc.value.sortOrder ?? 0;
     }
   },
@@ -368,7 +436,7 @@ const publicDocUrl = computed(() =>
     ? [
         `/${collectionSlug.value}/${currentSlugPath.value.map(encodeURIComponent).join("/")}`,
         new URLSearchParams({
-          ...(form.locale && form.locale !== "en"
+          ...(form.locale && form.locale !== defaultLocale.value
             ? { locale: form.locale }
             : {}),
           ...(selectedVersion.value && !selectedVersion.value.isDefault
@@ -504,9 +572,11 @@ async function save() {
           content: form.content,
           seoTitle: form.seoTitle,
           seoDescription: form.seoDescription,
-          locale: form.locale || "en",
+          locale: form.locale || defaultLocale.value,
           versionId: form.versionId,
           translationKey: form.translationKey,
+          badgeText: form.badgeText,
+          badgeIcon: form.badgeIcon,
           sortOrder: Number(form.sortOrder || 0),
         },
       });
@@ -550,9 +620,11 @@ async function save() {
             seoTitle: form.seoTitle,
             seoDescription: form.seoDescription,
             status: form.status,
-            locale: form.locale || "en",
+            locale: form.locale || defaultLocale.value,
             versionId: form.versionId,
             translationKey: form.translationKey,
+            badgeText: form.badgeText,
+            badgeIcon: form.badgeIcon,
             sortOrder: Number(form.sortOrder || 0),
             parentId: form.parentId === ROOT ? "" : form.parentId,
           },
@@ -592,7 +664,7 @@ const settingsSection = ref<SettingsSection>("content");
 const settingsTabs = [
   { label: "内容", value: "content", icon: "i-tabler-stack-2" },
   { label: "组织", value: "organization", icon: "i-tabler-arrows-sort" },
-  { label: "搜索", value: "seo", icon: "i-tabler-search" },
+  { label: "SEO", value: "seo", icon: "i-tabler-search" },
 ];
 function toggleSettings() {
   settingsOpen.value = !settingsOpen.value;
@@ -809,12 +881,16 @@ onMounted(() => nextTick(autoGrowTitle));
               :text="copyStatus === 'success' ? '已复制' : '复制公开链接'"
             >
               <UButton
-                :icon="copyStatus === 'success' ? 'i-tabler-check' : 'i-tabler-copy'"
+                :icon="
+                  copyStatus === 'success' ? 'i-tabler-check' : 'i-tabler-copy'
+                "
                 color="neutral"
                 variant="ghost"
                 size="xs"
                 square
-                :aria-label="copyStatus === 'success' ? '公开链接已复制' : '复制公开链接'"
+                :aria-label="
+                  copyStatus === 'success' ? '公开链接已复制' : '复制公开链接'
+                "
                 :disabled="!publicDocUrl"
                 @click="copyText(publicDocUrl)"
               />
@@ -849,10 +925,7 @@ onMounted(() => nextTick(autoGrowTitle));
       </section>
     </main>
 
-    <EditorInspector
-      v-model:open="settingsOpen"
-      title="文档设置"
-    >
+    <EditorInspector v-model:open="settingsOpen" title="文档设置">
       <template #default="{ docked }">
         <div
           class="min-w-0"
@@ -870,7 +943,8 @@ onMounted(() => nextTick(autoGrowTitle));
             :ui="{
               list: 'w-full rounded-xl bg-elevated/70 p-1',
               indicator: 'rounded-lg bg-default ring-1 ring-default shadow-xs',
-              trigger: 'min-h-9 flex-1 justify-center gap-2 rounded-lg data-[state=active]:text-highlighted',
+              trigger:
+                'min-h-9 flex-1 justify-center gap-2 rounded-lg data-[state=active]:text-highlighted',
               leadingIcon: 'size-4.5 shrink-0',
             }"
             data-docs-inspector-tabs
@@ -913,19 +987,6 @@ onMounted(() => nextTick(autoGrowTitle));
               />
             </UFormField>
 
-            <UFormField label="版本">
-              <USelectMenu
-                :model-value="form.versionId"
-                :items="versionOptions"
-                value-key="value"
-                placeholder="默认版本"
-                aria-label="选择文档版本"
-                :search-input="{ placeholder: '搜索版本…' }"
-                class="w-full"
-                @update:model-value="form.versionId = selectedValue($event)"
-              />
-            </UFormField>
-
             <UFormField label="语言">
               <USelectMenu
                 :model-value="form.locale"
@@ -933,7 +994,9 @@ onMounted(() => nextTick(autoGrowTitle));
                 value-key="value"
                 aria-label="选择文档语言"
                 class="w-full"
-                @update:model-value="form.locale = selectedValue($event) || 'en'"
+                @update:model-value="
+                  form.locale = selectedValue($event) || defaultLocale
+                "
               />
             </UFormField>
           </section>
@@ -962,13 +1025,38 @@ onMounted(() => nextTick(autoGrowTitle));
                 class="w-full"
               />
             </UFormField>
+
+            <div
+              class="space-y-3 rounded-xl border border-default bg-default p-3"
+            >
+              <UFormField
+                label="标题标记"
+                help="在目录和标题旁显示一项简短状态，例如 Beta 或已废弃。"
+              >
+                <USelect
+                  v-model="badgeMode"
+                  :items="badgeModeItems"
+                  value-key="value"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField v-if="badgeMode === 'text'" label="标记文字">
+                <UInput
+                  v-model="form.badgeText"
+                  maxlength="24"
+                  placeholder="Beta"
+                  class="w-full"
+                />
+              </UFormField>
+              <AdminIconPicker
+                v-else-if="badgeMode === 'icon'"
+                :model-value="form.badgeIcon || 'i-tabler-sparkles'"
+                @update:model-value="form.badgeIcon = $event"
+              />
+            </div>
           </section>
 
-          <section
-            v-else
-            class="mt-5 space-y-5"
-            data-docs-inspector-seo
-          >
+          <section v-else class="mt-5 space-y-5" data-docs-inspector-seo>
             <UFormField label="SEO 标题">
               <UInput
                 v-model="form.seoTitle"

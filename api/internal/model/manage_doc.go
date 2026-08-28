@@ -37,6 +37,8 @@ type ManageDoc struct {
 	Excerpt         string    `json:"excerpt" orm:"excerpt"`
 	Status          string    `json:"status" orm:"status"`
 	Locale          string    `json:"locale" orm:"locale"`
+	BadgeText       string    `json:"badgeText" orm:"badge_text"`
+	BadgeIcon       string    `json:"badgeIcon" orm:"badge_icon"`
 	SortOrder       int       `json:"sortOrder" orm:"sort_order"`
 	UpdatedAt       time.Time `json:"updatedAt" orm:"updated_at"`
 }

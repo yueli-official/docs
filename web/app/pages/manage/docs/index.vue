@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
+import { AdminRowActions } from "@yueli/ui/admin";
+import type { AdminRowActionItem } from "@yueli/ui/admin";
 import { createDocsNotifier } from "~/utils/feedback";
 import {
   createCollectionRouteQueryCodec,
@@ -17,6 +19,8 @@ import {
 import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import type {
   CollectionManageTree,
+  CollectionLocale,
+  CollectionLocalesResponse,
   CollectionVersion,
   CollectionVersionsResponse,
   CollectionView,
@@ -45,7 +49,7 @@ const UCheckbox = resolveComponent("UCheckbox");
 const UButton = resolveComponent("UButton");
 
 type StatusKey = "all" | "draft" | "published" | "archived" | "issues";
-type BulkDocAction = "publish" | "draft" | "archive";
+type BulkDocAction = "publish" | "draft" | "archive" | "locale";
 type SortKey = "updatedAt" | "title" | "path" | "sortOrder";
 type SortDirection = "asc" | "desc";
 
@@ -98,7 +102,7 @@ const defaultQuery: DocCollectionQuery = {
   view: "list",
   collection: "all",
   version: "",
-  locale: "en",
+  locale: "all",
   parent: "all",
   sort: "updatedAt",
   direction: "desc",
@@ -135,6 +139,8 @@ const querySync = createVueRouterCollectionQuerySync({
 const search = ref("");
 const bulkAction = ref<BulkDocAction | undefined>();
 const bulkBusy = ref(false);
+const bulkLocaleOpen = ref(false);
+const bulkLocale = ref("");
 const bulkResult = ref<{
   changed: number;
   failedIds: string[];
@@ -163,7 +169,14 @@ const bulkItems = computed<
     ? [{ label: "发布", value: "publish" as const, icon: "i-tabler-rocket" }]
     : []),
   ...(canUpdateDocs.value
-    ? [{ label: "转草稿", value: "draft" as const, icon: "i-tabler-pencil" }]
+    ? [
+        { label: "转草稿", value: "draft" as const, icon: "i-tabler-pencil" },
+        {
+          label: "修改语言",
+          value: "locale" as const,
+          icon: "i-tabler-language",
+        },
+      ]
     : []),
   ...(canArchiveDocs.value
     ? [{ label: "归档", value: "archive" as const, icon: "i-tabler-archive" }]
@@ -333,11 +346,27 @@ function submitSearch(value: string) {
 }
 
 const versionsByCollection = ref<Record<string, CollectionVersion[]>>({});
-const localeItems = [
-  { label: "全部语言", value: "all" },
-  { label: "English", value: "en" },
-  { label: "简体中文", value: "zh-CN" },
-];
+const localesByCollection = ref<Record<string, CollectionLocale[]>>({});
+function defaultLocaleForCollection(collectionId: string) {
+  const items = localesByCollection.value[collectionId] ?? [];
+  return items.find((item) => item.isDefault)?.locale ?? items[0]?.locale ?? "en";
+}
+const localeItems = computed(() => {
+  const source = activeCollection.value === "all"
+    ? Object.values(localesByCollection.value).flat()
+    : (localesByCollection.value[activeCollection.value] ?? []);
+  const unique = new Map<string, CollectionLocale>();
+  for (const item of source) {
+    if (!unique.has(item.locale)) unique.set(item.locale, item);
+  }
+  return [
+    { label: "全部语言", value: "all" },
+    ...[...unique.values()].map((item) => ({
+      label: item.isDefault && activeCollection.value !== "all" ? `${item.label}（默认）` : item.label,
+      value: item.locale,
+    })),
+  ];
+});
 
 const collectionItems = computed(() => [
   { label: "全部文档集", value: "all" },
@@ -360,27 +389,30 @@ const treeCollectionItems = computed(() =>
   collections.value.map((c) => ({ label: c.title, value: c.slug })),
 );
 
-async function loadVersions() {
+async function loadVariants() {
   const items = collections.value;
   if (!items.length) {
     versionsByCollection.value = {};
+    localesByCollection.value = {};
     return;
   }
   const entries = await Promise.all(
     items.map(async (col) => {
-      const res = await call<CollectionVersionsResponse>(
-        `/api/v1/collections/${col.id}/versions`,
-      );
-      return [col.id, res.items] as const;
+      const [versions, locales] = await Promise.all([
+        call<CollectionVersionsResponse>(`/api/v1/collections/${col.id}/versions`),
+        call<CollectionLocalesResponse>(`/api/v1/manage/collections/${col.id}/locales`),
+      ]);
+      return [col.id, versions.items, locales.items] as const;
     }),
   );
-  versionsByCollection.value = Object.fromEntries(entries);
+  versionsByCollection.value = Object.fromEntries(entries.map(([id, versions]) => [id, versions]));
+  localesByCollection.value = Object.fromEntries(entries.map(([id, _versions, locales]) => [id, locales]));
 }
 
 watch(
   collections,
   () => {
-    loadVersions();
+    loadVariants();
   },
   { immediate: true },
 );
@@ -446,6 +478,30 @@ const selectedDocs = computed(() =>
     return doc ? [doc] : [];
   }),
 );
+const commonBulkLocaleItems = computed(() => {
+  const collectionIds = [
+    ...new Set(selectedDocs.value.map((doc) => doc.collectionId)),
+  ];
+  if (!collectionIds.length) return [];
+  const localeSets = collectionIds.map(
+    (collectionId) =>
+      new Set(
+        (localesByCollection.value[collectionId] ?? [])
+          .filter((item) => item.enabled)
+          .map((item) => item.locale),
+      ),
+  );
+  const firstCollectionLocales = (
+    localesByCollection.value[collectionIds[0]!] ?? []
+  ).filter((item) => item.enabled);
+  return firstCollectionLocales
+    .filter(
+      (item) =>
+        localeSets.every((locales) => locales.has(item.locale)) &&
+        !selectedDocs.value.every((doc) => doc.locale === item.locale),
+    )
+    .map((item) => ({ label: item.label, value: item.locale }));
+});
 const parentItems = computed(() => {
   const items = [
     { label: "全部层级", value: "all" },
@@ -488,7 +544,7 @@ const collectionFilterControls = computed<CollectionControl[]>(() => [
     id: "locale",
     label: "语言",
     value: activeLocale.value,
-    options: localeItems,
+    options: localeItems.value,
     class: "w-32",
   },
   ...(activeCollection.value === "all"
@@ -504,26 +560,13 @@ const collectionFilterControls = computed<CollectionControl[]>(() => [
           class: "w-40",
         },
       ]),
-  ...(activeCollection.value === "all"
-    ? []
-    : [
-        {
-          kind: "select" as const,
-          id: "version",
-          label: "版本",
-          value: activeVersion.value,
-          options: versionItems.value,
-          class: "w-36",
-        },
-      ]),
 ]);
 const activeFilterCount = computed(
   () =>
     [
       activeStatus.value !== "all",
       activeCollection.value !== "all",
-      activeLocale.value !== "en",
-      Boolean(activeVersion.value),
+      activeLocale.value !== "all",
       activeParent.value !== "all",
     ].filter(Boolean).length,
 );
@@ -544,20 +587,11 @@ const activeFilterItems = computed(() => {
       label: `文档集：${label ?? activeCollection.value}`,
     });
   }
-  if (activeLocale.value !== "en") {
-    const label = localeItems.find(
+  if (activeLocale.value !== "all") {
+    const label = localeItems.value.find(
       (item) => item.value === activeLocale.value,
     )?.label;
     items.push({ id: "locale", label: `语言：${label ?? activeLocale.value}` });
-  }
-  if (activeVersion.value) {
-    const label = versionItems.value.find(
-      (item) => item.value === activeVersion.value,
-    )?.label;
-    items.push({
-      id: "version",
-      label: `版本：${label ?? activeVersion.value}`,
-    });
   }
   if (activeParent.value !== "all") {
     const label = parentItems.value.find(
@@ -584,7 +618,7 @@ function changeCollectionControl(id: string, value: CollectionControlValue) {
 function clearCollectionFilter(id: string) {
   if (id === "status") activeStatus.value = "all";
   if (id === "collection") activeCollection.value = "all";
-  if (id === "locale") activeLocale.value = "en";
+  if (id === "locale") activeLocale.value = "all";
   if (id === "version") activeVersion.value = "";
   if (id === "parent") activeParent.value = "all";
 }
@@ -593,7 +627,7 @@ function clearCollectionFilters() {
     status: "all",
     collection: "all",
     version: "",
-    locale: "en",
+    locale: "all",
     parent: "all",
   });
 }
@@ -665,7 +699,9 @@ function publicDocRoute(doc: ManagedDoc) {
     .join("/")}`;
   const query = new URLSearchParams({
     ...(doc.versionKey ? { version: doc.versionKey } : {}),
-    ...(doc.locale && doc.locale !== "en" ? { locale: doc.locale } : {}),
+    ...(doc.locale && doc.locale !== defaultLocaleForCollection(doc.collectionId)
+      ? { locale: doc.locale }
+      : {}),
   }).toString();
   return query ? `${path}?${query}` : path;
 }
@@ -697,6 +733,41 @@ async function openQuickEdit(doc: ManagedDoc) {
   }
 }
 
+function docRowActions(doc: ManagedDoc): AdminRowActionItem[] {
+  return [
+    {
+      id: "view",
+      label: `查看公开文档：${doc.title}`,
+      icon: "i-tabler-external-link",
+      to: publicDocRoute(doc),
+      target: "_blank",
+      rel: "noopener",
+      hidden: doc.status !== "published",
+    },
+    {
+      id: "quick-edit",
+      label: `快速编辑：${doc.title}`,
+      icon: "i-tabler-pencil",
+      hidden: !canUpdateDocs.value,
+      onSelect: () => void openQuickEdit(doc),
+    },
+    {
+      id: "edit",
+      label: `编辑文档：${doc.title}`,
+      icon: "i-tabler-file-pencil",
+      to: docManageRoute(doc.collectionSlug, doc.slugPath),
+      hidden: !canUpdateDocs.value,
+    },
+    {
+      id: "add-child",
+      label: `添加子文档：${doc.title}`,
+      icon: "i-tabler-file-plus",
+      hidden: !canCreateDocs.value,
+      onSelect: () => addChild(doc),
+    },
+  ];
+}
+
 async function onQuickEditSaved() {
   await Promise.all([reloadDocPage(), refreshTree()]);
 }
@@ -726,6 +797,20 @@ async function updateDocStatus(
 
 async function applyBulkAction() {
   if (!bulkAction.value || !selectedDocs.value.length) return;
+
+  if (bulkAction.value === "locale") {
+    if (
+      selectedDocs.value.some(
+        (doc) => !(doc.collectionId in localesByCollection.value),
+      )
+    ) {
+      await loadVariants();
+    }
+    bulkLocale.value = commonBulkLocaleItems.value[0]?.value || "";
+    bulkLocaleOpen.value = true;
+    bulkAction.value = undefined;
+    return;
+  }
 
   const status =
     bulkAction.value === "publish"
@@ -769,6 +854,56 @@ async function applyBulkAction() {
   }
 }
 
+async function confirmBulkLocale() {
+  if (!bulkLocale.value || !selectedDocs.value.length) return;
+  const docs = [...selectedDocs.value].sort(
+    (left, right) => left.depth - right.depth,
+  );
+  const requestedIds = docs.map((doc) => doc.id);
+  const failedIds: string[] = [];
+  let changed = 0;
+  bulkBusy.value = true;
+  bulkResult.value = undefined;
+  try {
+    for (const doc of docs) {
+      try {
+        await call(`/api/v1/docs/${doc.id}`, {
+          method: "PATCH",
+          body: { locale: bulkLocale.value },
+        });
+        changed += 1;
+      } catch {
+        failedIds.push(doc.id);
+      }
+    }
+    bulkResult.value = { changed, failedIds };
+    if (failedIds.length) replaceSelection(failedIds);
+    else clearBulkSelection();
+    bulkAction.value = undefined;
+    bulkLocaleOpen.value = false;
+    await Promise.all([reloadDocPage(), refreshTree()]);
+  } catch (error) {
+    const apiError = error as { data?: { message?: string } };
+    replaceSelection(requestedIds);
+    bulkResult.value = {
+      changed,
+      failedIds: requestedIds,
+      interrupted: true,
+      message:
+        apiError.data?.message ||
+        "批量请求中断，已保留选择，请核对当前语言后重试。",
+    };
+    await Promise.all([reloadDocPage(), refreshTree()]);
+  } finally {
+    bulkBusy.value = false;
+  }
+}
+
+function closeBulkLocale() {
+  bulkLocaleOpen.value = false;
+  bulkLocale.value = "";
+}
+
 // ─── Structure view ──────────────────────────────────────────────────────────
 
 const treeSlug = ref("");
@@ -805,7 +940,7 @@ async function fetchManageTree(
     `/api/v1/manage/collections/${encodeURIComponent(slug)}/tree`,
     {
       query: {
-        locale: locale === "all" ? "en" : locale,
+        ...(locale !== "all" ? { locale } : {}),
         ...(version ? { version } : {}),
       },
     },
@@ -1114,7 +1249,7 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
           ? "indeterminate"
           : table.getIsAllPageRowsSelected(),
         disabled: bulkBusy.value,
-        ariaLabel: "选择当前页文档",
+        "aria-label": "选择当前页文档",
         "onUpdate:modelValue": (value: boolean | "indeterminate") =>
           table.toggleAllPageRowsSelected(value === true),
       }),
@@ -1122,7 +1257,7 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
         disabled: bulkBusy.value,
-        ariaLabel: `选择文档：${row.original.title}`,
+        "aria-label": `选择文档：${row.original.title}`,
         "onUpdate:modelValue": (value: boolean | "indeterminate") =>
           row.toggleSelected(value === true),
       }),
@@ -1158,7 +1293,7 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
   {
     id: "collection",
     accessorFn: (doc) => doc.collectionTitle,
-    header: "文档集 / 版本",
+    header: "文档集 / 语言",
     meta: {
       class: {
         th: "hidden w-[18%] xl:table-cell",
@@ -1457,13 +1592,21 @@ const docColumns = computed(() =>
                 class="block max-w-full truncate text-left text-sm font-medium text-highlighted hover:text-primary"
                 @click="openQuickEdit(row.original)"
               >
-                {{ row.original.title }}
+                <span class="inline-flex min-w-0 items-center gap-2">
+                  <span class="truncate">{{ row.original.title }}</span>
+                  <UIcon v-if="row.original.badgeIcon" :name="row.original.badgeIcon" class="size-4 shrink-0 text-primary" />
+                  <UBadge v-else-if="row.original.badgeText" :label="row.original.badgeText" color="neutral" variant="soft" size="xs" />
+                </span>
               </button>
               <p
                 v-else
                 class="max-w-full truncate text-sm font-medium text-highlighted"
               >
-                {{ row.original.title }}
+                <span class="inline-flex min-w-0 items-center gap-2">
+                  <span class="truncate">{{ row.original.title }}</span>
+                  <UIcon v-if="row.original.badgeIcon" :name="row.original.badgeIcon" class="size-4 shrink-0 text-primary" />
+                  <UBadge v-else-if="row.original.badgeText" :label="row.original.badgeText" color="neutral" variant="soft" size="xs" />
+                </span>
               </p>
               <p class="mt-1 truncate text-xs text-muted">
                 {{ row.original.excerpt || "暂无摘要" }}
@@ -1501,7 +1644,6 @@ const docColumns = computed(() =>
                 {{ row.original.collectionTitle }}
               </p>
               <p class="mt-1 truncate text-muted">
-                {{ row.original.versionLabel || "默认版本" }} ·
                 {{ row.original.locale }}
               </p>
             </div>
@@ -1528,62 +1670,10 @@ const docColumns = computed(() =>
           </template>
 
           <template #actions-cell="{ row }">
-            <div class="flex justify-end gap-1">
-              <UTooltip
-                v-if="row.original.status === 'published'"
-                text="查看公开文档"
-              >
-                <UButton
-                  :to="publicDocRoute(row.original)"
-                  target="_blank"
-                  rel="noopener"
-                  icon="i-tabler-external-link"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :aria-label="`查看公开文档：${row.original.title}`"
-                />
-              </UTooltip>
-              <UTooltip v-if="canUpdateDocs" text="快速编辑">
-                <UButton
-                  icon="i-tabler-pencil"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :aria-label="`快速编辑：${row.original.title}`"
-                  @click="openQuickEdit(row.original)"
-                />
-              </UTooltip>
-              <UTooltip v-if="canUpdateDocs" text="编辑文档">
-                <UButton
-                  :to="
-                    docManageRoute(
-                      row.original.collectionSlug,
-                      row.original.slugPath,
-                    )
-                  "
-                  icon="i-tabler-file-pencil"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :aria-label="`编辑文档：${row.original.title}`"
-                />
-              </UTooltip>
-              <UTooltip v-if="canCreateDocs" text="添加子文档">
-                <UButton
-                  icon="i-tabler-file-plus"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :aria-label="`添加子文档：${row.original.title}`"
-                  @click="addChild(row.original)"
-                />
-              </UTooltip>
-            </div>
+            <AdminRowActions
+              :label="`${row.original.title} 的操作`"
+              :items="docRowActions(row.original)"
+            />
           </template>
 
           <template #empty>
@@ -1759,6 +1849,50 @@ const docColumns = computed(() =>
         </div>
       </template>
     </ClientOnly>
+
+    <UModal v-model:open="bulkLocaleOpen" title="批量修改语言">
+      <template #body>
+        <div class="space-y-4">
+          <p class="text-sm text-muted">
+            将已选择的 {{ selectedDocIds.length }} 篇文档修改为同一种语言。
+          </p>
+          <UFormField v-if="commonBulkLocaleItems.length" label="目标语言" required>
+            <USelect
+              v-model="bulkLocale"
+              :items="commonBulkLocaleItems"
+              value-key="value"
+              class="w-full"
+            />
+          </UFormField>
+          <UAlert
+            v-else
+            color="warning"
+            variant="subtle"
+            icon="i-tabler-language-off"
+            title="没有可用的共同语言"
+            description="所选文档所属的文档集没有共同启用的其他语言。"
+          />
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton
+            label="取消"
+            color="neutral"
+            variant="outline"
+            :disabled="bulkBusy"
+            @click="closeBulkLocale"
+          />
+          <UButton
+            label="修改语言"
+            icon="i-tabler-language"
+            :disabled="!bulkLocale"
+            :loading="bulkBusy"
+            @click="confirmBulkLocale"
+          />
+        </div>
+      </template>
+    </UModal>
 
     <ManageDocQuickEditModal
       v-if="canUpdateDocs"

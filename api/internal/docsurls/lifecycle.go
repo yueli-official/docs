@@ -144,8 +144,16 @@ func (l *Lifecycle) ReconcileAll(ctx context.Context, db *sql.DB) error {
 }
 
 func (l *Lifecycle) loadDesired(ctx context.Context, tx *sql.Tx, collectionID string) ([]desiredRoute, error) {
-	var collectionSlug string
-	err := tx.QueryRowContext(ctx, `SELECT slug FROM collections WHERE id = $1::uuid`, collectionID).Scan(&collectionSlug)
+	var collectionSlug, collectionDefaultLocale string
+	err := tx.QueryRowContext(ctx, `
+SELECT collection.slug,
+       COALESCE(locale.locale, $2)
+FROM collections collection
+LEFT JOIN collection_locales locale
+  ON locale.collection_id = collection.id
+ AND locale.is_default = true
+ AND locale.enabled = true
+WHERE collection.id = $1::uuid`, collectionID, l.defaultLocale).Scan(&collectionSlug, &collectionDefaultLocale)
 	if errors.Is(err, sql.ErrNoRows) {
 		return []desiredRoute{}, nil
 	}
@@ -180,7 +188,7 @@ WITH RECURSIVE paths AS (
 )
 SELECT path.id::text, path.version_id::text, path.locale, path.slug_path,
        version.key, version.is_default,
-       (path.public_chain AND version.status = 'published') AS public
+       (path.public_chain AND version.status IN ('published', 'archived')) AS public
 FROM paths path
 JOIN collection_versions version ON version.id = path.version_id
 ORDER BY path.id`, collectionID)
@@ -196,7 +204,7 @@ ORDER BY path.id`, collectionID)
 		}
 		resourceID := collectionID + "/" + id
 		query := make([]urllifecycle.QueryValue, 0, 2)
-		if locale != l.defaultLocale {
+		if locale != collectionDefaultLocale {
 			query = append(query, urllifecycle.QueryValue{Key: "locale", Value: locale})
 		}
 		if !isDefault {

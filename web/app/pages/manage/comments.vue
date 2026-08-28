@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import {
-  CollectionPagination,
-  CollectionSortHeader,
-  CollectionTableToolbar,
-} from "@yueli/ui/collection/pattern";
+import { CommentModerationCollection } from "@yueli/ui/comments/admin";
+import type {
+  CommentModerationCollectionActions,
+  CommentModerationCollectionModel,
+  CommentModerationItem,
+  CommentModerationLifecycle,
+} from "@yueli/ui/comments/admin";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import { createDocsNotifier } from "~/utils/feedback";
 import type {
@@ -20,11 +22,13 @@ const toast = createDocsNotifier(useToast());
 const query = ref("");
 const searchInput = ref("");
 const status = ref<CommentStatus | "all">("all");
+const lifecycle = computed(() => status.value as CommentModerationLifecycle);
 const sortOrder = ref<"asc" | "desc">("desc");
 const page = ref(1);
 const size = ref(20);
 const selected = ref<string[]>([]);
 const busy = ref("");
+const emptyingTrash = ref(false);
 const batchAction = ref<CommentStatus | "">("");
 const batchBusy = ref(false);
 const deleteOpen = ref(false);
@@ -32,22 +36,21 @@ const deleteTarget = ref<CommentAdminView | null>(null);
 const mounted = ref(false);
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
-const statusItems = [
-  { label: "全部评论", value: "all" },
-  { label: "待审核", value: "pending" },
-  { label: "已通过", value: "approved" },
-  { label: "垃圾评论", value: "spam" },
-  { label: "回收站", value: "trash" },
-];
-const sizeItems = [20, 50, 100].map((value) => ({
-  label: `${value}/页`,
-  value,
-}));
-const batchItems = [
-  { label: "通过", value: "approved" },
-  { label: "标记垃圾", value: "spam" },
-  { label: "移入回收站", value: "trash" },
-];
+const pageSizes = [20, 50, 100] as const;
+const batchItems = computed(() =>
+  lifecycle.value === "trash"
+    ? [{ label: "恢复", value: "approved" }]
+    : lifecycle.value === "spam"
+      ? [
+          { label: "恢复", value: "approved" },
+          { label: "移入回收站", value: "trash" },
+        ]
+      : [
+          { label: "通过", value: "approved" },
+          { label: "标记垃圾", value: "spam" },
+          { label: "移入回收站", value: "trash" },
+        ],
+);
 const statusMeta: Record<
   CommentStatus,
   {
@@ -160,6 +163,49 @@ async function setCommentStatus(id: string, next: CommentStatus) {
   }
 }
 
+async function emptyTrash() {
+  if (emptyingTrash.value) return false;
+  emptyingTrash.value = true;
+  try {
+    for (let batch = 0; batch < 100; batch += 1) {
+      const result = await call<ManageCommentsResponse>(
+        "/api/v1/manage/comments",
+        {
+          query: {
+            status: "trash",
+            sortBy: "createdAt",
+            sortOrder: "asc",
+            page: 1,
+            size: 100,
+          },
+        },
+      );
+      if (!result.items.length) break;
+      const outcomes = await Promise.allSettled(
+        result.items.map((comment) =>
+          call(`/api/v1/manage/comments/${comment.id}`, { method: "DELETE" }),
+        ),
+      );
+      if (outcomes.some((outcome) => outcome.status === "rejected")) {
+        throw new Error("部分评论未能永久删除");
+      }
+      if (result.items.length < 100) break;
+    }
+    selected.value = [];
+    await refresh();
+    return true;
+  } catch (error: any) {
+    toast.add({
+      title: "回收站未清空",
+      description: error?.message || "请稍后重试。",
+      color: "error",
+    });
+    return false;
+  } finally {
+    emptyingTrash.value = false;
+  }
+}
+
 async function applyBatch() {
   if (!batchAction.value || !selected.value.length || batchBusy.value) return;
   batchBusy.value = true;
@@ -196,36 +242,56 @@ function askDelete(comment: CommentAdminView) {
   deleteOpen.value = true;
 }
 function rowActionItems(comment: CommentAdminView) {
-  const moderation =
-    comment.status === "spam" || comment.status === "trash"
-      ? {
+  const disabled = busy.value === comment.id;
+  if (comment.status === "trash") {
+    return [
+      [
+        {
+          id: "restore",
           label: "恢复评论",
           icon: "i-tabler-restore",
-          disabled: busy.value === comment.id,
+          disabled,
           onSelect: () => void setCommentStatus(comment.id, "approved"),
-        }
-      : {
-          label: "标记为垃圾",
-          icon: "i-tabler-alert-triangle",
-          disabled: busy.value === comment.id,
-          onSelect: () => void setCommentStatus(comment.id, "spam"),
-        };
+        },
+      ],
+      [
+        {
+          id: "delete-permanently",
+          label: "永久删除",
+          icon: "i-tabler-trash-x",
+          tone: "danger" as const,
+          disabled,
+          onSelect: () => askDelete(comment),
+        },
+      ],
+    ];
+  }
   return [
-    [moderation],
     [
+      comment.status === "spam"
+        ? {
+            id: "restore",
+            label: "恢复评论",
+            icon: "i-tabler-restore",
+            disabled,
+            onSelect: () => void setCommentStatus(comment.id, "approved"),
+          }
+        : {
+            id: "spam",
+            label: "标记为垃圾",
+            icon: "i-tabler-alert-triangle",
+            disabled,
+            onSelect: () => void setCommentStatus(comment.id, "spam"),
+          },
       {
-        label: "删除",
+        id: "trash",
+        label: "移入回收站",
         icon: "i-tabler-trash",
-        class: "text-muted data-[highlighted]:text-error",
-        disabled: busy.value === comment.id,
-        onSelect: () => askDelete(comment),
+        disabled,
+        onSelect: () => void setCommentStatus(comment.id, "trash"),
       },
     ],
   ];
-}
-
-function reloadComments() {
-  void refresh();
 }
 
 function changeDateSort() {
@@ -262,13 +328,9 @@ function publicDocumentLink(comment: CommentAdminView) {
     path: `/${comment.collectionSlug}/${comment.slugPath}`,
     query: {
       ...(comment.versionKey ? { version: comment.versionKey } : {}),
-      ...(comment.locale !== "en" ? { locale: comment.locale } : {}),
+      ...(comment.locale ? { locale: comment.locale } : {}),
     },
   };
-}
-
-function authorInitial(name: string) {
-  return (name || "?").charAt(0).toUpperCase();
 }
 
 function formatDate(value: string) {
@@ -283,6 +345,87 @@ function formatDate(value: string) {
     hour12: false,
   }).format(date);
 }
+
+function submitSearch(value: string) {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchInput.value = value;
+  query.value = value.trim();
+  page.value = 1;
+  selected.value = [];
+}
+function changeLifecycle(value: CommentModerationLifecycle) {
+  status.value = value;
+}
+function moderationItem(comment: CommentAdminView): CommentModerationItem {
+  return {
+    id: comment.id,
+    content: comment.content,
+    createdAt: comment.createdAt,
+    authorName: comment.authorName || "匿名用户",
+    avatarUrl: comment.avatarUrl,
+    anonymous: !comment.userSub,
+    reply: Boolean(comment.parentId),
+    approve: comment.status === "pending",
+    approving: busy.value === comment.id,
+    actions: rowActionItems(comment),
+    ...(comment.status === "approved"
+      ? {}
+      : { status: statusMeta[comment.status] }),
+    source: {
+      label: comment.documentTitle || "文档已删除",
+      to: publicDocumentLink(comment),
+      icon: "i-tabler-file-text",
+    },
+  };
+}
+const moderationModel = computed<CommentModerationCollectionModel>(() => ({
+  search: searchInput.value,
+  searchPlaceholder: "搜索评论、评论者或文档…",
+  items: items.value.map(moderationItem),
+  state: error.value ? "error" : showSkeleton.value ? "loading" : "ready",
+  ...(error.value ? { errorMessage: "评论列表暂时无法加载。" } : {}),
+  total: total.value,
+  page: page.value,
+  pageSize: size.value,
+  pageSizes,
+  activeFilterCount: 0,
+  controls: [],
+  sortOrder: sortOrder.value,
+  lifecycle: lifecycle.value,
+  emptyingTrash: emptyingTrash.value,
+  selection: {
+    enabled: true,
+    count: selected.value.length,
+    pageSelected: allSelected.value,
+    pageIndeterminate:
+      selected.value.length > 0 && !allSelected.value,
+    isSelected: (id) => selected.value.includes(id),
+  },
+}));
+const moderationActions: CommentModerationCollectionActions = {
+  updateSearch: (value) => {
+    searchInput.value = value;
+  },
+  search: submitSearch,
+  controlChange: () => undefined,
+  clearFilters: () => changeLifecycle("all"),
+  retry: refresh,
+  sort: changeDateSort,
+  lifecycleChange: changeLifecycle,
+  emptyTrash,
+  approve: (id) => setCommentStatus(id, "approved"),
+  pageChange: (value) => {
+    page.value = value;
+  },
+  pageSizeChange: (value) => {
+    size.value = value;
+  },
+  togglePage,
+  toggleItem: toggleOne,
+  clearSelection: () => {
+    selected.value = [];
+  },
+};
 </script>
 
 <template>
@@ -293,258 +436,34 @@ function formatDate(value: string) {
     main-id="manage-main"
     body-class="w-full"
   >
-    <section
-      class="overflow-hidden rounded-xl border border-default bg-default"
-      aria-label="评论治理列表"
-      data-manage-comments
+    <CommentModerationCollection
+      :model="moderationModel"
+      :actions="moderationActions"
+      :format-date="formatDate"
     >
-      <CollectionTableToolbar
-        v-model:search="searchInput"
-        label="评论工具栏"
-        search-placeholder="搜索评论、评论者或文档…"
-        filter-label="筛选"
-        :selection-count="selected.length"
-      >
-        <template #utilities>
-          <USelect
-            v-model="status"
-            :items="statusItems"
-            value-key="value"
-            aria-label="评论范围"
-            size="sm"
-            class="w-32"
-          />
-        </template>
-        <template #selection>
-          <div class="flex min-w-0 items-center justify-between gap-2">
-            <span class="text-sm font-medium text-highlighted">
-              已选择 {{ selected.length }} 条评论
-            </span>
-            <div class="flex items-center gap-2">
-              <USelect
-                v-model="batchAction"
-                :items="batchItems"
-                value-key="value"
-                placeholder="批量操作"
-                size="xs"
-                class="w-28"
-              />
-              <UButton
-                label="应用"
-                size="xs"
-                :loading="batchBusy"
-                :disabled="!batchAction"
-                @click="applyBatch"
-              />
-              <UButton
-                icon="i-tabler-x"
-                aria-label="取消选择"
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                square
-                @click="selected = []"
-              />
-            </div>
-          </div>
-        </template>
-      </CollectionTableToolbar>
-
-      <div
-        v-if="showSkeleton"
-        class="grid gap-3 p-4 sm:p-5"
-        aria-label="正在加载评论"
-      >
-        <USkeleton v-for="index in 7" :key="index" class="h-20 rounded-lg" />
-      </div>
-
-      <div v-else-if="error" class="px-5 py-10 text-center">
-        <UIcon name="i-tabler-alert-circle" class="mx-auto size-7 text-error" />
-        <p class="mt-2 text-sm text-muted">评论列表暂时无法加载。</p>
-        <UButton
-          label="重新加载"
-          icon="i-tabler-refresh"
-          color="neutral"
-          variant="outline"
-          size="sm"
-          class="mt-4"
-          @click="reloadComments"
+      <template #bulk-actions>
+        <USelect
+          v-model="batchAction"
+          :items="batchItems"
+          value-key="value"
+          placeholder="批量操作"
+          size="xs"
+          class="w-28"
         />
-      </div>
-
-      <div v-else-if="!items.length" class="px-5 py-12 text-center text-muted">
-        <UIcon name="i-tabler-message-off" class="mx-auto size-7" />
-        <p class="mt-2 text-sm">当前没有匹配的评论。</p>
-      </div>
-
-      <template v-else>
-        <div class="border-b border-default px-4 py-2.5 sm:px-5">
-          <div
-            class="grid grid-cols-[1.5rem_minmax(0,1fr)_6.5rem] items-center gap-3 text-xs font-medium text-muted lg:grid-cols-[1.5rem_minmax(16rem,1.4fr)_minmax(10rem,0.8fr)_10rem_8.5rem_6.5rem]"
-          >
-            <UCheckbox
-              :model-value="allSelected"
-              aria-label="选择当前页评论"
-              @update:model-value="togglePage(Boolean($event))"
-            />
-            <span>评论</span>
-            <span class="hidden lg:block">来源</span>
-            <span class="hidden lg:block">用户</span>
-            <CollectionSortHeader
-              class="hidden lg:inline-flex"
-              label="评论日期"
-              :active="true"
-              :sort-order="sortOrder"
-              @sort="changeDateSort"
-            />
-            <span class="text-right">操作</span>
-          </div>
-        </div>
-        <div class="divide-y divide-default">
-          <article
-            v-for="comment in items"
-            :key="comment.id"
-            class="grid min-w-0 grid-cols-[1.5rem_minmax(0,1fr)_6.5rem] items-start gap-3 px-4 py-3 sm:px-5 lg:grid-cols-[1.5rem_minmax(16rem,1.4fr)_minmax(10rem,0.8fr)_10rem_8.5rem_6.5rem] lg:items-center"
-            data-manage-comment-row
-          >
-            <UCheckbox
-              :model-value="selected.includes(comment.id)"
-              :aria-label="`选择 ${comment.authorName} 的评论`"
-              @update:model-value="toggleOne(comment.id, Boolean($event))"
-            />
-            <div class="min-w-0">
-              <p
-                class="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-default"
-              >
-                {{ comment.content }}
-              </p>
-              <UBadge
-                v-if="comment.status !== 'approved'"
-                :label="statusMeta[comment.status].label"
-                :color="statusMeta[comment.status].color"
-                :icon="statusMeta[comment.status].icon"
-                variant="subtle"
-                size="sm"
-                class="mt-1.5 shrink-0"
-              />
-              <div
-                class="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-muted lg:hidden"
-              >
-                <UAvatar
-                  :src="comment.avatarUrl"
-                  :text="authorInitial(comment.authorName)"
-                  alt=""
-                  size="2xs"
-                  class="shrink-0"
-                />
-                <span class="truncate font-medium text-highlighted">
-                  {{ comment.authorName }}
-                </span>
-                <span v-if="comment.parentId" class="text-dimmed">回复</span>
-                <span class="text-dimmed">·</span>
-                <time :datetime="comment.createdAt">
-                  {{ formatDate(comment.createdAt) }}
-                </time>
-                <NuxtLink
-                  :to="publicDocumentLink(comment)"
-                  class="mt-1 flex basis-full items-center gap-1.5 truncate hover:text-primary"
-                >
-                  <UIcon name="i-tabler-file-text" class="size-3.5 shrink-0" />
-                  <span class="truncate">{{ comment.documentTitle }}</span>
-                </NuxtLink>
-              </div>
-            </div>
-            <div class="hidden min-w-0 lg:block">
-              <NuxtLink
-                :to="publicDocumentLink(comment)"
-                class="flex min-w-0 items-center gap-1.5 text-xs leading-5 text-muted hover:text-primary"
-              >
-                <UIcon name="i-tabler-file-text" class="size-3.5 shrink-0" />
-                <span class="line-clamp-2">{{ comment.documentTitle }}</span>
-              </NuxtLink>
-            </div>
-            <div class="hidden min-w-0 items-center gap-2 lg:flex">
-              <UAvatar
-                :src="comment.avatarUrl"
-                :text="authorInitial(comment.authorName)"
-                alt=""
-                size="2xs"
-                class="shrink-0"
-              />
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-highlighted">
-                  {{ comment.authorName }}
-                </p>
-                <p v-if="comment.parentId" class="text-xs text-dimmed">回复</p>
-              </div>
-            </div>
-            <div class="hidden text-xs text-muted lg:flex lg:items-center">
-              <time :datetime="comment.createdAt">
-                {{ formatDate(comment.createdAt) }}
-              </time>
-            </div>
-            <div class="flex flex-nowrap items-center justify-end gap-1">
-              <UButton
-                v-if="comment.status === 'pending'"
-                class="sm:hidden"
-                icon="i-tabler-check"
-                aria-label="通过"
-                color="success"
-                variant="soft"
-                size="xs"
-                square
-                :loading="busy === comment.id"
-                @click="setCommentStatus(comment.id, 'approved')"
-              />
-              <UButton
-                v-if="comment.status === 'pending'"
-                class="hidden sm:inline-flex"
-                label="通过"
-                icon="i-tabler-check"
-                color="success"
-                variant="soft"
-                size="xs"
-                :loading="busy === comment.id"
-                @click="setCommentStatus(comment.id, 'approved')"
-              />
-              <UDropdownMenu :items="rowActionItems(comment)">
-                <UButton
-                  icon="i-tabler-dots-vertical"
-                  :aria-label="`评论操作：${comment.authorName || '用户'}`"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :loading="busy === comment.id"
-                />
-              </UDropdownMenu>
-            </div>
-          </article>
-        </div>
+        <UButton
+          label="应用"
+          size="xs"
+          :loading="batchBusy"
+          :disabled="!batchAction"
+          @click="applyBatch"
+        />
       </template>
-
-      <footer
-        class="flex flex-col gap-3 border-t border-default px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
-      >
-        <span class="text-xs text-muted">共 {{ total }} 条评论</span>
-        <div class="flex items-center gap-2">
-          <USelect
-            v-model="size"
-            :items="sizeItems"
-            value-key="value"
-            aria-label="每页评论数量"
-            size="sm"
-            class="w-24"
-          />
-          <CollectionPagination v-model="page" :total-pages="totalPages" />
-        </div>
-      </footer>
-    </section>
+    </CommentModerationCollection>
 
     <UModal
       v-model:open="deleteOpen"
-      title="删除评论"
-      :description="`删除「${deleteTarget?.authorName || '用户'}」的评论及其回复。此操作不可撤销。`"
+      title="永久删除评论"
+      :description="`永久删除「${deleteTarget?.authorName || '用户'}」的评论及其回复？此操作不可撤销。`"
       :ui="{ footer: 'justify-end' }"
     >
       <template #footer>
@@ -556,8 +475,8 @@ function formatDate(value: string) {
           @click="closeDelete"
         />
         <UButton
-          label="确认删除"
-          icon="i-tabler-trash"
+          label="永久删除"
+          icon="i-tabler-trash-x"
           color="error"
           :loading="busy === deleteTarget?.id"
           @click="confirmDelete"

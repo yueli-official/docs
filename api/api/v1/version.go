@@ -32,3 +32,16 @@ type CreateCollectionVersionReq struct {
 type CreateCollectionVersionRes struct {
 	Version *CollectionVersionView `json:"version"`
 }
+
+type UpdateCollectionVersionReq struct {
+	g.Meta       `path:"/api/v1/manage/collections/{id}/versions/{versionId}" method:"patch" tags:"docs" summary:"Update collection version metadata"`
+	CollectionID string `json:"id" in:"path" v:"required"`
+	VersionID    string `json:"versionId" in:"path" v:"required"`
+	Label        string `json:"label" v:"required"`
+	Status       string `json:"status" v:"required"`
+	IsDefault    bool   `json:"isDefault"`
+	SortOrder    int    `json:"sortOrder"`
+}
+type UpdateCollectionVersionRes struct {
+	Version *CollectionVersionView `json:"version"`
+}

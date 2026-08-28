@@ -186,7 +186,7 @@ func (index *Index) applyRowsTx(ctx context.Context, tx *sql.Tx, values []docRow
 func (index *Index) applyRow(ctx context.Context, projector search.Projector, row docRow) error {
 	key := search.DocumentKey{Kind: "document", ID: search.DocumentID(row.ID)}
 	var change search.Change
-	if row.Status == "published" && row.VersionStatus == "published" && !row.DeletedAt.Valid {
+	if row.Status == "published" && (row.VersionStatus == "published" || row.VersionStatus == "archived") && !row.DeletedAt.Valid {
 		change = search.Upsert(search.SourceDocument{
 			Key: key, Revision: search.ProjectionRevision(row.Revision), Analyzer: analyzer,
 			Title: row.Title, Summary: row.Excerpt, Body: row.Content, SortAt: row.UpdatedAt.UTC(),

@@ -87,6 +87,7 @@ INSERT INTO doc_comments (
 func (store *Postgres) ApprovedTop(
 	ctx context.Context,
 	documentID string,
+	ascending bool,
 	limit int,
 	offset int,
 ) ([]*Comment, int, error) {
@@ -97,11 +98,15 @@ WHERE document_id = $1 AND parent_id IS NULL
   AND status = 'approved' AND deleted_at IS NULL`, documentID).Scan(&total); err != nil {
 		return nil, 0, err
 	}
+	order := "created_at DESC, id DESC"
+	if ascending {
+		order = "created_at ASC, id ASC"
+	}
 	rows, err := store.db.QueryContext(ctx, `SELECT `+commentColumns+`
 FROM doc_comments
 WHERE document_id = $1 AND parent_id IS NULL
   AND status = 'approved' AND deleted_at IS NULL
-ORDER BY created_at DESC, id DESC
+ORDER BY `+order+`
 LIMIT $2 OFFSET $3`, documentID, limit, offset)
 	if err != nil {
 		return nil, 0, err

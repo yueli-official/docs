@@ -1,5 +1,6 @@
 <script setup lang="ts">
-type IconOption = { label: string, value: string }
+import { AdminIconPicker } from '@yueli/ui/admin'
+import type { AdminIconOption } from '@yueli/ui/admin'
 
 const props = withDefaults(defineProps<{
   icon?: string
@@ -11,7 +12,7 @@ const props = withDefaults(defineProps<{
   progress?: number
   uploading?: boolean
   disabled?: boolean
-  iconOptions?: IconOption[]
+  iconOptions?: AdminIconOption[]
   coverSpec?: string
 }>(), {
   icon: '', coverUrl: '', previewUrl: '', title: '视觉资产',
@@ -32,11 +33,6 @@ const currentIcon = computed(() => props.icon || 'i-tabler-stack-2')
 const visibleCoverUrl = computed(() => props.previewUrl || props.coverUrl)
 const hasCover = computed(() => Boolean(visibleCoverUrl.value))
 const isUploading = computed(() => props.uploading || props.progress >= 0)
-const coverModel = computed({
-  get: () => props.coverUrl,
-  set: value => emit('update:coverUrl', value),
-})
-
 function openFilePicker() {
   if (!props.disabled && !isUploading.value) fileInput.value?.click()
 }
@@ -86,11 +82,32 @@ function clearCover() {
         <div class="relative aspect-square overflow-hidden rounded-xl border border-default bg-elevated" data-cover-preview>
           <img v-if="hasCover" :src="visibleCoverUrl" alt="" class="size-full object-cover">
           <div v-else class="grid size-full place-items-center text-muted">
-            <div class="text-center">
+            <div class="grid justify-items-center gap-3 text-center">
               <span class="mx-auto grid size-11 place-items-center rounded-lg bg-default text-primary ring-1 ring-default"><UIcon :name="currentIcon" class="block size-5" /></span>
-              <p class="mt-2 px-2 text-xs leading-5 text-muted">未设置封面</p>
+              <UButton
+                icon="i-tabler-upload"
+                label="上传封面"
+                color="neutral"
+                variant="outline"
+                size="sm"
+                :disabled="disabled || isUploading"
+                @click="openFilePicker"
+              />
             </div>
           </div>
+          <UTooltip v-if="hasCover && !isUploading" text="移除封面">
+            <UButton
+              icon="i-tabler-x"
+              color="neutral"
+              variant="soft"
+              size="xs"
+              square
+              class="absolute end-2 top-2 z-10 grid size-8 place-items-center bg-default/90 p-0 shadow-sm"
+              aria-label="移除封面"
+              :disabled="disabled"
+              @click="clearCover"
+            />
+          </UTooltip>
           <div v-if="isUploading" class="absolute inset-0 grid place-items-center bg-default/75 backdrop-blur-sm" role="status" aria-live="polite">
             <div class="w-3/4">
               <UProgress :model-value="Math.max(0, progress)" />
@@ -99,18 +116,10 @@ function clearCover() {
           </div>
         </div>
 
-        <div class="grid gap-2" data-cover-actions>
-          <UButton icon="i-tabler-upload" :label="hasCover ? '更换封面' : '上传封面'" color="neutral" variant="outline" block :disabled="disabled || isUploading" @click="openFilePicker" />
-          <UButton icon="i-tabler-trash" label="移除封面" color="neutral" variant="ghost" block :disabled="disabled || isUploading || !hasCover" @click="clearCover" />
-        </div>
-
-        <UFormField label="封面链接" data-cover-link>
-          <UInput v-model="coverModel" icon="i-tabler-link" placeholder="https://..." class="w-full min-w-0" :disabled="disabled || isUploading" />
-        </UFormField>
       </div>
 
       <div class="min-w-0" data-icon-column>
-        <ManageIconPicker :model-value="currentIcon" :disabled="disabled" :icon-options="iconOptions" @update:model-value="emit('update:icon', $event)" />
+        <AdminIconPicker :model-value="currentIcon" :disabled="disabled" :options="iconOptions" @update:model-value="emit('update:icon', $event)" />
       </div>
 
       <input ref="fileInput" type="file" :accept="accept" class="hidden" @change="onFileChange">

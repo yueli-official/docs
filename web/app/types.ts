@@ -8,6 +8,10 @@ export interface Collection {
   coverUrl: string;
   icon: string;
   sortOrder: number;
+  releaseFamilyId?: string;
+  releaseFamilyName?: string;
+  semanticVersion?: string;
+  derivedFromCollectionId?: string;
   docCount: number;
 }
 // CollectionView is the API response shape for collection list/detail endpoints.
@@ -25,6 +29,8 @@ export interface DocBase {
   seoDescription?: string;
   locale: string;
   translationKey: string;
+  badgeText: string;
+  badgeIcon: string;
   sortOrder: number;
 }
 export interface DocTreeNode extends DocBase {
@@ -61,6 +67,9 @@ export interface URLResolutionResponse {
   resolution: URLResolution;
 }
 export interface CollectionList {
+  items: Collection[];
+}
+export interface CollectionReleasesResponse {
   items: Collection[];
 }
 export interface MeView {
@@ -108,6 +117,31 @@ export interface CollectionVersion {
 export interface CollectionVersionsResponse {
   items: CollectionVersion[];
 }
+export interface CollectionLocale {
+  collectionId: string;
+  locale: string;
+  label: string;
+  htmlLang: string;
+  direction: "ltr" | "rtl";
+  isDefault: boolean;
+  enabled: boolean;
+  sortOrder: number;
+  docCount: number;
+}
+export interface CollectionLocalesResponse {
+  items: CollectionLocale[];
+}
+export interface CollectionVariantsResponse {
+  locales: CollectionLocale[];
+  versions: CollectionVersion[];
+}
+export interface DocumentVariantResolution {
+  path: string;
+  locale: string;
+  version: string;
+  translationKey?: string;
+  fallback?: "default_locale" | "collection";
+}
 
 export type ManageDocStatusKey =
   "all" | "draft" | "published" | "archived" | "issues";
@@ -127,6 +161,8 @@ export interface ManageDocListItem {
   excerpt: string;
   status: string;
   locale: string;
+  badgeText: string;
+  badgeIcon: string;
   sortOrder: number;
   updatedAt: string;
 }

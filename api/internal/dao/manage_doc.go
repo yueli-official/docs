@@ -111,7 +111,7 @@ func (p *PG) ManageDocs(ctx context.Context, query model.ManageDocsQuery) (*mode
     d.version_id, v.key AS version_key, v.label AS version_label,
     COALESCE(d.parent_id::text, '') AS parent_id, COALESCE(parent_doc.title, '') AS parent_title,
     d.slug, COALESCE(paths.slug_path, d.slug) AS slug_path,
-    d.title, d.excerpt, d.status, d.locale, d.sort_order, d.updated_at
+    d.title, d.excerpt, d.status, d.locale, d.badge_text, d.badge_icon, d.sort_order, d.updated_at
 ` + manageDocsFrom + " WHERE " + where + " ORDER BY " + order + " LIMIT ? OFFSET ?"
 	rowArgs := append(append([]any{}, args...), query.Size, (query.Page-1)*query.Size)
 	var items []*model.ManageDoc

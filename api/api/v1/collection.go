@@ -4,15 +4,19 @@ import "github.com/gogf/gf/v2/frame/g"
 
 // CollectionView is the public JSON projection of a collection.
 type CollectionView struct {
-	ID           string `json:"id"`
-	Slug         string `json:"slug"`
-	Title        string `json:"title"`
-	Description  string `json:"description"`
-	CoverAssetID string `json:"coverAssetId"`
-	CoverURL     string `json:"coverUrl"`
-	Icon         string `json:"icon"`
-	SortOrder    int    `json:"sortOrder"`
-	DocCount     int    `json:"docCount"`
+	ID                      string `json:"id"`
+	Slug                    string `json:"slug"`
+	Title                   string `json:"title"`
+	Description             string `json:"description"`
+	CoverAssetID            string `json:"coverAssetId"`
+	CoverURL                string `json:"coverUrl"`
+	Icon                    string `json:"icon"`
+	SortOrder               int    `json:"sortOrder"`
+	ReleaseFamilyID         string `json:"releaseFamilyId,omitempty"`
+	ReleaseFamilyName       string `json:"releaseFamilyName,omitempty"`
+	SemanticVersion         string `json:"semanticVersion,omitempty"`
+	DerivedFromCollectionID string `json:"derivedFromCollectionId,omitempty"`
+	DocCount                int    `json:"docCount"`
 }
 
 type ListCollectionsReq struct {
@@ -28,6 +32,14 @@ type GetCollectionReq struct {
 }
 type GetCollectionRes struct {
 	Collection *CollectionView `json:"collection"`
+}
+
+type GetCollectionReleasesReq struct {
+	g.Meta `path:"/api/v1/collections/{slug}/releases" method:"get" tags:"docs" summary:"List related collection releases"`
+	Slug   string `json:"slug" in:"path" v:"required"`
+}
+type GetCollectionReleasesRes struct {
+	Items []*CollectionView `json:"items"`
 }
 
 type CreateCollectionReq struct {
@@ -84,4 +96,25 @@ type DeleteCollectionReq struct {
 }
 type DeleteCollectionRes struct {
 	Deleted bool `json:"deleted"`
+}
+
+type CloneCollectionReleaseReq struct {
+	g.Meta                `path:"/api/v1/manage/collections/{id}/clone-release" method:"post" tags:"docs" summary:"Clone a collection as a related semantic release"`
+	ID                    string `json:"id" in:"path" v:"required"`
+	SourceSemanticVersion string `json:"sourceSemanticVersion"`
+	TargetSemanticVersion string `json:"targetSemanticVersion" v:"required"`
+	Title                 string `json:"title" v:"required"`
+	Slug                  string `json:"slug"`
+}
+type CloneCollectionReleaseRes struct {
+	Collection *CollectionView `json:"collection"`
+}
+
+type InitializeCollectionReleaseReq struct {
+	g.Meta          `path:"/api/v1/manage/collections/{id}/release" method:"post" tags:"docs" summary:"Initialize a collection as a semantic release"`
+	ID              string `json:"id" in:"path" v:"required"`
+	SemanticVersion string `json:"semanticVersion" v:"required"`
+}
+type InitializeCollectionReleaseRes struct {
+	Collection *CollectionView `json:"collection"`
 }

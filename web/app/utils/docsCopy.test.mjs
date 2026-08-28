@@ -24,6 +24,24 @@ test("homepage separates recommended documents from quick links", () => {
   assert.doesNotMatch(page, /搜索标题、摘要或正文/);
 });
 
+test("document variants live in the header and use transient shared feedback", () => {
+  const switcher = readApp("components/DocumentVariantSwitcher.vue");
+  const collection = readApp("pages/[collection]/index.vue");
+  const reader = readApp("pages/[collection]/[...slug].vue");
+
+  assert.match(switcher, /createDocsNotifier\(useToast\(\)\)/);
+  assert.match(switcher, /duration:\s*3_000/);
+  assert.match(switcher, /data-document-variant-switcher/);
+  assert.match(
+    switcher,
+    /resolution\.fallback === "collection" && props\.translationKey/,
+  );
+  assert.doesNotMatch(switcher, /docs-variant-notice|<UAlert/);
+  assert.match(collection, /sm:justify-between[\s\S]*DocumentVariantSwitcher/);
+  assert.match(reader, /sm:justify-between[\s\S]*DocumentVariantSwitcher/);
+  assert.doesNotMatch(reader, /分享文档|ContentShareActions/);
+});
+
 test("manage navigation keeps one settings entry and moves its workflows into tabs", () => {
   const layout = readApp("layouts/manage.vue");
   const page = readApp("pages/manage/home.vue");
@@ -48,7 +66,10 @@ test("manage navigation keeps one settings entry and moves its workflows into ta
   assert.doesNotMatch(settingsNavigation, /children:|type: "trigger"/);
   assert.doesNotMatch(layout, /站点设置 · (?:首页|页脚|基础)/);
   assert.equal(layout.match(/label: "站点设置"/g)?.length, 2);
-  assert.match(page, /import \{ TabbedSurface \} from "@yueli\/ui\/admin"/);
+  assert.match(
+    page,
+    /import \{[\s\S]{0,200}TabbedSurface[\s\S]{0,100}from "@yueli\/ui\/admin"/,
+  );
   assert.match(page, /<TabbedSurface/);
   assert.match(page, /navigation-label="站点设置"/);
   assert.match(page, /value: "home"/);
@@ -143,7 +164,21 @@ test("manage homepage layout uses the shared icon picker without preview chrome"
   const page = readApp("pages/manage/home.vue");
   assert.doesNotMatch(page, /首页预览|页脚预览|公开首页预览/);
   assert.match(page, /快速入口配置/);
-  assert.match(page, /ManageIconPicker/);
+  assert.match(page, /AdminIconPicker/);
+  assert.match(page, /<SettingSection\s+title="首页文案"/);
+  assert.match(page, /<SettingSection\s+title="快速入口配置"/);
+  assert.match(page, /<SettingSection\s+title="推荐文档"/);
+  assert.match(page, /label="添加文档"/);
+  assert.match(page, /v-model:open="featuredPickerOpen"/);
+  assert.match(page, /placeholder="搜索文档集"/);
+  assert.match(page, /featuredCollectionActionItems/);
+  assert.doesNotMatch(page, /<SettingSection\s+title="展示顺序"|toggleFeatured/);
+  assert.match(page, /<SettingSection\s+title="页脚内容"/);
+  assert.match(page, /<SettingSection\s+title="站点基础"/);
+  assert.doesNotMatch(page, /配置首页入口卡片的标题、路径和展示状态/);
+  assert.doesNotMatch(page, /选择首页展示的文档集，右侧顺序按选择顺序生成/);
+  assert.doesNotMatch(page, /用于所有文档页面底部的品牌说明与联系信息/);
+  assert.doesNotMatch(page, /这些字段用于导航品牌、SEO 描述和支持入口/);
   assert.match(page, /UPopover/);
   assert.match(page, /compact/);
   assert.match(page, /grid-cols-\[2\.75rem_minmax\(0,1fr\)\]/);
@@ -151,6 +186,20 @@ test("manage homepage layout uses the shared icon picker without preview chrome"
   assert.doesNotMatch(page, /group-hover/);
   assert.doesNotMatch(page, /opacity-0/);
   assert.doesNotMatch(page, /<UInput v-model="link\.icon"/);
+});
+
+test("collection settings initialize a single release and derive translation drafts", () => {
+  const panel = readApp("components/manage/CollectionVariantsManager.vue");
+  assert.match(panel, /设置当前版本/);
+  assert.match(
+    panel,
+    /\/manage\/collections\/\$\{props\.collection\.id\}\/release/,
+  );
+  assert.match(panel, /复制语言/);
+  assert.match(panel, /\/locales\/clone/);
+  assert.match(panel, /sourceLocale/);
+  assert.match(panel, /targetLocale/);
+  assert.match(panel, /复制后的文档全部为草稿/);
 });
 
 test("docs site exposes a dedicated collections directory", () => {
@@ -184,14 +233,30 @@ test("document editor exposes frequent properties and lifecycle actions", () => 
   assert.match(editor, /data-docs-inspector-organization/);
   assert.match(editor, /data-docs-inspector-seo/);
   assert.match(editor, /xl:pr-\[27rem\]/);
-  assert.match(editor, /label: "内容", value: "content", icon: "i-tabler-stack-2"/);
-  assert.match(editor, /label: "组织", value: "organization", icon: "i-tabler-arrows-sort"/);
-  assert.match(editor, /label: "搜索", value: "seo", icon: "i-tabler-search"/);
+  assert.match(
+    editor,
+    /label: "内容", value: "content", icon: "i-tabler-stack-2"/,
+  );
+  assert.match(
+    editor,
+    /label: "组织", value: "organization", icon: "i-tabler-arrows-sort"/,
+  );
+  assert.match(editor, /label: "SEO", value: "seo", icon: "i-tabler-search"/);
+  const inspector = editor.slice(
+    editor.indexOf("<EditorInspector"),
+    editor.indexOf("</EditorInspector>"),
+  );
+  const inspectorFields = [
+    ...inspector.matchAll(/<U(?:Input|Textarea|Select|SelectMenu)\b[\s\S]*?>/g),
+  ].map((match) => match[0]);
+  assert.ok(inspectorFields.length > 0);
+  for (const field of inspectorFields)
+    assert.match(field, /class="[^"]*w-full/);
   assert.match(editor, /data-docs-lifecycle-actions/);
   assert.match(editor, /label="摘要"/);
   assert.match(editor, /label="文档集"/);
   assert.match(editor, /label="父文档"/);
-  assert.match(editor, /label="版本"/);
+  assert.doesNotMatch(editor, /label="版本"/);
   assert.match(editor, /label="语言"/);
   assert.match(editor, /label: "转为草稿"/);
   assert.match(editor, /label: "归档"/);
@@ -214,6 +279,20 @@ test("document editor wires image upload and clears the exact local draft after 
   assert.match(editor, /editorComp\.value\?\.markSaved\(\)/);
   assert.match(editor, /draftInstanceId/);
   assert.doesNotMatch(editor, /:draft-entity-id="isNew \? 'new' : docId"/);
+});
+
+test("document inspector uses SEO and full-width fields", () => {
+  const editor = readApp("components/manage/DocEditorWorkbench.vue");
+  assert.match(editor, /label: "SEO", value: "seo", icon: "i-tabler-search"/);
+  const inspector = editor.slice(
+    editor.indexOf("<EditorInspector"),
+    editor.indexOf("</EditorInspector>"),
+  );
+  const fields = [
+    ...inspector.matchAll(/<U(?:Input|Textarea|Select|SelectMenu)\b[\s\S]*?>/g),
+  ].map((match) => match[0]);
+  assert.ok(fields.length > 0);
+  for (const field of fields) assert.match(field, /class="[^"]*w-full/);
 });
 
 test("quick edit uses a non-empty root parent sentinel for Nuxt UI comboboxes", () => {
@@ -256,6 +335,9 @@ test("document and tree actions follow effective capabilities", () => {
   assert.match(page, /can\("docs\.document\.archive"\)/);
   assert.match(page, /can\("docs\.document\.delete_permanently"\)/);
   assert.match(page, /const bulkItems = computed/);
+  assert.match(page, /label: "修改语言"/);
+  assert.match(page, /v-model:open="bulkLocaleOpen"/);
+  assert.match(page, /confirmBulkLocale/);
   assert.match(page, /const docColumns = computed/);
   assert.match(page, /没有文档读取权限/);
   assert.match(tree, /canEdit\?: boolean/);
@@ -293,8 +375,9 @@ test("docs settings and authorization consume effective capabilities", () => {
 
   assert.match(home, /can\("docs\.site_settings\.manage"\)/);
   assert.match(home, /没有站点设置权限/);
-  assert.match(assets, /AssetRegistrationSummary/);
+  assert.match(assets, /AssetPolicyPage/);
   assert.match(assets, /expected-namespace="docs"/);
+  assert.match(assets, /:can-edit="canEditAssets"/);
   assert.doesNotMatch(assets, /ManageAssetSettings/);
   assert.match(authorization, /<ManagePage/);
   assert.match(authorization, /<TabbedSurface/);
@@ -346,7 +429,6 @@ test("docs site exposes color mode controls in public and manage chrome", () => 
 test("collection cover upload uses the shared crop dialog before upload", () => {
   const page = readApp("pages/manage/collections.vue");
   const visualAsset = readApp("components/ManageVisualAssetField.vue");
-  const iconPicker = readApp("components/ManageIconPicker.vue");
   const assetDeclaration = JSON.parse(
     readFileSync(resolve(root, "../../deploy/asset.consumer.json"), "utf8"),
   );
@@ -367,17 +449,15 @@ test("collection cover upload uses the shared crop dialog before upload", () => 
   assert.match(visualAsset, /1:1 · 256 × 256 · WebP/);
   assert.match(visualAsset, /data-cover-column/);
   assert.match(visualAsset, /data-icon-column/);
+  assert.match(visualAsset, /AdminIconPicker/);
   assert.match(visualAsset, /i-tabler-info-circle/);
   assert.ok(
     visualAsset.indexOf("data-cover-preview") <
-      visualAsset.indexOf("data-cover-actions") &&
-      visualAsset.indexOf("data-cover-actions") <
-        visualAsset.indexOf("data-cover-link"),
+      visualAsset.indexOf("data-icon-column"),
   );
+  assert.doesNotMatch(visualAsset, /data-cover-actions|data-cover-link|封面链接/);
   assert.doesNotMatch(visualAsset, /aspect-\[16\/9\]/);
   assert.doesNotMatch(visualAsset, /:help="coverSpec"/);
-  assert.doesNotMatch(iconPicker, /iconQuery|搜索图标|<UInput/);
-  assert.match(iconPicker, /grid size-9 place-items-center p-0/);
   assert.deepEqual(coverProfile.variants, [
     {
       key: "cover",
@@ -394,7 +474,8 @@ test("collection cover upload uses the shared crop dialog before upload", () => 
   const footer = page.slice(page.indexOf("<template #footer>"));
   assert.ok(
     footer.indexOf("删除文档集") < footer.indexOf('label="取消"') &&
-      footer.indexOf('label="取消"') < footer.indexOf(":label=\"current ? '保存' : '创建'\""),
+      footer.indexOf('label="取消"') <
+        footer.indexOf(":label=\"current ? '保存' : '创建'\""),
   );
 });
 
@@ -412,43 +493,42 @@ test("document reader has a fuller reading surface", () => {
   assert.match(page, /md:text-\[2\.3125rem\]/);
   assert.doesNotMatch(page, /lg:text-5xl/);
   assert.match(page, /reading-shell/);
-  assert.match(page, /ContentShareActions/);
-  assert.match(page, /aria-label="分享文档"/);
+  assert.doesNotMatch(page, /ContentShareActions|aria-label="分享文档"/);
 });
 
 test("docs comments provide a reader thread and an administrator moderation queue", () => {
   const reader = readApp("pages/[collection]/[...slug].vue");
-  const form = readApp("components/DocumentCommentForm.vue");
   const comments = readApp("components/DocumentComments.vue");
+  const chapterNavigation = readApp("components/DocNav.vue");
   const manage = readApp("pages/manage/comments.vue");
   const layout = readApp("layouts/manage.vue");
 
   assert.match(reader, /<DocumentComments/);
-  assert.match(form, /登录后评论/);
-  assert.match(form, /\/api\/v1\/docs\/\$\{props\.documentId\}\/comments/);
+  assert.match(reader, /<DocNav[\s\S]*<DocumentComments/);
   assert.match(comments, /data-document-comments/);
-  assert.match(comments, /data-comment-thread/);
-  assert.match(comments, /:src="comment\.avatarUrl"/);
+  assert.match(comments, /PublicCommentThread/);
+  assert.match(comments, /sortOrder: order\.value/);
+  assert.match(comments, /登录后评论/);
+  assert.match(comments, /\/api\/v1\/docs\/\$\{props\.documentId\}\/comments/);
+  assert.doesNotMatch(comments, /border-t border-default/);
+  assert.doesNotMatch(chapterNavigation, /border-t border-default/);
+  assert.doesNotMatch(comments, /data-comment-thread|DocumentCommentForm/);
   assert.doesNotMatch(comments, /isMember|label="成员"/);
   assert.match(manage, /<ManagePage/);
-  assert.match(manage, /data-manage-comments/);
+  assert.match(manage, /CommentModerationCollection/);
   assert.match(manage, /批量操作/);
-  for (const heading of ["评论", "来源", "用户", "操作"]) {
-    assert.match(manage, new RegExp(`>${heading}<`));
-  }
-  assert.match(manage, /label="评论日期"/);
-  assert.doesNotMatch(manage, />状态<\/span>/);
-  assert.match(manage, /:src="comment\.avatarUrl"/);
-  assert.doesNotMatch(manage, /label="成员"/);
-  assert.match(manage, /v-if="comment\.status !== 'approved'"/);
-  assert.match(manage, /rowActionItems\(comment\)/);
-  assert.match(manage, /<UDropdownMenu/);
-  assert.match(manage, /<CollectionSortHeader/);
+  assert.match(manage, /icon: "i-tabler-file-text"/);
+  assert.match(manage, /actions: rowActionItems\(comment\)/);
+  assert.doesNotMatch(manage, /<CollectionTableToolbar|<CollectionSortHeader/);
   assert.match(manage, /sortBy:\s*"createdAt"/);
   assert.match(manage, /sortOrder:\s*sortOrder\.value/);
   assert.match(manage, /useMinimumLoading/);
   assert.doesNotMatch(manage, /<UButton[\s\S]{0,160}label="标记为垃圾"/);
-  assert.match(manage, /title="删除评论"/);
+  assert.match(manage, /title="永久删除评论"/);
+  assert.match(manage, /label: "移入回收站"/);
+  assert.match(manage, /label: "永久删除"/);
+  assert.match(manage, /lifecycleChange: changeLifecycle/);
+  assert.match(manage, /emptyTrash/);
   assert.match(layout, /to: "\/manage\/comments"/);
   assert.match(layout, /label: "评论"/);
 });

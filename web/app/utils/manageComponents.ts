@@ -1,5 +1,4 @@
 export { default as ManageEmpty } from '../components/ManageEmpty.vue'
-export { default as ManageIconPicker } from '../components/ManageIconPicker.vue'
 export { default as ManageRepeaterRow } from '../components/ManageRepeaterRow.vue'
 export { default as ManageVisualAssetField } from '../components/ManageVisualAssetField.vue'
 export { default as SkeletonCards } from '../components/SkeletonCards.vue'

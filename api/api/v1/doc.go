@@ -22,6 +22,8 @@ type DocView struct {
 	Status         string     `json:"status"`
 	Locale         string     `json:"locale"`
 	TranslationKey string     `json:"translationKey"`
+	BadgeText      string     `json:"badgeText"`
+	BadgeIcon      string     `json:"badgeIcon"`
 	SortOrder      int        `json:"sortOrder"`
 	Children       []*DocView `json:"children,omitempty"`
 }
@@ -38,6 +40,8 @@ type DocTreeNodeView struct {
 	Status         string             `json:"status"`
 	Locale         string             `json:"locale"`
 	TranslationKey string             `json:"translationKey"`
+	BadgeText      string             `json:"badgeText"`
+	BadgeIcon      string             `json:"badgeIcon"`
 	SortOrder      int                `json:"sortOrder"`
 	Children       []*DocTreeNodeView `json:"children,omitempty"`
 }
@@ -68,6 +72,8 @@ type ManageDocView struct {
 	Excerpt         string    `json:"excerpt"`
 	Status          string    `json:"status"`
 	Locale          string    `json:"locale"`
+	BadgeText       string    `json:"badgeText"`
+	BadgeIcon       string    `json:"badgeIcon"`
 	SortOrder       int       `json:"sortOrder"`
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
@@ -159,6 +165,8 @@ type CreateDocReq struct {
 	SEODescription string `json:"seoDescription"`
 	Locale         string `json:"locale"`
 	TranslationKey string `json:"translationKey"`
+	BadgeText      string `json:"badgeText"`
+	BadgeIcon      string `json:"badgeIcon"`
 	SortOrder      int    `json:"sortOrder"`
 }
 type CreateDocRes struct {
@@ -178,6 +186,8 @@ type UpdateDocReq struct {
 	Locale         *string `json:"locale"`
 	VersionID      *string `json:"versionId"`
 	TranslationKey *string `json:"translationKey"`
+	BadgeText      *string `json:"badgeText"`
+	BadgeIcon      *string `json:"badgeIcon"`
 	SortOrder      *int    `json:"sortOrder"`
 	ParentID       *string `json:"parentId"`
 }

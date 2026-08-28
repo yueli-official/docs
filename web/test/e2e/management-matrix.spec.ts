@@ -321,13 +321,18 @@ export function registerManagementSuite(product: string) {
           await page.getByRole("button", { name: "文档设置" }).click();
           const settings = page.getByRole("dialog", { name: "文档设置" });
           await expect(settings).toBeVisible();
-          await expect(page.locator("[data-docs-editor-inspector]")).toHaveAttribute(
-            "data-inspector-mode",
-            "docked",
-          );
-          await expect(settings.getByRole("tab", { name: "内容", exact: true })).toBeVisible();
-          await expect(settings.getByRole("tab", { name: "组织", exact: true })).toBeVisible();
-          await expect(settings.getByRole("tab", { name: "搜索", exact: true })).toBeVisible();
+          await expect(
+            page.locator("[data-docs-editor-inspector]"),
+          ).toHaveAttribute("data-inspector-mode", "docked");
+          await expect(
+            settings.getByRole("tab", { name: "内容", exact: true }),
+          ).toBeVisible();
+          await expect(
+            settings.getByRole("tab", { name: "组织", exact: true }),
+          ).toBeVisible();
+          await expect(
+            settings.getByRole("tab", { name: "SEO", exact: true }),
+          ).toBeVisible();
           await expect(settings.getByLabel("父文档")).toBeVisible();
           await expect(page.getByLabel("摘要")).toBeVisible();
           await page.getByLabel("文档标题").pressSequentially(" ");
@@ -338,10 +343,12 @@ export function registerManagementSuite(product: string) {
             .boundingBox();
           expect(inspectorBox?.width || 0).toBeGreaterThanOrEqual(390);
           expect(inspectorBox?.width || 0).toBeLessThanOrEqual(410);
-          await settings.getByRole("tab", { name: "组织", exact: true }).click();
+          await settings
+            .getByRole("tab", { name: "组织", exact: true })
+            .click();
           await expect(settings.getByLabel("排序")).toBeVisible();
           await expect(settings.getByLabel("翻译关联键")).toBeVisible();
-          await settings.getByRole("tab", { name: "搜索", exact: true }).click();
+          await settings.getByRole("tab", { name: "SEO", exact: true }).click();
           await expect(settings.getByLabel("SEO 标题")).toBeVisible();
           await page.waitForTimeout(250);
           await page.screenshot({
@@ -352,10 +359,9 @@ export function registerManagementSuite(product: string) {
           await page.setViewportSize({ width: 390, height: 844 });
           await page.reload({ waitUntil: "networkidle" });
           await page.getByRole("button", { name: "文档设置" }).click();
-          await expect(page.locator("[data-docs-editor-inspector]")).toHaveAttribute(
-            "data-inspector-mode",
-            "overlay",
-          );
+          await expect(
+            page.locator("[data-docs-editor-inspector]"),
+          ).toHaveAttribute("data-inspector-mode", "overlay");
           await page.waitForTimeout(250);
           const mobileInspector = await page
             .locator(".y-editor-inspector-surface")
@@ -368,6 +374,76 @@ export function registerManagementSuite(product: string) {
             fullPage: false,
           });
           expect(failures).toEqual([]);
+        } finally {
+          await context.close();
+        }
+      });
+
+      test("停靠检查器与命令栏下拉保持可交互且位于最上层", async ({
+        browser,
+      }) => {
+        const context = await loginE2E(
+          browser,
+          { viewport: { width: 1440, height: 900 } },
+          undefined,
+          site.url,
+        );
+        const page = await context.newPage();
+        try {
+          await page.goto(
+            new URL(
+              "/manage/docs/operations/troubleshooting",
+              site.url,
+            ).toString(),
+            { waitUntil: "networkidle" },
+          );
+          await page.getByRole("button", { name: "文档设置" }).click();
+          const settings = page.getByRole("dialog", { name: "文档设置" });
+          await expect(settings).toBeVisible();
+
+          async function expectTopmost(locator: ReturnType<Page["locator"]>) {
+            const box = await locator.boundingBox();
+            expect(box).toBeTruthy();
+            expect(
+              await page.evaluate(
+                ({ x, y }) => {
+                  const hit = document.elementFromPoint(x, y);
+                  return Boolean(
+                    hit &&
+                    (hit === document.body ||
+                      hit.closest('[role="listbox"], [role="menu"]')),
+                  );
+                },
+                {
+                  x: box!.x + box!.width / 2,
+                  y: box!.y + Math.min(box!.height / 2, 24),
+                },
+              ),
+            ).toBe(true);
+          }
+
+          await settings.getByLabel("父文档").click();
+          const parentList = page
+            .getByRole("listbox")
+            .filter({ visible: true });
+          await expect(parentList).toBeVisible();
+          await expectTopmost(parentList);
+          await page.keyboard.press("Escape");
+
+          await settings.getByLabel("版本").click();
+          const versionList = page
+            .getByRole("listbox")
+            .filter({ visible: true });
+          await expect(versionList).toBeVisible();
+          await expectTopmost(versionList);
+          await page.keyboard.press("Escape");
+
+          await page.getByRole("button", { name: /已发布/u }).click();
+          const lifecycleMenu = page
+            .getByRole("menu")
+            .filter({ visible: true });
+          await expect(lifecycleMenu).toBeVisible();
+          await expectTopmost(lifecycleMenu);
         } finally {
           await context.close();
         }
@@ -389,13 +465,7 @@ export function registerManagementSuite(product: string) {
           });
           const comments = page.locator("[data-manage-comments]");
           await expect(comments).toBeVisible();
-          for (const heading of [
-            "评论",
-            "来源",
-            "用户",
-            "评论日期",
-            "操作",
-          ]) {
+          for (const heading of ["评论", "来源", "用户", "评论日期", "操作"]) {
             await expect(
               comments.getByText(heading, { exact: true }).first(),
             ).toBeVisible();
@@ -422,10 +492,12 @@ export function registerManagementSuite(product: string) {
           await expect(
             firstComment.getByText("成员", { exact: true }),
           ).toHaveCount(0);
-          await expect(
-            comments.getByText("状态", { exact: true }),
-          ).toHaveCount(0);
-          await firstComment.getByRole("button", { name: /评论操作：/u }).click();
+          await expect(comments.getByText("状态", { exact: true })).toHaveCount(
+            0,
+          );
+          await firstComment
+            .getByRole("button", { name: /评论操作：/u })
+            .click();
           await expect(page.getByRole("menu")).toBeVisible();
           await page.keyboard.press("Escape");
           await page.screenshot({
@@ -464,6 +536,95 @@ export function registerManagementSuite(product: string) {
           const saveBox = await save.boundingBox();
           const fieldBox = await firstField.boundingBox();
           expect(saveBox?.y).toBeLessThan(fieldBox!.y);
+          const baseSection = page
+            .locator("[data-setting-section]")
+            .filter({ hasText: "站点基础" });
+          const [baseHeaderBox, baseBodyBox] = await Promise.all([
+            baseSection
+              .getByRole("heading", { name: "站点基础", exact: true })
+              .boundingBox(),
+            baseSection.locator("[data-setting-section-body]").boundingBox(),
+          ]);
+          expect(baseHeaderBox).not.toBeNull();
+          expect(baseBodyBox).not.toBeNull();
+          expect(baseBodyBox!.y).toBeGreaterThan(
+            baseHeaderBox!.y + baseHeaderBox!.height,
+          );
+          await page.getByRole("tab", { name: "首页", exact: true }).click();
+          await expect(page.locator("[data-setting-section]")).toHaveCount(3);
+          await expect(
+            page.getByRole("heading", { name: "展示顺序", exact: true }),
+          ).toHaveCount(0);
+          const recommendations = page
+            .locator("[data-setting-section]")
+            .filter({ has: page.getByRole("heading", { name: "推荐文档", exact: true }) });
+          const selectedRecommendations = recommendations.locator(
+            "[data-featured-collection]",
+          );
+          const initialRecommendationCount = await selectedRecommendations.count();
+          expect(initialRecommendationCount).toBeGreaterThan(0);
+          const removedRecommendation = selectedRecommendations.last();
+          const removedSlug = await removedRecommendation.getAttribute(
+            "data-featured-collection",
+          );
+          expect(removedSlug).toBeTruthy();
+          await removedRecommendation
+            .getByRole("button", { name: "移除", exact: true })
+            .click();
+          await expect(selectedRecommendations).toHaveCount(
+            initialRecommendationCount - 1,
+          );
+          await recommendations
+            .getByRole("button", { name: "添加文档", exact: true })
+            .click();
+          const picker = page.getByRole("dialog", { name: "添加推荐文档" });
+          await expect(picker).toBeVisible();
+          await picker.getByPlaceholder("搜索文档集").fill(removedSlug!);
+          const candidate = picker.locator(
+            `[data-featured-candidate="${removedSlug}"]`,
+          );
+          await expect(candidate).toBeVisible();
+          await page.screenshot({
+            path: testInfo.outputPath("featured-document-picker.png"),
+            fullPage: false,
+          });
+          await candidate.getByRole("button", { name: "添加", exact: true }).click();
+          await picker.getByRole("button", { name: "完成", exact: true }).click();
+          await expect(selectedRecommendations).toHaveCount(
+            initialRecommendationCount,
+          );
+          const restoredRecommendation = recommendations.locator(
+            `[data-featured-collection="${removedSlug}"]`,
+          );
+          await restoredRecommendation
+            .getByRole("button", { name: "上移", exact: true })
+            .click();
+          await restoredRecommendation
+            .getByRole("button", { name: "下移", exact: true })
+            .click();
+          await page.screenshot({
+            path: testInfo.outputPath("featured-document-order.png"),
+            fullPage: false,
+          });
+          await page.setViewportSize({ width: 390, height: 844 });
+          await recommendations
+            .getByRole("button", { name: "添加文档", exact: true })
+            .click();
+          await expect(picker).toBeVisible();
+          await expectNoHorizontalOverflow(page, "Docs 推荐文档选择器");
+          await picker.getByRole("button", { name: "完成", exact: true }).click();
+          await page.setViewportSize({ width: 1440, height: 900 });
+          await expect(
+            page.getByText("配置首页入口卡片的标题、路径和展示状态。", {
+              exact: true,
+            }),
+          ).toHaveCount(0);
+          await expect(
+            page.getByText("选择首页展示的文档集，右侧顺序按选择顺序生成。", {
+              exact: true,
+            }),
+          ).toHaveCount(0);
+          await page.getByRole("tab", { name: "基础", exact: true }).click();
           await expect(page.locator('[data-manage-dock="save"]')).toHaveCount(
             0,
           );

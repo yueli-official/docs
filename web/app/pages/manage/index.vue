@@ -172,9 +172,7 @@ function publicDocumentLink(document: DashboardOverview["topDocuments"][number])
   return {
     path: `/${document.collectionSlug}/${document.slugPath}`,
     query: {
-      ...(document.locale && document.locale !== "en"
-        ? { locale: document.locale }
-        : {}),
+      ...(document.locale ? { locale: document.locale } : {}),
       ...(document.versionKey ? { version: document.versionKey } : {}),
     },
   };

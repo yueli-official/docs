@@ -15,6 +15,8 @@ type Doc struct {
 	Status         string `json:"status" orm:"status"`
 	Locale         string `json:"locale" orm:"locale"`
 	TranslationKey string `json:"translationKey" orm:"translation_key"`
+	BadgeText      string `json:"badgeText" orm:"badge_text"`
+	BadgeIcon      string `json:"badgeIcon" orm:"badge_icon"`
 	SortOrder      int    `json:"sortOrder" orm:"sort_order"`
 	AuthorSub      string `json:"authorSub" orm:"author_sub"`
 	SearchRevision uint64 `json:"-" orm:"search_revision"`

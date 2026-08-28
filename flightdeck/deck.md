@@ -2,11 +2,11 @@
 
 ## Focus
 
-无。
+- [Docs 语言与版本闭环](work/2026-08-27-docs-language-versioning/index.md)
 
 ## Open Work
 
-无。
+- [Docs 语言与版本闭环](work/2026-08-27-docs-language-versioning/index.md)：补齐文档集语言注册、语言/版本管理、前台上下文切换与缺失内容回退。
 
 ## Finished Work
 

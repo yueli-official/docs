@@ -3,7 +3,9 @@ package dao
 import (
 	"context"
 
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
 
 	"github.com/yueli-official/docs/api/internal/model"
 )
@@ -22,6 +24,31 @@ func (p *PG) InsertCollectionVersion(ctx context.Context, m *model.CollectionVer
 		"source_version_id": nilIfEmpty(m.SourceVersionID),
 	}).Insert()
 	return err
+}
+
+func (p *PG) UpdateCollectionVersion(ctx context.Context, version *model.CollectionVersion, hook TransactionHook) error {
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if version.IsDefault {
+			if _, err := tx.Model(tCollectionVersions).Ctx(ctx).
+				Where("collection_id", version.CollectionID).
+				Data(g.Map{"is_default": false, "updated_at": gtime.Now()}).Update(); err != nil {
+				return err
+			}
+		}
+		if _, err := tx.Model(tCollectionVersions).Ctx(ctx).
+			Where("id", version.ID).
+			Where("collection_id", version.CollectionID).
+			Data(g.Map{
+				"label":      version.Label,
+				"status":     version.Status,
+				"is_default": version.IsDefault,
+				"sort_order": version.SortOrder,
+				"updated_at": gtime.Now(),
+			}).Update(); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }
 
 func (p *PG) ListCollectionVersions(ctx context.Context, collectionID string) ([]*model.CollectionVersion, error) {

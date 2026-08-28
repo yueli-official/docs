@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMinimumLoading } from '@yueli/ui/feedback'
-import type { CollectionTree, CollectionView, DocTreeNode } from '~/types'
+import type { CollectionTree, CollectionVariantsResponse, CollectionView, DocTreeNode } from '~/types'
 import {
   searchStatusText,
   shouldDimSearchResults,
@@ -37,10 +37,19 @@ let searchSeq = 0
 
 const route = useRoute()
 const { call } = useApi()
-const locale = computed(() => typeof route.query.locale === 'string' ? route.query.locale : 'en')
+const routeCollection = computed(() => typeof route.params.collection === 'string' ? route.params.collection : '')
+const { data: variantsData } = await useAsyncData(
+  () => `docs-search-variants-${routeCollection.value}`,
+  () => routeCollection.value
+    ? call<CollectionVariantsResponse>(`/api/v1/collections/${routeCollection.value}/variants`)
+    : Promise.resolve({ locales: [], versions: [] }),
+  { watch: [routeCollection] },
+)
+const defaultLocale = computed(() => variantsData.value?.locales.find(item => item.isDefault)?.locale || 'en')
+const locale = computed(() => typeof route.query.locale === 'string' ? route.query.locale : defaultLocale.value)
 const version = computed(() => typeof route.query.version === 'string' ? route.query.version : '')
 const routeQuery = computed(() => ({
-  ...(locale.value !== 'en' ? { locale: locale.value } : {}),
+  ...(locale.value !== defaultLocale.value ? { locale: locale.value } : {}),
   ...(version.value ? { version: version.value } : {}),
 }))
 const { data: collectionsData } = await useAsyncData(

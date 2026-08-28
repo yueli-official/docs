@@ -110,6 +110,7 @@ func Configure(s *ghttp.Server, d Deps) {
 		}
 		grp.Bind(controller.NewCollections(d.Catalog))
 		grp.Bind(controller.NewVersions(d.Catalog))
+		grp.Bind(controller.NewLocales(d.Catalog))
 		grp.Bind(controller.NewDocs(d.Catalog))
 		grp.Bind(controller.NewImports(d.Catalog))
 		if d.Analytics != nil {

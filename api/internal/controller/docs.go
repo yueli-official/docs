@@ -19,14 +19,10 @@ type Docs struct{ svc *catalog.Service }
 func NewDocs(svc *catalog.Service) *Docs { return &Docs{svc: svc} }
 
 func (c *Docs) ListDocs(ctx context.Context, req *v1.ListDocsReq) (*v1.ListDocsRes, error) {
-	locale := req.Locale
-	if locale == "" {
-		locale = "en"
-	}
 	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
 		return nil, err
 	}
-	items, err := c.svc.ListDocs(ctx, req.CollectionID, req.Version, locale)
+	items, err := c.svc.ListDocs(ctx, req.CollectionID, req.Version, req.Locale)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +81,7 @@ func (c *Docs) ManageDocs(ctx context.Context, req *v1.ManageDocsReq) (*v1.Manag
 			VersionID: item.VersionID, VersionKey: item.VersionKey, VersionLabel: item.VersionLabel,
 			ParentID: item.ParentID, ParentTitle: item.ParentTitle, Slug: item.Slug, SlugPath: item.SlugPath,
 			Title: item.Title, Excerpt: item.Excerpt, Status: item.Status, Locale: item.Locale,
+			BadgeText: item.BadgeText, BadgeIcon: item.BadgeIcon,
 			SortOrder: item.SortOrder, UpdatedAt: item.UpdatedAt,
 		}
 	}
@@ -143,6 +140,8 @@ func (c *Docs) CreateDoc(ctx context.Context, req *v1.CreateDocReq) (*v1.CreateD
 		SEODescription: req.SEODescription,
 		Locale:         req.Locale,
 		TranslationKey: req.TranslationKey,
+		BadgeText:      req.BadgeText,
+		BadgeIcon:      req.BadgeIcon,
 		SortOrder:      req.SortOrder,
 	})
 	if err != nil {
@@ -235,6 +234,8 @@ func (c *Docs) UpdateDoc(ctx context.Context, req *v1.UpdateDocReq) (*v1.UpdateD
 		Locale:         req.Locale,
 		VersionID:      req.VersionID,
 		TranslationKey: req.TranslationKey,
+		BadgeText:      req.BadgeText,
+		BadgeIcon:      req.BadgeIcon,
 		SortOrder:      req.SortOrder,
 		ParentID:       req.ParentID,
 	})
@@ -326,6 +327,8 @@ func docView(m *model.Doc) *v1.DocView {
 		Status:         m.Status,
 		Locale:         m.Locale,
 		TranslationKey: m.TranslationKey,
+		BadgeText:      m.BadgeText,
+		BadgeIcon:      m.BadgeIcon,
 		SortOrder:      m.SortOrder,
 	}
 }

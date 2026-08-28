@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { BackToTop } from "@yueli/ui/navigation/back-to-top";
+import type { CollectionVariantsResponse } from "~/types";
 
 const route = useRoute();
 const slug = computed(() => route.params.collection as string);
+const { call } = useApi();
+const { data: variantData } = await useAsyncData(
+  () => `collection-variants-${slug.value}`,
+  () => call<CollectionVariantsResponse>(`/api/v1/collections/${slug.value}/variants`),
+  { watch: [slug] },
+);
+const defaultLocale = computed(() =>
+  variantData.value?.locales.find((item) => item.isDefault)?.locale || "en",
+);
 const locale = computed(() =>
-  typeof route.query.locale === "string" ? route.query.locale : "en",
+  typeof route.query.locale === "string" ? route.query.locale : defaultLocale.value,
 );
 const version = computed(() =>
   typeof route.query.version === "string" ? route.query.version : "",
 );
 const routeQuery = computed(() => ({
-  ...(locale.value !== "en" ? { locale: locale.value } : {}),
+  ...(locale.value !== defaultLocale.value ? { locale: locale.value } : {}),
   ...(version.value ? { version: version.value } : {}),
 }));
 const collectionTo = computed(() => ({
@@ -82,7 +92,7 @@ const currentPath = computed(() => {
               :class="i % 3 === 0 ? 'ml-4 w-32' : 'w-44'"
             />
           </div>
-          <DocTree v-else :nodes="tree" :current-path="currentPath" />
+          <DocTree v-else :nodes="tree" :current-path="currentPath" :default-locale="defaultLocale" />
         </div>
       </aside>
       <main id="public-main" tabindex="-1" class="min-w-0 flex-1 outline-none">
@@ -160,6 +170,7 @@ const currentPath = computed(() => {
             v-else
             :nodes="tree"
             :current-path="currentPath"
+            :default-locale="defaultLocale"
             @click="navOpen = false"
           />
         </div>

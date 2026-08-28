@@ -10,6 +10,8 @@ import {
 import { AssetImageCropper } from "@yueli/asset-nuxt/components";
 import { assetUploadURL } from "@yueli/asset-nuxt/upload";
 import { createDocsNotifier } from "~/utils/feedback";
+import { AdminRowActions } from "@yueli/ui/admin";
+import type { AdminRowActionItem } from "@yueli/ui/admin";
 import {
   ManageEmpty,
   ManageVisualAssetField,
@@ -165,6 +167,20 @@ const pageSizeItems = [12, 24, 48].map((value) => ({
 
 const open = ref(false);
 const current = ref<CollectionView | null>(null);
+async function onReleaseChanged() {
+  const currentID = current.value?.id;
+  await refresh();
+  if (currentID) {
+    current.value = (data.value?.items ?? []).find((item) => item.id === currentID) ?? current.value;
+  }
+}
+type CollectionEditorSection = "basic" | "languages" | "versions";
+const editorSection = ref<CollectionEditorSection>("basic");
+const editorTabs = computed(() => [
+  { label: "基础", value: "basic", icon: "i-tabler-adjustments-horizontal" },
+  { label: "语言", value: "languages", icon: "i-tabler-language", disabled: !current.value },
+  { label: "版本", value: "versions", icon: "i-tabler-versions", disabled: !current.value },
+]);
 const form = reactive({
   title: "",
   slug: "",
@@ -218,6 +234,7 @@ function openCreate() {
   form.cover = "";
   slugTouched.value = false;
   confirmingDelete.value = false;
+  editorSection.value = "basic";
   open.value = true;
 }
 
@@ -232,7 +249,27 @@ function openEdit(col: CollectionView) {
   form.cover = col.coverUrl || "";
   slugTouched.value = true;
   confirmingDelete.value = false;
+  editorSection.value = "basic";
   open.value = true;
+}
+
+function collectionRowActions(col: CollectionView): AdminRowActionItem[] {
+  return [
+    {
+      id: "view",
+      label: `查看文档集：${col.title}`,
+      icon: "i-tabler-external-link",
+      to: collectionPublicPath(col),
+      target: "_blank",
+      rel: "noopener",
+    },
+    {
+      id: "edit",
+      label: `编辑文档集：${col.title}`,
+      icon: "i-tabler-pencil",
+      onSelect: () => openEdit(col),
+    },
+  ];
 }
 
 function clearPendingCover() {
@@ -513,7 +550,7 @@ async function doDelete() {
 
         <template v-else>
         <div
-          class="hidden grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_3rem] items-center gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid"
+          class="hidden grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_8rem] items-center gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid"
         >
           <span>文档集</span>
           <span>公开路径</span>
@@ -522,15 +559,17 @@ async function doDelete() {
         </div>
 
         <div class="divide-y divide-default">
-          <button
+          <div
             v-for="col in pagedItems"
             :key="col.id"
-            type="button"
-            class="grid w-full grid-cols-[minmax(0,1fr)_2.75rem] items-center gap-3 p-3 text-left transition hover:bg-elevated/55 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary sm:p-4 lg:grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_3rem]"
-            :aria-label="`编辑文档集：${col.title}`"
-            @click="openEdit(col)"
+            class="grid w-full grid-cols-[minmax(0,1fr)_8rem] items-center gap-3 p-3 text-left transition hover:bg-elevated/55 sm:p-4 lg:grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_8rem]"
           >
-            <span class="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              class="flex min-w-0 items-center gap-3 rounded-lg text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+              :aria-label="`编辑文档集：${col.title}`"
+              @click="openEdit(col)"
+            >
               <img
                 v-if="col.coverUrl"
                 :src="col.coverUrl"
@@ -544,15 +583,15 @@ async function doDelete() {
                 <UIcon :name="col.icon || 'i-tabler-stack-2'" class="size-5" />
               </span>
               <span class="min-w-0">
-                <span
-                  class="line-clamp-1 text-sm font-semibold text-highlighted"
-                  >{{ col.title }}</span
-                >
+                <span class="flex min-w-0 items-center gap-2">
+                  <span class="line-clamp-1 text-sm font-semibold text-highlighted">{{ col.title }}</span>
+                  <UBadge v-if="col.semanticVersion" :label="col.semanticVersion" color="neutral" variant="soft" size="xs" />
+                </span>
                 <span class="mt-1 line-clamp-1 text-xs text-muted">{{
                   col.description || "未填写集合说明"
                 }}</span>
               </span>
-            </span>
+            </button>
 
             <span
               class="col-start-1 min-w-0 pl-14 font-mono text-xs text-muted sm:text-sm lg:col-start-auto lg:pl-0"
@@ -571,13 +610,12 @@ async function doDelete() {
               篇文档
             </span>
 
-            <span
-              class="row-start-1 col-start-2 grid size-11 place-items-center text-muted lg:row-auto lg:col-start-auto"
-              aria-hidden="true"
-            >
-              <UIcon name="i-tabler-pencil" class="size-4" />
-            </span>
-          </button>
+            <AdminRowActions
+              class="row-start-1 col-start-2 lg:row-auto lg:col-start-auto"
+              :label="`${col.title} 的操作`"
+              :items="collectionRowActions(col)"
+            />
+          </div>
         </div>
         </template>
       </section>
@@ -617,7 +655,24 @@ async function doDelete() {
             :description="formError"
             role="alert"
           />
-          <div class="space-y-4">
+          <UTabs
+            v-model="editorSection"
+            :items="editorTabs"
+            :content="false"
+            value-key="value"
+            variant="pill"
+            color="neutral"
+            class="w-full"
+            :ui="{
+              list: 'w-full rounded-xl bg-elevated/70 p-1',
+              indicator: 'rounded-lg bg-default ring-1 ring-default shadow-xs',
+              trigger: 'min-h-9 flex-1 justify-center gap-2 rounded-lg data-[state=active]:text-highlighted',
+              leadingIcon: 'size-4.5 shrink-0',
+            }"
+            aria-label="文档集设置分区"
+            data-collection-settings-tabs
+          />
+          <div v-if="editorSection === 'basic'" class="space-y-4">
             <UFormField label="标题" required>
               <UInput
                 v-model="form.title"
@@ -657,6 +712,12 @@ async function doDelete() {
               @clear-cover="form.cover = ''"
             />
           </div>
+          <ManageCollectionVariantsManager
+            v-else-if="current"
+            :collection="current"
+            :section="editorSection === 'languages' ? 'languages' : 'versions'"
+            @changed="onReleaseChanged"
+          />
         </div>
       </template>
 

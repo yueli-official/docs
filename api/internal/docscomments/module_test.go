@@ -37,7 +37,7 @@ func TestDocumentCommentsKeepTwoLevelThreadsAndModeration(t *testing.T) {
 		t.Fatalf("nested parent = %q, want top-level %q", nested.ParentID, top.ID)
 	}
 
-	threads, total, _, _, err := module.List(ctx, "doc-1", 1, 20)
+	threads, total, _, _, err := module.List(ctx, "doc-1", true, 1, 20)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestDocumentCommentsKeepTwoLevelThreadsAndModeration(t *testing.T) {
 	if _, err := module.Moderate(ctx, reply.ID, StatusSpam); err != nil {
 		t.Fatal(err)
 	}
-	threads, _, _, _, err = module.List(ctx, "doc-1", 1, 20)
+	threads, _, _, _, err = module.List(ctx, "doc-1", true, 1, 20)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func TestDocumentCommentsKeepTwoLevelThreadsAndModeration(t *testing.T) {
 	if err := module.Delete(ctx, top.ID); err != nil {
 		t.Fatal(err)
 	}
-	threads, total, _, _, err = module.List(ctx, "doc-1", 1, 20)
+	threads, total, _, _, err = module.List(ctx, "doc-1", true, 1, 20)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,5 +127,42 @@ func TestManageCommentsSortsByCreatedAtInBothDirections(t *testing.T) {
 	}
 	if len(descending.Items) != 2 || descending.Items[0].Comment.ID != second.ID {
 		t.Fatalf("descending order = %+v", descending.Items)
+	}
+}
+
+func TestPublicCommentsSortTopLevelThreadsInBothDirections(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemory()
+	store.SeedDocument(Document{ID: "doc-1", Title: "安装"})
+	module := New(store)
+	now := time.Date(2026, 8, 28, 8, 0, 0, 0, time.UTC)
+	module.clock = func() time.Time {
+		now = now.Add(time.Minute)
+		return now
+	}
+
+	first, err := module.Create(ctx, "doc-1", "member-1", "甲", "第一条", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := module.Create(ctx, "doc-1", "member-2", "乙", "第二条", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ascending, _, _, _, err := module.List(ctx, "doc-1", true, 1, 20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ascending) != 2 || ascending[0].Comment.ID != first.ID {
+		t.Fatalf("ascending order = %+v", ascending)
+	}
+
+	descending, _, _, _, err := module.List(ctx, "doc-1", false, 1, 20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(descending) != 2 || descending[0].Comment.ID != second.ID {
+		t.Fatalf("descending order = %+v", descending)
 	}
 }
