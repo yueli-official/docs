@@ -1,6 +1,5 @@
 // Package assetclient is the docs site's gateway to the asset service for
-// collection cover images. Collection covers are public assets, so docs stores
-// the finalized CDN URL on the collection record.
+// collection cover images. Public delivery is derived from mediaKey.
 package assetclient
 
 import "context"
@@ -22,7 +21,6 @@ type InitOutput struct {
 type View struct {
 	ID       string
 	MediaKey string
-	CdnURL   string
 	Size     int64
 	Mime     string
 	Filename string

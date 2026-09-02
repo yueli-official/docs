@@ -2,7 +2,7 @@ package assetclient
 
 import (
 	"context"
-	"path"
+	"strings"
 
 	"github.com/yueli-official/foundation/go/identifier"
 )
@@ -18,16 +18,16 @@ func (f *Fake) UploadInit(context.Context, string, InitInput) (InitOutput, error
 }
 
 func (f *Fake) Finalize(context.Context, string, string) (View, error) {
-	return View{ID: identifier.MustNew().String(), MediaKey: "docs/fake", CdnURL: "https://asset.test/docs/fake.png", Mime: "image/png", Filename: "fake.png"}, nil
+	return View{ID: identifier.MustNew().String(), MediaKey: "docs_fake", Mime: "image/png", Filename: "fake.png"}, nil
 }
 
 func (f *Fake) Upload(_ context.Context, _ string, in InitInput, data []byte) (View, error) {
 	if f.Uploaded == nil {
 		f.Uploaded = map[string][]byte{}
 	}
-	url := "https://asset.test/docs/" + path.Base(in.Filename)
-	f.Uploaded[url] = append([]byte(nil), data...)
-	return View{ID: identifier.MustNew().String(), CdnURL: url, Size: in.Size, Mime: in.Mime, Filename: in.Filename}, nil
+	key := "docs_" + strings.NewReplacer("/", "_", "\\", "_").Replace(in.Filename)
+	f.Uploaded[key] = append([]byte(nil), data...)
+	return View{ID: identifier.MustNew().String(), MediaKey: key, Size: in.Size, Mime: in.Mime, Filename: in.Filename}, nil
 }
 
 func (f *Fake) RegisterReference(_ context.Context, _ string, in ReferenceInput) error {

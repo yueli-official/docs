@@ -152,7 +152,11 @@ func (s *Service) FinalizeCollectionCover(ctx context.Context, id, bearer, uploa
 		return nil, err
 	}
 	old := c.CoverAssetID
-	c.CoverURL = view.CdnURL
+	coverURL, err := publicImageURL(view, "cover")
+	if err != nil {
+		return nil, err
+	}
+	c.CoverURL = coverURL
 	c.CoverAssetID = view.ID
 	if err := s.dao.UpdateCollection(ctx, c); err != nil {
 		return nil, err

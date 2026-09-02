@@ -492,8 +492,12 @@ func (s *Service) uploadImportAssets(ctx context.Context, bearer string, assets 
 		if err != nil {
 			return nil, err
 		}
-		out[asset.ID] = view.CdnURL
-		if err := s.dao.UpdateImportAssetUploaded(ctx, asset.ID, view.CdnURL); err != nil {
+		publicURL, err := publicImageURL(view, "inline")
+		if err != nil {
+			return nil, err
+		}
+		out[asset.ID] = publicURL
+		if err := s.dao.UpdateImportAssetUploaded(ctx, asset.ID, publicURL); err != nil {
 			return nil, err
 		}
 	}

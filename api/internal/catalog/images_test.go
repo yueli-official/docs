@@ -35,7 +35,7 @@ func (*imageAssetFake) UnregisterReference(context.Context, string, assetclient.
 
 func TestDocumentImageUsesConsumerProfileAndStableDeliveryURL(t *testing.T) {
 	fake := &imageAssetFake{view: assetclient.View{
-		ID: "asset-1", MediaKey: "docs/docs-content-image/opaque", CdnURL: "https://bucket.invalid/object.webp",
+		ID: "asset-1", MediaKey: "docs_content_image_opaque",
 	}}
 	svc := New(nil).WithAssets(fake, "")
 

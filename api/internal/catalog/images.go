@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"context"
+	"errors"
 	"net/url"
 
 	"github.com/yueli-official/docs/api/internal/assetclient"
@@ -34,8 +35,12 @@ func (s *Service) FinalizeDocumentImage(ctx context.Context, bearer, uploadToken
 	if err != nil {
 		return "", err
 	}
+	return publicImageURL(view, "inline")
+}
+
+func publicImageURL(view assetclient.View, rendition string) (string, error) {
 	if view.MediaKey == "" {
-		return view.CdnURL, nil
+		return "", errors.New("asset finalize did not return mediaKey")
 	}
-	return "/media/" + url.PathEscape(view.MediaKey) + "?format=webp&name=inline", nil
+	return "/media/" + url.PathEscape(view.MediaKey) + "?format=webp&name=" + url.QueryEscape(rendition), nil
 }
