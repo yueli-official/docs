@@ -239,7 +239,7 @@ func publicCommentMediaURL(reference *identityclient.MediaRef) string {
 	if reference == nil || reference.MediaKey == "" {
 		return ""
 	}
-	return "/media/" + reference.MediaKey + "?format=webp&name=thumbnail"
+	return "/media/" + reference.MediaKey + "?format=webp&name=thumbnail&v=1"
 }
 
 func resolveCommentProfiles(ctx context.Context, client identityclient.Client, userKeys []string) map[string]identityclient.PublicUser {

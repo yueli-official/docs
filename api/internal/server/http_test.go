@@ -300,7 +300,7 @@ func TestDocumentCommentsFlow(t *testing.T) {
 		commentID := createdJSON.Get("comment.id").String()
 		t.AssertNE(commentID, "")
 		t.Assert(createdJSON.Get("comment.authorName").String(), "测试评论者")
-		t.Assert(createdJSON.Get("comment.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail")
+		t.Assert(createdJSON.Get("comment.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail&v=1")
 
 		replied, err := client(memberSub).Post(ctx, "/api/v1/docs/"+documentID+"/comments", g.Map{
 			"content": "补充一个细节", "parentId": commentID,
@@ -317,7 +317,7 @@ func TestDocumentCommentsFlow(t *testing.T) {
 		listedJSON := gjson.New(listed.ReadAllString())
 		t.Assert(listedJSON.Get("total").Int(), 1)
 		t.Assert(listedJSON.Get("items.0.authorName").String(), "测试评论者")
-		t.Assert(listedJSON.Get("items.0.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail")
+		t.Assert(listedJSON.Get("items.0.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail&v=1")
 		t.Assert(listedJSON.Get("items.0.replies.0.id").String(), replyID)
 
 		forbidden, err := client(memberSub).Get(ctx, "/api/v1/manage/comments")
@@ -332,7 +332,7 @@ func TestDocumentCommentsFlow(t *testing.T) {
 		managedJSON := gjson.New(managed.ReadAllString())
 		t.Assert(managedJSON.Get("total").Int(), 2)
 		t.Assert(managedJSON.Get("items.0.authorName").String(), "测试评论者")
-		t.Assert(managedJSON.Get("items.0.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail")
+		t.Assert(managedJSON.Get("items.0.avatarUrl").String(), "/media/comment-avatar?format=webp&name=thumbnail&v=1")
 
 		moderated, err := client(testSub).Patch(ctx, "/api/v1/manage/comments/"+replyID, g.Map{"status": "spam"})
 		t.AssertNil(err)
