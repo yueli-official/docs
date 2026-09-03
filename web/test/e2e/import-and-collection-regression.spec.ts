@@ -86,3 +86,53 @@ test("converted AE package preflights with alerts and images", async ({ browser 
   await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
   await context.close();
 });
+
+test("creates and selects a document collection without leaving import", async ({ browser }) => {
+  const siteURL = process.env.DOCS_E2E_URL!;
+  const context = await loginE2E(browser, {}, undefined, siteURL);
+  const page = await context.newPage();
+  const failures = capturePageFailures(page);
+  const collectionSlug = `inline-import-${Date.now()}`;
+  let createdID = "";
+
+  await page.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(page);
+  await page.getByRole("button", { name: "新建", exact: true }).click();
+  const creator = page.locator("[data-import-collection-creator]");
+  await creator.getByLabel("标题").fill("导入页即时创建验收");
+  await creator.getByLabel("路径标识").fill(collectionSlug);
+  await expect(creator.getByLabel("首个版本")).toHaveValue("1.0.0");
+
+  const responsePromise = page.waitForResponse(
+    (response) => response.url().endsWith("/api/v1/collections") && response.request().method() === "POST",
+  );
+  await creator.getByRole("button", { name: "创建并选中" }).click();
+  const response = await responsePromise;
+  expect(response.ok(), await response.text()).toBeTruthy();
+  const created = (await response.json()).collection as { id: string; slug: string };
+  createdID = created.id;
+  expect(created.slug).toBe(collectionSlug);
+  await expect(page.getByText("新建并选作文档集")).toHaveCount(0);
+  await expect(page.getByText("文档集已创建", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("目标文档集")).toContainText("导入页即时创建验收");
+  expect(failures).toEqual([]);
+
+  const mobile = await context.newPage();
+  await mobile.setViewportSize({ width: 390, height: 844 });
+  await mobile.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(mobile);
+  await mobile.getByRole("button", { name: "新建", exact: true }).click();
+  const mobileCreator = mobile.locator("[data-import-collection-creator]");
+  await expect(mobileCreator.getByLabel("标题")).toBeVisible();
+  await expect(mobileCreator.getByLabel("路径标识")).toBeVisible();
+  await expect(mobileCreator.getByLabel("默认语言")).toBeVisible();
+  await expect(mobileCreator.getByLabel("首个版本")).toBeVisible();
+  await mobile.getByRole("button", { name: "取消新建文档集" }).click();
+  await expect(mobileCreator).toHaveCount(0);
+
+  if (createdID) {
+    const deleted = await context.request.delete(new URL(`/api/v1/collections/${createdID}`, siteURL).toString());
+    expect(deleted.ok()).toBeTruthy();
+  }
+  await context.close();
+});

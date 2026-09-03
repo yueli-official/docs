@@ -20,6 +20,7 @@ useSeoMeta({ title: "批量导入 · 控制台" });
 const { call } = useApi();
 const { can } = useMe();
 const canManageImports = computed(() => can("docs.import.manage"));
+const canManageCollections = computed(() => can("docs.collection.manage"));
 const toast = createDocsNotifier(useToast());
 
 const file = ref<File | null>(null);
@@ -31,6 +32,16 @@ const summary = ref<DocsImportSummary | null>(null);
 const collectionSlug = ref("");
 const defaultLocale = ref("zh-CN");
 const importMode = ref("upsert");
+const creatingCollection = ref(false);
+const showCreateCollection = ref(false);
+const createCollectionError = ref("");
+const newCollection = reactive({
+  title: "",
+  slug: "",
+  defaultLocale: "zh-CN",
+  semanticVersion: "1.0.0",
+});
+const newCollectionSlugTouched = ref(false);
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
@@ -46,7 +57,7 @@ const canUpload = computed(() =>
   ),
 );
 
-const { data: collectionsData } = await useAsyncData(
+const { data: collectionsData, refresh: refreshCollections } = await useAsyncData(
   "docs-import-collections",
   () => call<{ items: CollectionView[] }>("/api/v1/collections"),
   { server: false, default: () => ({ items: [] as CollectionView[] }) },
@@ -57,6 +68,70 @@ const collectionOptions = computed(() =>
 watch(collectionOptions, (items) => {
   if (!collectionSlug.value && items[0]) collectionSlug.value = items[0].value;
 }, { immediate: true });
+function normalizeSlug(value: string) {
+  return value.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "");
+}
+watch(() => newCollection.title, (title) => {
+  if (!newCollectionSlugTouched.value) newCollection.slug = normalizeSlug(title);
+});
+const canCreateCollection = computed(() => Boolean(
+  canManageCollections.value &&
+  newCollection.title.trim() &&
+  normalizeSlug(newCollection.slug) &&
+  /^\d+\.\d+\.\d+$/.test(newCollection.semanticVersion.trim()) &&
+  !creatingCollection.value,
+));
+
+function openCreateCollection() {
+  createCollectionError.value = "";
+  newCollection.title = "";
+  newCollection.slug = "";
+  newCollection.defaultLocale = defaultLocale.value.trim() || "zh-CN";
+  newCollection.semanticVersion = "1.0.0";
+  newCollectionSlugTouched.value = false;
+  showCreateCollection.value = true;
+}
+
+function closeCreateCollection() {
+  showCreateCollection.value = false;
+  createCollectionError.value = "";
+}
+
+async function createCollection() {
+  if (!canCreateCollection.value) return;
+  creatingCollection.value = true;
+  createCollectionError.value = "";
+  try {
+    const res = await call<{ collection: CollectionView }>("/api/v1/collections", {
+      method: "POST",
+      body: {
+        title: newCollection.title.trim(),
+        slug: normalizeSlug(newCollection.slug),
+        description: "",
+        icon: "",
+        cover: "",
+        defaultLocale: newCollection.defaultLocale,
+        semanticVersion: newCollection.semanticVersion.trim(),
+      },
+    });
+    await refreshCollections();
+    collectionSlug.value = res.collection.slug;
+    defaultLocale.value = newCollection.defaultLocale;
+    batch.value = null;
+    summary.value = null;
+    showCreateCollection.value = false;
+    toast.add({
+      title: "文档集已创建",
+      description: `${res.collection.title} 已设为本次导入目标`,
+      color: "success",
+      icon: "i-tabler-circle-check",
+    });
+  } catch (err: any) {
+    createCollectionError.value = err?.data?.message || err?.message || "创建文档集失败";
+  } finally {
+    creatingCollection.value = false;
+  }
+}
 const modeOptions = [
   { label: "更新同路径文档", value: "upsert" },
   { label: "仅创建，不覆盖", value: "create-only" },
@@ -257,7 +332,17 @@ async function confirmImport() {
 
           <div class="mb-3 grid gap-3 md:grid-cols-3">
             <UFormField label="目标文档集" required>
-              <USelect v-model="collectionSlug" :items="collectionOptions" value-key="value" class="w-full" />
+              <div class="flex gap-2">
+                <USelect v-model="collectionSlug" :items="collectionOptions" value-key="value" class="min-w-0 flex-1" />
+                <UButton
+                  v-if="canManageCollections"
+                  label="新建"
+                  icon="i-tabler-plus"
+                  color="neutral"
+                  variant="outline"
+                  @click="openCreateCollection"
+                />
+              </div>
             </UFormField>
             <UFormField label="默认语言" required>
               <UInput v-model="defaultLocale" placeholder="zh-CN" class="w-full" />
@@ -265,6 +350,68 @@ async function confirmImport() {
             <UFormField label="导入模式" required>
               <USelect v-model="importMode" :items="modeOptions" value-key="value" class="w-full" />
             </UFormField>
+          </div>
+
+          <div
+            v-if="showCreateCollection"
+            class="mb-4 border-t border-default pt-4"
+            data-import-collection-creator
+          >
+            <div class="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-semibold text-highlighted">新建并选作文档集</h3>
+                <p class="mt-1 text-xs text-muted">创建默认语言和首个版本后，继续使用当前 ZIP 预检。</p>
+              </div>
+              <UButton
+                icon="i-tabler-x"
+                aria-label="取消新建文档集"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                @click="closeCreateCollection"
+              />
+            </div>
+            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <UFormField label="标题" required>
+                <UInput v-model="newCollection.title" autofocus placeholder="文档集标题" class="w-full" />
+              </UFormField>
+              <UFormField label="路径标识" required>
+                <UInput
+                  v-model="newCollection.slug"
+                  placeholder="quickstart"
+                  class="w-full"
+                  @input="newCollectionSlugTouched = true"
+                />
+              </UFormField>
+              <UFormField label="默认语言" required>
+                <USelect
+                  v-model="newCollection.defaultLocale"
+                  :items="[
+                    { label: '简体中文', value: 'zh-CN' },
+                    { label: 'English', value: 'en-US' },
+                    { label: '繁體中文', value: 'zh-TW' },
+                    { label: '日本語', value: 'ja-JP' },
+                  ]"
+                  value-key="value"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField label="首个版本" required>
+                <UInput v-model="newCollection.semanticVersion" placeholder="1.0.0" class="w-full" />
+              </UFormField>
+            </div>
+            <p v-if="createCollectionError" class="mt-3 text-sm text-error" role="alert">
+              {{ createCollectionError }}
+            </p>
+            <div class="mt-3 flex justify-end">
+              <UButton
+                label="创建并选中"
+                icon="i-tabler-folder-plus"
+                :disabled="!canCreateCollection"
+                :loading="creatingCollection"
+                @click="createCollection"
+              />
+            </div>
           </div>
 
           <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">

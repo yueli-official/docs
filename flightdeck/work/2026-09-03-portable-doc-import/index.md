@@ -72,6 +72,9 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 - 2026-09-03：用户确认 AE 转换包实际导入有效。导出器新增 `--all` 自动发现及批量报告，兼容中文 `注意`、`bug`、`quote`、
   旧式反向容器、行尾关闭标记，以及导航/文件名的大小写与括号差异；9 套双语包共 3818 篇 Markdown、804 个图片条目全部生成，
   ZIP 内 `:::` 指令残留为零，源文档和导航保持未修改。
+- 2026-09-04：批量导入页支持具备 `docs.collection.manage` 权限的用户原地新建文档集，同时填写标题、路径、默认语言和首个语义版本；
+  创建成功后自动选为当前导入目标并同步默认语言，无需离开或刷新页面。桌面真实创建/选中/删除和 390px 响应式 Playwright、
+  Web 52 tests 与 Impeccable detector 全绿；typecheck 仅余 Foundation/Overlay Tiptap 3.28.0/3.30.2 既存类型漂移。
 
 ## References
 
