@@ -71,3 +71,18 @@ test("confirm failure is shown once and remains until dismissed", async ({ brows
   await expect(page.getByText("导入失败", { exact: true })).toBeVisible();
   await context.close();
 });
+
+test("converted AE package preflights with alerts and images", async ({ browser }) => {
+  const siteURL = process.env.DOCS_E2E_URL!;
+  const context = await loginE2E(browser, {}, undefined, siteURL);
+  const page = await context.newPage();
+  await page.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(page);
+  await page.locator('input[type="file"]').setInputFiles("E:/projects/yozya/docs/exports/ae-scripting-docs-v1.zip");
+  await page.getByRole("button", { name: "上传并预检" }).click();
+  await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText("144", { exact: true })).toBeVisible();
+  await expect(page.getByText("4", { exact: true })).toBeVisible();
+  await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
+  await context.close();
+});

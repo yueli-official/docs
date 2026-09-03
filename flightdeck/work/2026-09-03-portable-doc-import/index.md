@@ -23,13 +23,17 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 
 随后真实确认链路已完成：补齐 `docs-import-image` Asset Profile，服务端 PUT 改为发送原始字节与准确 Content-Length；导航虚拟组
 物化为双语章节入口，文档按父层级批量插入；新增 0017 让 `updated_at` 与 Search revision 保持一致，重复 upsert 不再触发幂等冲突。
-当前 Session `20260903T141604Z-24200` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
+当前 Session `20260903T154231Z-24856` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
 一个 `duration: 0` 的可手动关闭 Toast，不再重复渲染右侧 Alert。
+
+AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/caution/danger` 容器转换为 GFM Alerts，复制包内图片并从
+`src/nav/ae-scripting.ts` 生成顺序；未知或未闭合容器会直接中止。Docs 图片仍按 10 MiB 文件大小限制，产品原有 3000 万像素
+限制已取消，`maxPixels` 与 Asset 基础设施的 8000 万安全护栏对齐。
 
 ## Next
 
-用 CLI Playwright 上传真实 AE 双语包，验证目标选择、预检、确认、公开阅读、图片、多语言映射与回滚。验收继续遵守
-[媒体合同](../../../../workspace/flightdeck/knowledge/asset/consumer-media-contract.md)。
+等待用户重新导入转换后的 AE 双语包；通过后再用同一脚本批量转换其余文档。验收继续遵守
+[媒体合同](../../../../workspace/flightdeck/knowledge/asset/consumer-media-contract.md)，不得移除 Asset 的解码炸弹基础设施护栏。
 
 ## Progress
 
@@ -62,6 +66,9 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 - 2026-09-03：通用编辑工作区规则已推广到 Blog：保留 Blog 封面/分类/标签/系列/发布/SEO Adapter，标题进入 sticky 命令栏，
   Slug/摘要进入 Inspector，普通工具栏 sticky，沉浸模式只保留编辑器。Blog API 全量 Go、编辑器源码合同、1440px/390px
   Playwright 与 detector 全绿；全量 Web 仍有既存 Asset 页面旧断言和 Tiptap 双版本类型漂移。
+- 2026-09-03：新增可复用 `export-docs-package.mjs` 与测试，将 AE 双语源的 616 个 Docusaurus 容器转换为 GFM Alerts，保留
+  120 篇 Markdown、双语导航顺序和 4 个图片条目；源目录与导航文件不变。真实 Docs Playwright 预检得到 144 个节点、4 张图片、
+  零问题。Docs 专属 3000 万像素限制改为 Asset 通用 8000 万安全护栏，10 MiB 文件大小限制不变。
 
 ## References
 
