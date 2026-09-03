@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/yueli-official/docs/api/internal/assetclient"
+	"github.com/yueli-official/docs/api/internal/importkit"
 	"github.com/yueli-official/docs/api/internal/model"
 )
 
@@ -15,6 +16,28 @@ func TestImportAssetUsesDedicatedImageProfile(t *testing.T) {
 	in := assetclientInput(&model.ImportAsset{SourcePath: "guide/images/hero.gif", Data: []byte("gif")})
 	if in.Category != "docs-import-image" || in.Mime != "image/gif" || in.Visibility != "public" {
 		t.Fatalf("import asset input = %+v", in)
+	}
+}
+
+func TestImportAssetsDeduplicateIdenticalContentAcrossLocalePaths(t *testing.T) {
+	pkg := &importkit.Package{
+		Docs: []importkit.DocFile{
+			{SourcePath: "guide.md", ImageRefs: []importkit.ImageRef{{Original: "./images/a.png", ResolvedPath: "images/a.png"}}},
+			{SourcePath: "locales/en-US/guide.md", ImageRefs: []importkit.ImageRef{{Original: "../../images/a.png", ResolvedPath: "locales/en-US/images/a.png"}}},
+		},
+		Assets: map[string]importkit.AssetFile{
+			"images/a.png":               {SourcePath: "images/a.png", Bytes: []byte("same"), SHA256: "same-hash"},
+			"locales/en-US/images/a.png": {SourcePath: "locales/en-US/images/a.png", Bytes: []byte("same"), SHA256: "same-hash"},
+		},
+	}
+	assets, refs := importAssetsAndRefs("batch", pkg, map[string]string{
+		"guide.md": "zh-item", "locales/en-US/guide.md": "en-item",
+	})
+	if len(assets) != 1 {
+		t.Fatalf("assets=%d, want one content-addressed upload", len(assets))
+	}
+	if len(refs) != 2 || refs[0].AssetID != refs[1].AssetID {
+		t.Fatalf("refs did not reuse the same asset: %+v", refs)
 	}
 }
 

@@ -106,3 +106,27 @@ func TestHTTPClientUploadPutsExactBytesBeforeFinalize(t *testing.T) {
 		t.Fatalf("uploaded = %q, want %q", uploaded, payload)
 	}
 }
+
+func TestHTTPClientRetriesAssetRateLimit(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		if requests == 1 {
+			w.Header().Set("Retry-After", "1")
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = w.Write([]byte(`{"type":"about:blank","status":429,"code":"common.rate_limited","traceId":"rate-test"}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"uploadUrl":"http://upload.test","uploadToken":"token"}`))
+	}))
+	defer server.Close()
+
+	client := NewHTTP(server.URL, "docs-main", "yueli")
+	if _, err := client.UploadInit(context.Background(), "token", InitInput{Filename: "a.png", Mime: "image/png", Category: "docs-import-image", Size: 1}); err != nil {
+		t.Fatalf("UploadInit() error = %v", err)
+	}
+	if requests != 2 {
+		t.Fatalf("requests=%d, want one retry", requests)
+	}
+}

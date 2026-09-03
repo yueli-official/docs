@@ -91,14 +91,33 @@ test("large Sapphire package reaches a completed preflight", async ({ browser })
   test.slow();
   const siteURL = process.env.DOCS_E2E_URL!;
   const context = await loginE2E(browser, {}, undefined, siteURL);
+  const collectionSlug = `sapphire-import-${Date.now()}`;
+  const createResponse = await context.request.post(new URL("/api/v1/collections", siteURL).toString(), {
+    data: { title: "Sapphire 导入验收", slug: collectionSlug, defaultLocale: "zh-CN", semanticVersion: "1.0.0" },
+  });
+  expect(createResponse.ok(), await createResponse.text()).toBeTruthy();
+  const collection = (await createResponse.json()).collection as { id: string };
   const page = await context.newPage();
-  await page.goto(new URL("/manage/import", siteURL).toString());
-  await settleNuxt(page);
-  await page.locator('input[type="file"]').setInputFiles("E:/projects/yozya/docs/exports/sapphire-docs-v1.zip");
-  await page.getByRole("button", { name: "上传并预检" }).click();
-  await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 180_000 });
-  await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
-  await context.close();
+  try {
+    await page.goto(new URL("/manage/import", siteURL).toString());
+    await settleNuxt(page);
+    await page.getByLabel("目标文档集").click();
+    await page.locator('[data-slot="itemLabel"]').getByText("Sapphire 导入验收", { exact: true }).click();
+    await page.locator('input[type="file"]').setInputFiles("E:/projects/yozya/docs/exports/sapphire-docs-v1.zip");
+    await page.getByRole("button", { name: "上传并预检" }).click();
+    await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 180_000 });
+    await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
+    const confirmResponsePromise = page.waitForResponse(
+      (response) => /\/api\/v1\/imports\/docs\/[0-9a-f-]+\/confirm$/.test(response.url()),
+      { timeout: 180_000 },
+    );
+    await page.getByRole("button", { name: "确认导入" }).click();
+    const confirmResponse = await confirmResponsePromise;
+    expect(confirmResponse.ok(), await confirmResponse.text()).toBeTruthy();
+  } finally {
+    await context.request.delete(new URL(`/api/v1/collections/${collection.id}`, siteURL).toString());
+    await context.close();
+  }
 });
 
 test("creates and selects a document collection without leaving import", async ({ browser }) => {

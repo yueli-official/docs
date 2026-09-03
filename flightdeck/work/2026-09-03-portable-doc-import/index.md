@@ -23,7 +23,7 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 
 随后真实确认链路已完成：补齐 `docs-import-image` Asset Profile，服务端 PUT 改为发送原始字节与准确 Content-Length；导航虚拟组
 物化为双语章节入口，文档按父层级批量插入；新增 0017 让 `updated_at` 与 Search revision 保持一致，重复 upsert 不再触发幂等冲突。
-当前 Session `20260903T162824Z-25656` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
+当前 Session `20260903T164405Z-26776` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
 一个 `duration: 0` 的可手动关闭 Toast，不再重复渲染右侧 Alert。
 
 AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/caution/danger` 容器转换为 GFM Alerts，复制包内图片并从
@@ -79,6 +79,10 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
   `foundation.request.network`：只为 `POST /api/v1/imports/docs` 增加复用 Identity 会话 Adapter 的流式代理，保留 32 MiB
   Content-Length 门禁和 5 分钟截止时间，其他 API 安全预算不变。原始 Sapphire 浏览器复现由连接重置转为 582 篇、546 张图片、
   零问题的成功预检，回归 Playwright 9.0 秒通过；Web 52 tests 全绿，typecheck 仅余既存 Tiptap 双版本漂移。
+- 2026-09-04：修复 Sapphire 确认阶段的 `docs.upstream_failed(common.rate_limited)`：图片按 SHA-256 跨语言去重，546 个路径归并为
+  270 份物理上传；Asset HTTP 客户端遵守 429 的 `Retry-After`/`Ratelimit-Reset` 后自动续传，确认端点使用独立 5 分钟代理预算。
+  临时文档集真实 Playwright 完成上传、零问题预检、270 张图片上传、582 篇文档确认与清理，耗时 2.3 分钟；Asset retry、内容去重、
+  导入确认定向 Go tests 全绿。
 
 ## References
 

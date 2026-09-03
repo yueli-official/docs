@@ -5,9 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
@@ -28,22 +31,51 @@ func NewHTTP(baseURL, siteSlug, spaceKey string) Client {
 
 func (c *httpClient) post(ctx context.Context, bearer, path string, body g.Map) (*gjson.Json, error) {
 	raw, _ := json.Marshal(body)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(raw))
-	if err != nil {
-		return nil, docserr.UpstreamFailed("foundation.request.invalid")
+	for attempt := 0; attempt < 3; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(raw))
+		if err != nil {
+			return nil, docserr.UpstreamFailed("foundation.request.invalid")
+		}
+		req.Header.Set("Authorization", "Bearer "+bearer)
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, docserr.UpstreamFailed("asset service unreachable")
+		}
+		if resp.StatusCode == http.StatusTooManyRequests && attempt < 2 {
+			if !waitForRateLimit(ctx, resp) {
+				return nil, docserr.UpstreamFailed("common.rate_limited")
+			}
+			continue
+		}
+		defer resp.Body.Close()
+		out, err := foundationhttpclient.DecodeJSON[map[string]any](resp, foundationhttpclient.Limits{})
+		if err != nil {
+			return nil, docserr.UpstreamFailed(remoteCode(err))
+		}
+		return gjson.New(out), nil
 	}
-	req.Header.Set("Authorization", "Bearer "+bearer)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, docserr.UpstreamFailed("asset service unreachable")
+	return nil, docserr.UpstreamFailed("common.rate_limited")
+}
+
+func waitForRateLimit(ctx context.Context, resp *http.Response) bool {
+	delay := time.Second
+	for _, name := range []string{"Retry-After", "Ratelimit-Reset"} {
+		if seconds, err := strconv.Atoi(strings.TrimSpace(resp.Header.Get(name))); err == nil && seconds > 0 {
+			delay = time.Duration(seconds) * time.Second
+			break
+		}
 	}
-	defer resp.Body.Close()
-	out, err := foundationhttpclient.DecodeJSON[map[string]any](resp, foundationhttpclient.Limits{})
-	if err != nil {
-		return nil, docserr.UpstreamFailed(remoteCode(err))
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
 	}
-	return gjson.New(out), nil
 }
 
 func (c *httpClient) UploadInit(ctx context.Context, bearer string, in InitInput) (InitOutput, error) {
@@ -135,24 +167,33 @@ func (c *httpClient) Upload(ctx context.Context, bearer string, in InitInput, da
 	if err != nil {
 		return View{}, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, out.UploadURL, bytes.NewReader(data))
-	if err != nil {
-		return View{}, docserr.UpstreamFailed("asset blob upload failed")
+	for attempt := 0; attempt < 3; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, out.UploadURL, bytes.NewReader(data))
+		if err != nil {
+			return View{}, docserr.UpstreamFailed("asset blob upload failed")
+		}
+		req.ContentLength = int64(len(data))
+		if in.Mime != "" {
+			req.Header.Set("Content-Type", in.Mime)
+		}
+		for k, v := range out.UploadHeaders {
+			req.Header.Set(k, v)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return View{}, docserr.UpstreamFailed("asset blob upload failed")
+		}
+		if resp.StatusCode == http.StatusTooManyRequests && attempt < 2 {
+			if !waitForRateLimit(ctx, resp) {
+				return View{}, docserr.UpstreamFailed("common.rate_limited")
+			}
+			continue
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return View{}, docserr.UpstreamFailed("asset blob upload failed")
+		}
+		return c.Finalize(ctx, bearer, out.UploadToken)
 	}
-	req.ContentLength = int64(len(data))
-	if in.Mime != "" {
-		req.Header.Set("Content-Type", in.Mime)
-	}
-	for k, v := range out.UploadHeaders {
-		req.Header.Set(k, v)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return View{}, docserr.UpstreamFailed("asset blob upload failed")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return View{}, docserr.UpstreamFailed("asset blob upload failed")
-	}
-	return c.Finalize(ctx, bearer, out.UploadToken)
+	return View{}, docserr.UpstreamFailed("common.rate_limited")
 }

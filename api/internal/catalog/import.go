@@ -448,17 +448,21 @@ func issuesForPath(issues []importkit.Issue, p string) []importkit.Issue {
 }
 
 func importAssetsAndRefs(batchID string, pkg *importkit.Package, itemIDBySource map[string]string) ([]*model.ImportAsset, []*model.ImportAssetRef) {
-	assetIDBySource := map[string]string{}
+	assetIDByContent := map[string]string{}
 	var assets []*model.ImportAsset
 	var refs []*model.ImportAssetRef
 	for _, doc := range pkg.Docs {
 		itemID := itemIDBySource[doc.SourcePath]
 		for _, ref := range doc.ImageRefs {
 			asset := pkg.Assets[ref.ResolvedPath]
-			assetID := assetIDBySource[ref.ResolvedPath]
+			dedupeKey := "sha256:" + asset.SHA256
+			if asset.SHA256 == "" {
+				dedupeKey = "path:" + ref.ResolvedPath
+			}
+			assetID := assetIDByContent[dedupeKey]
 			if assetID == "" && asset.SourcePath != "" {
 				assetID = identifier.MustNew().String()
-				assetIDBySource[ref.ResolvedPath] = assetID
+				assetIDByContent[dedupeKey] = assetID
 				assets = append(assets, &model.ImportAsset{
 					ID:          assetID,
 					BatchID:     batchID,
