@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createDocsNotifier } from "~/utils/feedback";
 import { ManageEmpty } from "~/utils/manageComponents";
+import { CollectionPagination } from "@yueli/ui/collection/pattern";
 import type {
   DocsImportBatch,
   DocsImportListResponse,
@@ -32,6 +33,8 @@ const summary = ref<DocsImportSummary | null>(null);
 const collectionSlug = ref("");
 const defaultLocale = ref("zh-CN");
 const importMode = ref("upsert");
+const historyPage = ref(1);
+const historySize = 8;
 const creatingCollection = ref(false);
 const showCreateCollection = ref(false);
 const createCollectionError = ref("");
@@ -65,6 +68,12 @@ const { data: collectionsData, refresh: refreshCollections } = await useAsyncDat
 const collectionOptions = computed(() =>
   (collectionsData.value?.items ?? []).map((item) => ({ label: item.title, value: item.slug })),
 );
+const collectionTitleByID = computed(() => new Map(
+  (collectionsData.value?.items ?? []).map((item) => [item.id, item.title] as const),
+));
+function importCollectionTitle(item: DocsImportBatch) {
+  return collectionTitleByID.value.get(item.collectionId) || "未知文档集";
+}
 watch(collectionOptions, (items) => {
   if (!collectionSlug.value && items[0]) collectionSlug.value = items[0].value;
 }, { immediate: true });
@@ -153,19 +162,22 @@ const {
   error: historyError,
   refresh: refreshHistory,
 } = await useAsyncData(
-  "docs-import-history",
+  () => `docs-import-history-${historyPage.value}`,
   () =>
     canManageImports.value
       ? call<DocsImportListResponse>("/api/v1/imports/docs", {
-          query: { limit: 12 },
+          query: { page: historyPage.value, size: historySize },
         })
-      : Promise.resolve({ items: [] }),
+      : Promise.resolve({ items: [], total: 0, page: 1, size: historySize }),
   {
     server: false,
-    default: () => ({ items: [] as DocsImportBatch[] }),
+    default: () => ({ items: [] as DocsImportBatch[], total: 0, page: 1, size: historySize }),
+    watch: [historyPage],
   },
 );
 const recentImports = computed(() => historyData.value?.items ?? []);
+const historyTotal = computed(() => historyData.value?.total ?? 0);
+const historyTotalPages = computed(() => Math.max(1, Math.ceil(historyTotal.value / historySize)));
 const showHistoryLoading = computed(
   () => !mounted.value || historyPending.value,
 );
@@ -242,15 +254,10 @@ async function upload() {
     });
     batch.value = res.batch;
     summary.value = res.summary;
+    historyPage.value = 1;
     await refreshHistory();
   } catch (err: any) {
     errorMessage.value = err?.data?.message || err?.message || "上传失败";
-    toast.add({
-      title: "上传失败",
-      description: errorMessage.value,
-      color: "error",
-      icon: "i-tabler-alert-circle",
-    });
   } finally {
     uploading.value = false;
   }
@@ -259,6 +266,7 @@ async function upload() {
 async function confirmImport() {
   if (!canManageImports.value || !batch.value) return;
   confirming.value = true;
+  batch.value = { ...batch.value, status: "running" };
   try {
     const res = await call<DocsImportUploadResponse>(
       `/api/v1/imports/docs/${batch.value.id}/confirm`,
@@ -266,6 +274,7 @@ async function confirmImport() {
     );
     await navigateTo(`/manage/import/${res.batch.id}`);
   } catch (err: any) {
+    if (batch.value) batch.value = { ...batch.value, status: "failed" };
     toast.add({
       title: "导入失败",
       description:
@@ -323,11 +332,11 @@ async function confirmImport() {
                 导入前会检查正文、图片与内部链接。
               </p>
             </div>
-            <UBadge
-              label="ZIP 格式"
-              icon="i-tabler-file-zip"
-              variant="subtle"
-            />
+          </div>
+
+          <div class="mb-4 flex gap-2 text-sm text-muted">
+            <UIcon name="i-tabler-clock-play" class="mt-0.5 size-4 shrink-0 text-primary" />
+            <p>预检会保存为导入批次；确认后由后台继续执行，可以离开页面并从最近导入查看进度。</p>
           </div>
 
           <div class="mb-3 grid gap-3 md:grid-cols-3">
@@ -527,11 +536,15 @@ async function confirmImport() {
           </div>
         </div>
 
-        <ManageEmpty
+        <div
           v-if="!summary && !errorMessage"
-          icon="i-tabler-file-import"
-          text="选择 ZIP 后开始预检"
-        />
+          class="flex items-center gap-3 rounded-lg border border-dashed border-default px-4 py-3 text-sm text-muted"
+        >
+          <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <UIcon name="i-tabler-file-search" class="size-4.5" />
+          </span>
+          <p>选择 ZIP 并预检后，这里会显示变更数量和需要处理的问题。</p>
+        </div>
 
         <section
           aria-labelledby="import-history-title"
@@ -548,7 +561,7 @@ async function confirmImport() {
                 最近导入
               </h2>
               <p class="mt-0.5 text-xs text-muted">
-                查看预检、执行、失败与回滚记录。
+                批次由后台持续执行，离开此页不会隐藏记录。
               </p>
             </div>
             <UButton
@@ -578,12 +591,13 @@ async function confirmImport() {
               class="group grid gap-2 px-5 py-3 transition hover:bg-elevated/40 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center"
             >
               <span class="min-w-0">
-                <span class="block truncate font-mono text-xs text-highlighted">
-                  {{ item.id }}
+                <span class="block truncate text-sm font-medium text-highlighted">
+                  {{ importCollectionTitle(item) }}
                 </span>
                 <span class="mt-1 block text-xs text-muted">
                   {{ importModeLabel(item.mode) }} ·
-                  {{ item.summary.creates + item.summary.updates }} 篇变更
+                  {{ item.summary.creates + item.summary.updates }} 篇变更 ·
+                  <span class="font-mono">{{ item.id }}</span>
                 </span>
               </span>
               <UBadge
@@ -602,6 +616,13 @@ async function confirmImport() {
             </NuxtLink>
           </div>
           <ManageEmpty v-else icon="i-tabler-history" text="还没有导入记录" />
+          <div
+            v-if="historyTotalPages > 1"
+            class="flex items-center justify-between gap-3 border-t border-default px-5 py-3"
+          >
+            <p class="text-xs text-muted">共 {{ historyTotal }} 个批次</p>
+            <CollectionPagination v-model="historyPage" :total-pages="historyTotalPages" />
+          </div>
         </section>
       </section>
 
@@ -614,7 +635,7 @@ async function confirmImport() {
               导入状态
             </p>
             <h2 class="mt-1 text-base font-semibold text-highlighted">
-              {{ batch ? importStatusMeta(batch.status).label : "等待上传" }}
+              {{ confirming ? "后台处理中" : batch ? importStatusMeta(batch.status).label : "等待上传" }}
             </h2>
           </div>
           <span
@@ -648,6 +669,14 @@ async function confirmImport() {
         </div>
 
         <USeparator class="my-4" />
+
+        <div
+          v-if="confirming"
+          class="mb-4 flex gap-2 rounded-lg bg-primary/5 p-3 text-sm text-default"
+        >
+          <UIcon name="i-tabler-loader-2" class="mt-0.5 size-4 shrink-0 animate-spin text-primary" />
+          <p>任务正在后台执行。可以离开本页，稍后从“最近导入”返回查看结果。</p>
+        </div>
 
         <div class="grid gap-2">
           <UButton

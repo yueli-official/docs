@@ -287,8 +287,8 @@ func (s *Service) GetImport(ctx context.Context, batchID string) (*model.ImportB
 	return batch, items, nil
 }
 
-func (s *Service) ListImports(ctx context.Context, collectionID string, limit int) ([]*model.ImportBatch, error) {
-	return s.dao.ListImportBatches(ctx, strings.TrimSpace(collectionID), limit)
+func (s *Service) ListImports(ctx context.Context, collectionID string, page, size int) ([]*model.ImportBatch, int, error) {
+	return s.dao.ListImportBatches(ctx, strings.TrimSpace(collectionID), page, size)
 }
 
 func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, bearer, author string) error {

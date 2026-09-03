@@ -70,10 +70,14 @@ type UploadDocsImportRes struct {
 type ListDocsImportsReq struct {
 	g.Meta       `path:"/api/v1/imports/docs" method:"get" tags:"docs" summary:"List recent docs import batches"`
 	CollectionID string `json:"collectionId" in:"query"`
-	Limit        int    `json:"limit" in:"query" d:"20" v:"min:1|max:100"`
+	Page         int    `json:"page" in:"query" d:"1" v:"min:1"`
+	Size         int    `json:"size" in:"query" d:"8" v:"min:1|max:50"`
 }
 type ListDocsImportsRes struct {
 	Items []*ImportBatchView `json:"items"`
+	Total int                `json:"total"`
+	Page  int                `json:"page"`
+	Size  int                `json:"size"`
 }
 
 type GetDocsImportReq struct {

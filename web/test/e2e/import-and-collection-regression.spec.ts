@@ -61,10 +61,13 @@ test("confirm failure is shown once and remains until dismissed", async ({ brows
   await page.getByRole("button", { name: "上传并预检" }).click();
   await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 90_000 });
 
-  await page.route("**/api/v1/imports/docs/*/confirm", (route) =>
-    route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ message: "确认导入失败测试" }) }),
-  );
+  await page.route("**/api/v1/imports/docs/*/confirm", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ message: "确认导入失败测试" }) });
+  });
   await page.getByRole("button", { name: "确认导入" }).click();
+  await expect(page.getByText("后台处理中", { exact: true })).toBeVisible();
+  await expect(page.getByText("任务正在后台执行。可以离开本页，稍后从“最近导入”返回查看结果。")).toBeVisible();
   await expect(page.getByText("导入失败", { exact: true })).toHaveCount(1);
   await expect(page.getByText("确认导入失败", { exact: true })).toHaveCount(0);
   await page.waitForTimeout(5_000);
@@ -167,5 +170,39 @@ test("creates and selects a document collection without leaving import", async (
     const deleted = await context.request.delete(new URL(`/api/v1/collections/${createdID}`, siteURL).toString());
     expect(deleted.ok()).toBeTruthy();
   }
+  await context.close();
+});
+
+test("import history is server paginated", async ({ browser }) => {
+  const siteURL = process.env.DOCS_E2E_URL!;
+  const context = await loginE2E(browser, {}, undefined, siteURL);
+  const first = await context.request.get(new URL("/api/v1/imports/docs?page=1&size=2", siteURL).toString());
+  expect(first.ok(), await first.text()).toBeTruthy();
+  const firstPage = await first.json() as { items: Array<{ id: string }>; total: number; page: number; size: number };
+  expect(firstPage).toMatchObject({ page: 1, size: 2 });
+  expect(firstPage.items.length).toBeLessThanOrEqual(2);
+  expect(firstPage.total).toBeGreaterThanOrEqual(firstPage.items.length);
+  if (firstPage.total > 2) {
+    const second = await context.request.get(new URL("/api/v1/imports/docs?page=2&size=2", siteURL).toString());
+    expect(second.ok(), await second.text()).toBeTruthy();
+    const secondPage = await second.json() as { items: Array<{ id: string }>; page: number; size: number };
+    expect(secondPage).toMatchObject({ page: 2, size: 2 });
+    expect(secondPage.items.some((item) => firstPage.items.some((firstItem) => firstItem.id === item.id))).toBeFalsy();
+  }
+  const page = await context.newPage();
+  await page.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(page);
+  await expect(page.getByText("预检会保存为导入批次；确认后由后台继续执行，可以离开页面并从最近导入查看进度。")).toBeVisible();
+  await expect(page.getByText(`共 ${firstPage.total} 个批次`)).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
+  await page.screenshot({ path: "test-results/import-task-center-desktop.png", fullPage: true });
+
+  const mobile = await context.newPage();
+  await mobile.setViewportSize({ width: 390, height: 844 });
+  await mobile.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(mobile);
+  await expect(mobile.getByText(`共 ${firstPage.total} 个批次`)).toBeVisible();
+  expect(await mobile.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
+  await mobile.screenshot({ path: "test-results/import-task-center-mobile.png", fullPage: true });
   await context.close();
 });

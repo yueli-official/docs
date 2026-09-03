@@ -179,20 +179,27 @@ func (p *PG) GetImportBatch(ctx context.Context, id string) (*model.ImportBatch,
 	return out, err
 }
 
-func (p *PG) ListImportBatches(ctx context.Context, collectionID string, limit int) ([]*model.ImportBatch, error) {
-	if limit <= 0 || limit > 100 {
-		limit = 50
+func (p *PG) ListImportBatches(ctx context.Context, collectionID string, page, size int) ([]*model.ImportBatch, int, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if size <= 0 || size > 50 {
+		size = 8
 	}
 	var out []*model.ImportBatch
 	q := p.db.Model(tDocImportBatches).Ctx(ctx)
 	if collectionID != "" {
 		q = q.Where("collection_id", collectionID)
 	}
-	err := q.OrderDesc("created_at").Limit(limit).Scan(&out)
+	total, err := q.Clone().Count()
+	if err != nil {
+		return nil, 0, err
+	}
+	err = q.OrderDesc("created_at").Page(page, size).Scan(&out)
 	if out == nil {
 		out = []*model.ImportBatch{}
 	}
-	return out, err
+	return out, total, err
 }
 
 func (p *PG) InsertImportItems(ctx context.Context, items []*model.ImportItem) error {

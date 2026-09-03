@@ -56,6 +56,22 @@ const showSkeleton = useMinimumLoading(
 const loadError = computed(
   () => error.value as { data?: { message?: string }; message?: string } | null,
 );
+let statusTimer: ReturnType<typeof setInterval> | undefined;
+function stopStatusPolling() {
+  if (statusTimer) clearInterval(statusTimer);
+  statusTimer = undefined;
+}
+function syncStatusPolling(status?: string) {
+  if (status !== "running") {
+    stopStatusPolling();
+    return;
+  }
+  if (!statusTimer) {
+    statusTimer = setInterval(() => void refresh(), 2_000);
+  }
+}
+watch(() => batch.value?.status, syncStatusPolling);
+onScopeDispose(stopStatusPolling);
 
 const summaryCards = computed(() => {
   const s = summary.value;
@@ -421,12 +437,14 @@ async function rollback() {
 
           <UAlert
             v-else
-            color="neutral"
+            :color="batch.status === 'running' ? 'primary' : 'neutral'"
             variant="soft"
-            icon="i-tabler-info-circle"
-            title="当前状态不可回滚"
+            :icon="batch.status === 'running' ? 'i-tabler-clock-play' : 'i-tabler-info-circle'"
+            :title="batch.status === 'running' ? '后台执行中' : '当前状态不可回滚'"
             :description="
-              batch.status === 'rolled_back'
+              batch.status === 'running'
+                ? '可以离开此页面；任务完成后状态会自动更新。'
+                : batch.status === 'rolled_back'
                 ? '这个批次已经回滚。'
                 : '只有已完成的导入批次可以回滚。'
             "

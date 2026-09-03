@@ -23,11 +23,11 @@ func (c *Imports) ListDocsImports(ctx context.Context, req *v1.ListDocsImportsRe
 	if err := requireCapability(ctx, docsauthz.CapabilityImportManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
 		return nil, err
 	}
-	items, err := c.svc.ListImports(ctx, req.CollectionID, req.Limit)
+	items, total, err := c.svc.ListImports(ctx, req.CollectionID, req.Page, req.Size)
 	if err != nil {
 		return nil, err
 	}
-	return &v1.ListDocsImportsRes{Items: importBatchViews(items)}, nil
+	return &v1.ListDocsImportsRes{Items: importBatchViews(items), Total: total, Page: req.Page, Size: req.Size}, nil
 }
 
 func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImportReq) (*v1.UploadDocsImportRes, error) {

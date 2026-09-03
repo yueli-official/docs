@@ -228,6 +228,9 @@ export interface DocsImportDetailResponse {
 }
 export interface DocsImportListResponse {
   items: DocsImportBatch[];
+  total: number;
+  page: number;
+  size: number;
 }
 
 export interface DashboardTrafficPoint {
