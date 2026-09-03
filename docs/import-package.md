@@ -1,6 +1,6 @@
 # Docs Import Package v1
 
-Docs 接受一个 ZIP 文档包。正文以 UTF-8 Markdown 为唯一内容真值；普通单语言目录不需要 JSON。多语言包添加
+Docs 接受一个 ZIP 文档包，支持条目使用 Store、Deflate 或 XZ（ZIP method 95）压缩。正文以 UTF-8 Markdown 为唯一内容真值；普通单语言目录不需要 JSON。多语言包添加
 `docs.json`；显式导航和重定向也由这份包级清单表达。
 
 ## 最小文档包

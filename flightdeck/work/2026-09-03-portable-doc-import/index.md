@@ -26,6 +26,14 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 当前 Session `20260903T181415Z-32640` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
 一个 `duration: 0` 的可手动关闭 Toast，不再重复渲染右侧 Alert。
 
+批量导入页原地创建文档集在 URL 注册表增长到 6,042 条引用后曾稳定超过 10 秒并被网关取消。Foundation PostgreSQL URL
+状态加载已用 storage ref 索引替代逐 Route 全表查找；Docs 新集合初始化同时跳过不可能存在的旧 Route 全站扫描。真实数据库回归
+由 3 秒超时降至约 0.95 秒，LAN Playwright 原地创建、选中、移动端布局与删除通过。非 Problem JSON 的 502/503/504 现显示
+`docs.upstream_failed`，不再误报 `foundation.problem.invalid_body`。当前 Shared Session `20260903T232218Z-33864` ready。
+
+ZIP 读取现兼容 Bandizip 生成的 XZ method 95 条目，并为 XZ 字典设置 64 MiB 内存上限；原有 100 MiB 包、1 GiB 解压总量、
+25 MiB 单文件和 20,000 条目门禁继续生效。用户原始 `user-guide.zip` 已通过解析：11 篇文档、6 张图片、零问题。
+
 AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/caution/danger` 容器转换为 GFM Alerts，复制包内图片并从
 `src/nav/ae-scripting.ts` 生成顺序；未知或未闭合容器会直接中止。Docs 图片仍按 10 MiB 文件大小限制，产品原有 3000 万像素
 限制已取消，`maxPixels` 与 Asset 基础设施的 8000 万安全护栏对齐。
@@ -95,6 +103,12 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
   tests 全绿，本地 Environment 已按 100 MiB API multipart 配置启动；格式文档同步记录正式边界。
 - 2026-09-04：修复最近导入与批次详情的 `running` Badge 只显示 loader 图标但不旋转；共享 presentation Adapter 为 leading icon
   提供 `animate-spin motion-reduce:animate-none`。单测与真实 Playwright computed animation 验收通过。
+- 2026-09-04：修复大 URL 注册表下批量导入页创建文档集超时：Foundation PostgreSQL 状态加载从 Route×Reference 线性查找改为
+  storage ref 索引，Docs 新集合初始化不再分页扫描全站旧 Route；真实数据库回归 0.95 秒、LAN Playwright 创建/选中/删除通过。
+  Web 对非 Problem JSON 的 502/503/504 映射为 `docs.upstream_failed`，避免用 `foundation.problem.invalid_body` 掩盖网关错误。
+- 2026-09-04：ZIP 导入增加 Bandizip XZ method 95 解压，使用纯 Go 解码器并限制 64 MiB 字典；生成式 XZ 回归与用户原始
+  `user-guide.zip` 均通过；后者经 LAN Playwright 上传并预检为 11 篇文档、6 张图片、零问题。格式文档同步声明
+  Store/Deflate/XZ 支持范围。
 
 ## References
 

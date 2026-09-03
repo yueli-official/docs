@@ -45,6 +45,17 @@ export async function decodeDocsLegacyFailure(response: Response, limit: number)
   if (response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() === 'application/problem+json') {
     return failureFromProblemResponse(response, limit)
   }
+  if ([502, 503, 504].includes(response.status)) {
+    return {
+      kind: 'remote',
+      status: response.status,
+      code: 'docs.upstream_failed',
+      params: { status: response.status },
+      violations: [],
+      traceId: safeTraceId(undefined, response),
+      reauth: 'not-attempted',
+    }
+  }
   const text = await readTextWithinLimit(response, limit)
   if (text === undefined) {
     return { kind: 'protocol', code: 'foundation.problem.body_too_large', reauth: 'not-attempted' }

@@ -11,13 +11,45 @@ import (
 	"path"
 	"sort"
 	"strings"
+
+	"github.com/ulikunitz/xz"
 )
+
+const (
+	zipMethodXZ        uint16 = 95
+	zipXZDictionaryCap        = 64 * 1024 * 1024
+)
+
+type xzReadCloser struct {
+	reader io.Reader
+	err    error
+}
+
+func (r *xzReadCloser) Read(p []byte) (int, error) {
+	if r.err != nil {
+		err := r.err
+		r.err = nil
+		return 0, err
+	}
+	return r.reader.Read(p)
+}
+
+func (*xzReadCloser) Close() error { return nil }
+
+func openXZEntry(compressed io.Reader) io.ReadCloser {
+	reader, err := (xz.ReaderConfig{
+		DictCap:      zipXZDictionaryCap,
+		SingleStream: true,
+	}).NewReader(compressed)
+	return &xzReadCloser{reader: reader, err: err}
+}
 
 func readZipFiles(data []byte, opts Options) (map[string][]byte, error) {
 	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
 		return nil, fmt.Errorf("invalid zip: %w", err)
 	}
+	zr.RegisterDecompressor(zipMethodXZ, openXZEntry)
 	files := map[string][]byte{}
 	var extractedBytes uint64
 	for _, f := range zr.File {
@@ -37,18 +69,24 @@ func readZipFiles(data []byte, opts Options) (map[string][]byte, error) {
 		if f.UncompressedSize64 > uint64(opts.MaxExtractedBytes) || extractedBytes > uint64(opts.MaxExtractedBytes)-f.UncompressedSize64 {
 			return nil, fmt.Errorf("archive expands beyond %d bytes", opts.MaxExtractedBytes)
 		}
+		if f.Method != zip.Store && f.Method != zip.Deflate && f.Method != zipMethodXZ {
+			return nil, fmt.Errorf("unsupported zip compression method %d: %s", f.Method, name)
+		}
 		extractedBytes += f.UncompressedSize64
 		rc, err := f.Open()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("open archive entry %s: %w", name, err)
 		}
-		body, readErr := io.ReadAll(rc)
+		body, readErr := io.ReadAll(io.LimitReader(rc, opts.MaxEntryBytes+1))
 		closeErr := rc.Close()
 		if readErr != nil {
-			return nil, readErr
+			return nil, fmt.Errorf("read archive entry %s: %w", name, readErr)
 		}
 		if closeErr != nil {
-			return nil, closeErr
+			return nil, fmt.Errorf("close archive entry %s: %w", name, closeErr)
+		}
+		if int64(len(body)) > opts.MaxEntryBytes {
+			return nil, fmt.Errorf("archive entry exceeds %d bytes: %s", opts.MaxEntryBytes, name)
 		}
 		files[name] = body
 	}

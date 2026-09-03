@@ -77,7 +77,7 @@ func (s *Service) CreateCollectionWithSetup(ctx context.Context, in CreateCollec
 		ctx, m, version, &model.CollectionLocale{
 			CollectionID: m.ID, Locale: locale, Label: localeLabel(locale), HTMLLang: locale,
 			Direction: localeDirection(locale), IsDefault: true, Enabled: true,
-		}, s.urlReconcileHook(m.ID, "docs collection created"),
+		}, s.urlInitializeHook(m.ID, "docs collection created"),
 	); err != nil {
 		return nil, err
 	}

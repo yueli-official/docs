@@ -108,6 +108,27 @@ func (l *Lifecycle) ReconcileCollection(ctx context.Context, tx *sql.Tx, collect
 	return err
 }
 
+// InitializeCollection publishes the routes for a collection that was created
+// in the caller-owned transaction. A new collection cannot have former routes,
+// so avoid the site-wide paginated inspection used by reconciliation. That
+// inspection becomes increasingly expensive as the shared URL registry grows.
+func (l *Lifecycle) InitializeCollection(ctx context.Context, tx *sql.Tx, collectionID, reason string) error {
+	module, err := l.bound(tx)
+	if err != nil {
+		return err
+	}
+	desired, err := l.loadDesired(ctx, tx, collectionID)
+	if err != nil {
+		return err
+	}
+	change := planReconciliation(desired, map[string]urllifecycle.Inspection{}, reason)
+	if len(change.ResourceChanges) == 0 {
+		return nil
+	}
+	_, err = module.Apply(ctx, change, urllifecycle.ApplyOptions{})
+	return err
+}
+
 // ReconcileAll is the startup backfill. It uses one transaction per collection
 // so a large site is bounded by collection size rather than global page count.
 func (l *Lifecycle) ReconcileAll(ctx context.Context, db *sql.DB) error {

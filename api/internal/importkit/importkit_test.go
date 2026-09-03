@@ -3,8 +3,11 @@ package importkit
 import (
 	"archive/zip"
 	"bytes"
+	"hash/crc32"
 	"strings"
 	"testing"
+
+	"github.com/ulikunitz/xz"
 )
 
 func zipBytes(t *testing.T, files map[string]string) []byte {
@@ -24,6 +27,50 @@ func zipBytes(t *testing.T, files map[string]string) []byte {
 		t.Fatal(err)
 	}
 	return buf.Bytes()
+}
+
+func xzZipBytes(t *testing.T, name, body string) []byte {
+	t.Helper()
+	var compressed bytes.Buffer
+	xzWriter, err := xz.NewWriter(&compressed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := xzWriter.Write([]byte(body)); err != nil {
+		t.Fatal(err)
+	}
+	if err := xzWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	var archive bytes.Buffer
+	zipWriter := zip.NewWriter(&archive)
+	header := &zip.FileHeader{Name: name, Method: zipMethodXZ}
+	header.CRC32 = crc32.ChecksumIEEE([]byte(body))
+	header.CompressedSize64 = uint64(compressed.Len())
+	header.UncompressedSize64 = uint64(len(body))
+	entry, err := zipWriter.CreateRaw(header)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := entry.Write(compressed.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	if err := zipWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return archive.Bytes()
+}
+
+func TestParseZipSupportsXZCompressedEntries(t *testing.T) {
+	data := xzZipBytes(t, "index.md", "---\nid: home\ntitle: 首页\n---\n正文")
+	pkg, err := ParseZip(data, Options{Collection: "guide", DefaultLocale: "zh-CN", Mode: "upsert"})
+	if err != nil {
+		t.Fatalf("ParseZip: %v", err)
+	}
+	if len(pkg.Docs) != 1 || pkg.Docs[0].Title != "首页" || pkg.Docs[0].Content != "正文" {
+		t.Fatalf("package: %+v", pkg)
+	}
 }
 
 func TestParseMarkdownDirectoryWithoutManifest(t *testing.T) {

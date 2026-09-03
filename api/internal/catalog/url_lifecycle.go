@@ -21,3 +21,12 @@ func (s *Service) urlReconcileHook(collectionID, reason string) dao.TransactionH
 		return s.urls.ReconcileCollection(ctx, tx, collectionID, reason)
 	}
 }
+
+func (s *Service) urlInitializeHook(collectionID, reason string) dao.TransactionHook {
+	if s.urls == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		return s.urls.InitializeCollection(ctx, tx, collectionID, reason)
+	}
+}
