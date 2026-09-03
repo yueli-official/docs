@@ -23,7 +23,7 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 
 随后真实确认链路已完成：补齐 `docs-import-image` Asset Profile，服务端 PUT 改为发送原始字节与准确 Content-Length；导航虚拟组
 物化为双语章节入口，文档按父层级批量插入；新增 0017 让 `updated_at` 与 Search revision 保持一致，重复 upsert 不再触发幂等冲突。
-当前 Session `20260903T170258Z-31900` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
+当前 Session `20260903T173220Z-2056` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
 一个 `duration: 0` 的可手动关闭 Toast，不再重复渲染右侧 Alert。
 
 AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/caution/danger` 容器转换为 GFM Alerts，复制包内图片并从
@@ -87,6 +87,9 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
   详情页对 `running` 批次每 2 秒自动刷新。移除把历史推离首屏的大型空状态，最近导入显示文档集、模式、变更量、批次、状态和完整时间，
   改为 `page/size/total` 服务端分页。桌面与 390px Playwright 无横向溢出，分页第 1/2 页无重复，确认中与失败反馈 2 tests、Web 52 tests、
   Impeccable layout detector 全绿；API 相关包通过，catalog 全包仅余既存媒体 URL 旧断言。
+- 2026-09-04：修复 9.38 MiB `houdini-vex-docs-v1.zip` 超过 GoFrame 默认 8 MiB multipart 上限后返回纯文本、最终被前端显示为
+  `foundation.problem.invalid_body`：Docs API 与上传网关统一为 32 MiB 门禁，Controller 同时校验实际文件大小，本地 Environment 合同
+  显式渲染该值。真实临时文档集完成 2152 篇文档上传、预检、确认与删除清理，耗时 3.5 分钟；Controller tests 全绿。
 
 ## References
 

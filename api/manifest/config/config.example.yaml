@@ -8,6 +8,9 @@ server:
   # to a new temp exe each time → repeated prompts on 0.0.0.0). Prod hardening:
   # 生产环境可绑定所有接口（":8086"）；本地约束见 flightdeck/knowledge/local-dev/local-environment.md。
   address: "127.0.0.1:8086"
+  # Matches the Docs import gateway ceiling; ordinary JSON endpoints remain
+  # constrained by their schemas and the shared BFF budget.
+  clientMaxBodySize: 33554432
   openapiPath: "/api.json"
   swaggerPath: "/swagger"
 logger:

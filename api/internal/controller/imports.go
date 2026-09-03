@@ -17,6 +17,8 @@ import (
 
 type Imports struct{ svc *catalog.Service }
 
+const maxImportPackageBytes = 32 * 1024 * 1024
+
 func NewImports(svc *catalog.Service) *Imports { return &Imports{svc: svc} }
 
 func (c *Imports) ListDocsImports(ctx context.Context, req *v1.ListDocsImportsReq) (*v1.ListDocsImportsRes, error) {
@@ -40,6 +42,9 @@ func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImport
 	}
 	if req.File == nil {
 		return nil, docserr.InvalidInput("file required")
+	}
+	if req.File.Size > maxImportPackageBytes {
+		return nil, docserr.InvalidInput("import package exceeds 32 MiB")
 	}
 	file, err := req.File.Open()
 	if err != nil {
