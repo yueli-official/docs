@@ -93,6 +93,8 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 - 2026-09-04：按管理员迁移任务定稿放宽压缩包预算至 100 MiB，不设置图片数量业务上限；新增 1 GiB 解压总量、25 MiB 单文件和
   20,000 文件条目的 ZIP 防护，确认任务预算调整为 30 分钟，Asset 仍按 429 自动等待续传。Importkit 四类资源预算和 Controller
   tests 全绿，本地 Environment 已按 100 MiB API multipart 配置启动；格式文档同步记录正式边界。
+- 2026-09-04：修复最近导入与批次详情的 `running` Badge 只显示 loader 图标但不旋转；共享 presentation Adapter 为 leading icon
+  提供 `animate-spin motion-reduce:animate-none`。单测与真实 Playwright computed animation 验收通过。
 
 ## References
 

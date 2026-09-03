@@ -12,6 +12,7 @@ import type {
 import {
   formatImportDate,
   importModeLabel,
+  importStatusBadgeUI,
   importStatusMeta,
 } from "~/utils/docsImportPresentation.mjs";
 
@@ -604,6 +605,8 @@ async function confirmImport() {
                 :label="importStatusMeta(item.status).label"
                 :color="importStatusMeta(item.status).color"
                 :icon="importStatusMeta(item.status).icon"
+                :ui="importStatusBadgeUI(item.status)"
+                :data-import-status="item.status"
                 variant="subtle"
                 size="sm"
               />

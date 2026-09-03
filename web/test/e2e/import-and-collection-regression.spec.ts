@@ -244,3 +244,36 @@ test("import history is server paginated", async ({ browser }) => {
   await mobile.screenshot({ path: "test-results/import-task-center-mobile.png", fullPage: true });
   await context.close();
 });
+
+test("running import history uses a reduced-motion-safe spinner", async ({ browser }) => {
+  const siteURL = process.env.DOCS_E2E_URL!;
+  const context = await loginE2E(browser, {}, undefined, siteURL);
+  const page = await context.newPage();
+  await page.route("**/api/v1/imports/docs?page=1&size=8", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({
+      items: [{
+        id: "01a-running-test",
+        collectionId: "collection-test",
+        versionId: "version-test",
+        defaultLocale: "zh-CN",
+        mode: "upsert",
+        status: "running",
+        errorMessage: "",
+        summary: { creates: 20, updates: 0, archives: 0, skips: 0, conflicts: 0, errors: 0, images: 2, warnings: 0, blocking: false, issues: [] },
+        createdAt: "2026-09-04T02:27:00+08:00",
+        updatedAt: "2026-09-04T02:27:00+08:00",
+      }],
+      total: 1,
+      page: 1,
+      size: 8,
+    }),
+  }));
+  await page.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(page);
+  const icon = page.locator('[data-import-status="running"] [data-slot="leadingIcon"]');
+  await expect(icon).toHaveClass(/animate-spin/);
+  expect(await icon.evaluate((element) => getComputedStyle(element).animationName)).not.toBe("none");
+  await context.close();
+});

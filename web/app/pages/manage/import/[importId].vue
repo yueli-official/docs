@@ -9,6 +9,7 @@ import type {
 } from "~/types";
 import {
   importModeLabel,
+  importStatusBadgeUI,
   importStatusMeta,
 } from "~/utils/docsImportPresentation.mjs";
 
@@ -247,6 +248,7 @@ async function rollback() {
               :label="importStatusMeta(batch.status).label"
               :color="importStatusMeta(batch.status).color"
               :icon="importStatusMeta(batch.status).icon"
+              :ui="importStatusBadgeUI(batch.status)"
               variant="subtle"
             />
           </div>

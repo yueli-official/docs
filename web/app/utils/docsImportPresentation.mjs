@@ -47,6 +47,12 @@ export function importStatusMeta(status) {
   );
 }
 
+export function importStatusBadgeUI(status) {
+  return String(status || "") === "running"
+    ? { leadingIcon: "animate-spin motion-reduce:animate-none" }
+    : undefined;
+}
+
 export function importModeLabel(mode) {
   return modes[String(mode || "")] ?? mode ?? "未记录";
 }

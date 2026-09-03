@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   formatImportDate,
   importModeLabel,
+  importStatusBadgeUI,
   importStatusMeta,
 } from "./docsImportPresentation.mjs";
 
@@ -19,4 +20,11 @@ test("import dates fail closed to a readable placeholder", () => {
   assert.equal(formatImportDate(""), "未记录");
   assert.equal(formatImportDate("not-a-date"), "未记录");
   assert.notEqual(formatImportDate("2026-07-25T08:30:00Z"), "未记录");
+});
+
+test("running import badges spin unless reduced motion is requested", () => {
+  assert.deepEqual(importStatusBadgeUI("running"), {
+    leadingIcon: "animate-spin motion-reduce:animate-none",
+  });
+  assert.equal(importStatusBadgeUI("completed"), undefined);
 });
