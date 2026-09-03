@@ -3,6 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "test:export": "node --test scripts/export-docs-package.test.mjs",
+    "export:docs": "node scripts/export-docs-package.mjs",
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",

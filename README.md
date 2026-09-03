@@ -68,3 +68,13 @@
 1. 提交 Pull Request 或在仓库中提出 Issue
 2. 提供清晰代码示例与文档说明
 3. 请确保格式统一，易于阅读
+# 导出 Docs 上传包
+
+将双语文档、导航顺序、图片和 Docusaurus `:::` 容器转换为 Docs Import Package v1：
+
+```bash
+node scripts/export-docs-package.mjs ae-scripting
+```
+
+输出位于 `exports/<document-key>-docs-v1.zip`，并生成同名报告。源 Markdown 与 `src/nav/<document-key>.ts` 保持只读。
+支持的容器为 `note`、`info`、`tip`、`important`、`warning`、`caution`、`danger`；未知或未闭合容器会中止导出。
