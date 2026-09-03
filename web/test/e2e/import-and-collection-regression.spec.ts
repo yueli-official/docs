@@ -87,6 +87,20 @@ test("converted AE package preflights with alerts and images", async ({ browser 
   await context.close();
 });
 
+test("large Sapphire package reaches a completed preflight", async ({ browser }) => {
+  test.slow();
+  const siteURL = process.env.DOCS_E2E_URL!;
+  const context = await loginE2E(browser, {}, undefined, siteURL);
+  const page = await context.newPage();
+  await page.goto(new URL("/manage/import", siteURL).toString());
+  await settleNuxt(page);
+  await page.locator('input[type="file"]').setInputFiles("E:/projects/yozya/docs/exports/sapphire-docs-v1.zip");
+  await page.getByRole("button", { name: "上传并预检" }).click();
+  await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 180_000 });
+  await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
+  await context.close();
+});
+
 test("creates and selects a document collection without leaving import", async ({ browser }) => {
   const siteURL = process.env.DOCS_E2E_URL!;
   const context = await loginE2E(browser, {}, undefined, siteURL);
