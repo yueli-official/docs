@@ -32,7 +32,7 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 
 ## Next
 
-等待用户重新导入转换后的 AE 双语包；通过后再用同一脚本批量转换其余文档。验收继续遵守
+用户已确认重新导入转换后的 AE 双语包有效；同一脚本现已批量生成其余 8 套双语文档包。后续按文档集逐一导入验收。验收继续遵守
 [媒体合同](../../../../workspace/flightdeck/knowledge/asset/consumer-media-contract.md)，不得移除 Asset 的解码炸弹基础设施护栏。
 
 ## Progress
@@ -69,6 +69,9 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 - 2026-09-03：新增可复用 `export-docs-package.mjs` 与测试，将 AE 双语源的 616 个 Docusaurus 容器转换为 GFM Alerts，保留
   120 篇 Markdown、双语导航顺序和 4 个图片条目；源目录与导航文件不变。真实 Docs Playwright 预检得到 144 个节点、4 张图片、
   零问题。Docs 专属 3000 万像素限制改为 Asset 通用 8000 万安全护栏，10 MiB 文件大小限制不变。
+- 2026-09-03：用户确认 AE 转换包实际导入有效。导出器新增 `--all` 自动发现及批量报告，兼容中文 `注意`、`bug`、`quote`、
+  旧式反向容器、行尾关闭标记，以及导航/文件名的大小写与括号差异；9 套双语包共 3818 篇 Markdown、804 个图片条目全部生成，
+  ZIP 内 `:::` 指令残留为零，源文档和导航保持未修改。
 
 ## References
 
