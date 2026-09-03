@@ -7,11 +7,12 @@ import (
 )
 
 type frontmatter struct {
-	Title          string `yaml:"title"`
-	Slug           string `yaml:"slug"`
-	Excerpt        string `yaml:"excerpt"`
-	TranslationKey string `yaml:"translationKey"`
-	Order          int    `yaml:"order"`
+	Title       string `yaml:"title"`
+	Slug        string `yaml:"slug"`
+	Description string `yaml:"description"`
+	ID          string `yaml:"id"`
+	Order       int    `yaml:"order"`
+	Draft       bool   `yaml:"draft"`
 }
 
 func splitFrontmatter(s string) (frontmatter, string, error) {

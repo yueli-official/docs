@@ -56,8 +56,11 @@ type ImportItemView struct {
 }
 
 type UploadDocsImportReq struct {
-	g.Meta `path:"/api/v1/imports/docs" method:"post" mime:"multipart/form-data" tags:"docs" summary:"Upload and preflight a docs import ZIP"`
-	File   *ghttp.UploadFile `json:"file" type:"file" v:"required"`
+	g.Meta        `path:"/api/v1/imports/docs" method:"post" mime:"multipart/form-data" tags:"docs" summary:"Upload and preflight a docs import ZIP"`
+	File          *ghttp.UploadFile `json:"file" type:"file" v:"required"`
+	Collection    string            `json:"collection"`
+	DefaultLocale string            `json:"defaultLocale"`
+	Mode          string            `json:"mode"`
 }
 type UploadDocsImportRes struct {
 	Batch   *ImportBatchView  `json:"batch"`

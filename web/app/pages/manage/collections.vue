@@ -187,7 +187,15 @@ const form = reactive({
   description: "",
   icon: "",
   cover: "",
+  defaultLocale: "zh-CN",
+  semanticVersion: "1.0.0",
 });
+const localeItems = [
+  { label: "简体中文", value: "zh-CN" },
+  { label: "English", value: "en-US" },
+  { label: "繁體中文", value: "zh-TW" },
+  { label: "日本語", value: "ja-JP" },
+];
 const slugTouched = ref(false);
 const saving = ref(false);
 const coverPct = ref(-1);
@@ -201,7 +209,11 @@ const formError = ref("");
 
 const normalizedFormSlug = computed(() => clientSlug(form.slug));
 const canSave = computed(() =>
-  Boolean(form.title.trim() && normalizedFormSlug.value),
+  Boolean(
+    form.title.trim() &&
+      normalizedFormSlug.value &&
+      (current.value || /^\d+\.\d+\.\d+$/.test(form.semanticVersion.trim())),
+  ),
 );
 
 function clientSlug(value: string) {
@@ -232,6 +244,8 @@ function openCreate() {
   form.description = "";
   form.icon = "";
   form.cover = "";
+  form.defaultLocale = "zh-CN";
+  form.semanticVersion = "1.0.0";
   slugTouched.value = false;
   confirmingDelete.value = false;
   editorSection.value = "basic";
@@ -371,6 +385,10 @@ async function save() {
     formError.value = "请填写路径标识";
     return;
   }
+  if (!current.value && !/^\d+\.\d+\.\d+$/.test(form.semanticVersion.trim())) {
+    formError.value = "版本号必须使用 major.minor.patch，例如 1.0.0";
+    return;
+  }
 
   saving.value = true;
   try {
@@ -381,6 +399,12 @@ async function save() {
       description: form.description,
       icon: form.icon,
       cover: form.cover,
+      ...(!current.value
+        ? {
+            defaultLocale: form.defaultLocale,
+            semanticVersion: form.semanticVersion.trim(),
+          }
+        : {}),
     };
     const res = current.value
       ? await call<{ collection: CollectionView }>(
@@ -699,6 +723,33 @@ async function doDelete() {
             <UFormField label="描述">
               <UTextarea v-model="form.description" :rows="3" class="w-full" />
             </UFormField>
+
+            <div v-if="!current" class="grid gap-4 sm:grid-cols-2">
+              <UFormField
+                label="默认语言"
+                required
+                help="创建后仍可添加其他语言；默认语言必须始终保留。"
+              >
+                <USelect
+                  v-model="form.defaultLocale"
+                  :items="localeItems"
+                  value-key="value"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField
+                label="版本号"
+                required
+                help="使用 major.minor.patch；创建后不可修改。"
+              >
+                <UInput
+                  v-model="form.semanticVersion"
+                  inputmode="decimal"
+                  placeholder="1.0.0"
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
 
             <ManageVisualAssetField
               :icon="form.icon"

@@ -73,6 +73,7 @@ function selectedValue(value: unknown) {
 }
 
 const mounted = ref(false);
+const immersiveCollaboration = ref(false);
 onMounted(() => {
   mounted.value = true;
   if (isNew.value && draftInstanceId.value && !route.query.draft) {
@@ -466,12 +467,6 @@ const sm = computed(
   () => statusMeta[form.status || "draft"] ?? statusMeta.draft!,
 );
 
-const contentText = computed(() =>
-  form.content
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim(),
-);
 // ── quick publish / unpublish (edit mode) ──────────────────────────────────────
 const busy = ref("");
 async function setStatus(status: "draft" | "published" | "archived") {
@@ -678,7 +673,7 @@ const {
 async function copyText(value: string) {
   if (!value) return;
   try {
-    await navigator.clipboard.writeText(value);
+    await writeClipboardText(value);
     markCopied();
   } catch {
     markCopyFailed();
@@ -692,6 +687,10 @@ async function copyText(value: string) {
 
 function previewDoc() {
   if (publicDocUrl.value) window.open(publicDocUrl.value, "_blank");
+}
+
+function toggleImmersiveCollaboration() {
+  immersiveCollaboration.value = !immersiveCollaboration.value;
 }
 
 // ── keyboard shortcuts ─────────────────────────────────────────────────────────
@@ -712,30 +711,23 @@ defineShortcuts({
   },
 });
 
-// ── title auto-grow ────────────────────────────────────────────────────────────
-const titleEl = ref<HTMLTextAreaElement>();
-function autoGrowTitle() {
-  const el = titleEl.value;
-  if (!el) return;
-  el.style.height = "0px";
-  el.style.height = `${el.scrollHeight}px`;
-}
-watch(
-  () => form.title,
-  () => nextTick(autoGrowTitle),
-);
 watch(
   () => form.title,
   (title) => {
     if (isNew.value && !slugTouched.value) form.slug = clientSlug(title);
   },
 );
-onMounted(() => nextTick(autoGrowTitle));
 </script>
 
 <template>
-  <div class="yueli-admin-canvas min-h-full min-w-0" data-docs-editor>
+  <div
+    class="yueli-admin-canvas min-w-0"
+    :class="immersiveCollaboration ? 'fixed inset-0 z-50 h-svh overflow-hidden bg-default' : 'min-h-full'"
+    data-docs-editor
+    :data-collaboration-mode="immersiveCollaboration ? 'immersive' : 'standard'"
+  >
     <div
+      v-if="!immersiveCollaboration"
       class="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-2 border-b border-default bg-default px-3 py-1.5 sm:gap-4 sm:px-4 sm:py-2 lg:px-8"
       data-docs-editor-commandbar
     >
@@ -752,14 +744,27 @@ onMounted(() => nextTick(autoGrowTitle));
             aria-label="返回文档列表"
           />
         </UTooltip>
-        <span
-          class="hidden max-w-[min(32vw,28rem)] truncate text-sm font-semibold text-toned md:block"
-        >
-          {{ isNew ? "新建文档" : "文档编辑" }}
-        </span>
+        <input
+          v-model="form.title"
+          class="min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold text-highlighted outline-none placeholder:text-dimmed md:text-base"
+          placeholder="未命名文档"
+          aria-label="文档标题"
+        />
       </div>
 
       <div class="flex shrink-0 items-center gap-1.5">
+        <UTooltip :text="immersiveCollaboration ? '退出沉浸式协作' : '沉浸式协作'">
+          <UButton
+            :icon="immersiveCollaboration ? 'i-tabler-minimize' : 'i-tabler-maximize'"
+            color="neutral"
+            :variant="immersiveCollaboration ? 'soft' : 'ghost'"
+            square
+            class="size-11 sm:size-8"
+            :aria-label="immersiveCollaboration ? '退出沉浸式协作' : '沉浸式协作'"
+            :aria-pressed="immersiveCollaboration"
+            @click="toggleImmersiveCollaboration"
+          />
+        </UTooltip>
         <UTooltip v-if="!isNew && doc" text="预览公开页">
           <UButton
             icon="i-tabler-eye"
@@ -840,88 +845,60 @@ onMounted(() => nextTick(autoGrowTitle));
 
     <main
       v-else
-      class="px-4 pb-12 pt-6 transition-[padding] duration-200 ease-out sm:px-6 sm:pb-16 sm:pt-8 lg:px-8 lg:pt-10"
-      :class="settingsOpen ? 'xl:pr-[27rem]' : ''"
+      class="transition-[padding] duration-200 ease-out"
+      :class="[
+        immersiveCollaboration
+          ? 'h-svh overflow-y-auto p-0'
+          : 'px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:px-8 lg:pt-10',
+        settingsOpen && !immersiveCollaboration ? 'xl:pr-[27rem]' : '',
+      ]"
       data-docs-editor-workspace
+      :data-collaboration-mode="immersiveCollaboration ? 'immersive' : 'standard'"
     >
       <section
-        class="mx-auto w-full max-w-6xl rounded-xl bg-default p-3 shadow-sm sm:rounded-2xl sm:p-4 lg:p-6"
+        class="mx-auto w-full bg-default"
+        :class="
+          immersiveCollaboration
+            ? 'min-h-full max-w-none'
+            : 'max-w-6xl rounded-xl p-3 shadow-sm sm:rounded-2xl sm:p-4 lg:p-6'
+        "
         data-docs-editor-document
         aria-label="文档正文编辑"
       >
-        <header class="mb-5 px-1">
-          <textarea
-            ref="titleEl"
-            v-model="form.title"
-            rows="1"
-            placeholder="未命名文档"
-            class="block w-full resize-none overflow-hidden border-0 bg-transparent font-display text-[1.75rem] font-bold leading-[1.12] tracking-[-0.04em] text-highlighted outline-none placeholder:text-dimmed sm:text-[clamp(2rem,3vw,2.25rem)]"
-            aria-label="文档标题"
-            @input="autoGrowTitle"
-          />
-          <div
-            class="mt-3 flex min-h-9 items-center gap-1.5 rounded-xl border border-default bg-default/80 px-2.5 py-1.5 text-xs"
-          >
-            <UIcon name="i-tabler-link" class="size-4 shrink-0 text-primary" />
-            <span class="shrink-0 text-dimmed">
-              /{{ collectionSlug || "collection" }}/<template
-                v-if="currentSlugPath.length > 1"
-                >{{ currentSlugPath.slice(0, -1).join("/") }}/</template
-              >
-            </span>
-            <input
-              v-model="form.slug"
-              placeholder="url-slug"
-              class="min-w-0 flex-1 bg-transparent text-toned outline-none transition placeholder:text-dimmed focus:text-highlighted"
-              aria-label="文档永久链接"
-              @input="slugTouched = true"
-            />
-            <UTooltip
-              v-if="!isNew"
-              :text="copyStatus === 'success' ? '已复制' : '复制公开链接'"
-            >
-              <UButton
-                :icon="
-                  copyStatus === 'success' ? 'i-tabler-check' : 'i-tabler-copy'
-                "
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                square
-                :aria-label="
-                  copyStatus === 'success' ? '公开链接已复制' : '复制公开链接'
-                "
-                :disabled="!publicDocUrl"
-                @click="copyText(publicDocUrl)"
-              />
-            </UTooltip>
-            <span class="hidden shrink-0 text-dimmed sm:inline">
-              {{ contentText.length }} 字符
-            </span>
-          </div>
-
-          <UFormField label="摘要" class="mt-4">
-            <UTextarea
-              v-model="form.excerpt"
-              autoresize
-              :rows="2"
-              :maxrows="4"
-              placeholder="用于搜索结果、集合页和分享预览"
-              class="w-full"
-            />
-          </UFormField>
-        </header>
-
         <ContentEditor
           ref="editorComp"
           v-model="form.content"
-          class="[&>div>.rounded-xl]:border-default [&>div>.rounded-xl]:bg-muted [&_[data-slot=content]]:mx-auto [&_[data-slot=content]]:min-h-[28rem] [&_[data-slot=content]]:w-full [&_[data-slot=content]]:px-[1.125rem] [&_[data-slot=content]]:py-6 sm:[&_[data-slot=content]]:min-h-[max(40rem,calc(100svh-19rem))] sm:[&_[data-slot=content]]:px-[clamp(2rem,4vw,3rem)] sm:[&_[data-slot=content]]:py-9"
+          :class="[
+            '[&>div>.rounded-xl]:border-default [&>div>.rounded-xl]:bg-muted [&_[data-slot=content]]:mx-auto [&_[data-slot=content]]:min-h-[28rem] [&_[data-slot=content]]:w-full [&_[data-slot=content]]:px-[1.125rem] [&_[data-slot=content]]:py-6 sm:[&_[data-slot=content]]:px-[clamp(2rem,4vw,3rem)] sm:[&_[data-slot=content]]:py-9',
+            immersiveCollaboration
+              ? '[&>div>.rounded-xl]:rounded-none [&>div>.rounded-xl]:border-0 [&_[data-slot=content]]:min-h-[calc(100svh-3.5rem)]'
+              : 'sm:[&_[data-slot=content]]:min-h-[max(40rem,calc(100svh-19rem))]',
+          ]"
           draft-key-prefix="docs:doc"
           :draft-entity-id="isNew ? draftInstanceId : docId"
           :draft-mode="isNew ? 'create' : 'edit'"
           :has-initial-content="!isNew && !!doc?.content"
           :image-uploader="uploadInlineImage"
-        />
+          :style="{
+            '--content-editor-toolbar-top': immersiveCollaboration
+              ? '0px'
+              : '4rem',
+          }"
+        >
+          <template v-if="immersiveCollaboration" #toolbar-actions>
+            <UTooltip text="退出沉浸式协作">
+              <UButton
+                icon="i-tabler-minimize"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                square
+                aria-label="退出沉浸式协作"
+                @click="toggleImmersiveCollaboration"
+              />
+            </UTooltip>
+          </template>
+        </ContentEditor>
       </section>
     </main>
 
@@ -955,6 +932,36 @@ onMounted(() => nextTick(autoGrowTitle));
             class="mt-5 space-y-5"
             data-docs-inspector-content
           >
+            <UFormField label="路径标识" required>
+              <UFieldGroup class="w-full">
+                <UInput
+                  v-model="form.slug"
+                  placeholder="url-slug"
+                  class="min-w-0 w-full flex-1"
+                  @input="slugTouched = true"
+                />
+                <UButton
+                  v-if="!isNew"
+                  :icon="copyStatus === 'success' ? 'i-tabler-check' : 'i-tabler-copy'"
+                  color="neutral"
+                  variant="outline"
+                  :aria-label="copyStatus === 'success' ? '公开链接已复制' : '复制公开链接'"
+                  :disabled="!publicDocUrl"
+                  @click="copyText(publicDocUrl)"
+                />
+              </UFieldGroup>
+            </UFormField>
+
+            <UFormField label="摘要" help="用于搜索结果、集合页和分享预览">
+              <UTextarea
+                v-model="form.excerpt"
+                autoresize
+                :rows="3"
+                :maxrows="6"
+                class="w-full"
+              />
+            </UFormField>
+
             <UFormField label="文档集" required>
               <USelectMenu
                 v-if="isNew"

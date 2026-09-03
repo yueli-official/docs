@@ -14,6 +14,22 @@ import (
 // CreateCollection generates a slug from the title, guards duplicates, and
 // inserts a new collection owned by authorSub.
 func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, description, cover, icon string) (*model.Collection, error) {
+	return s.CreateCollectionWithSetup(ctx, CreateCollectionInput{
+		AuthorSub: authorSub, Title: title, Slug: slug, Description: description,
+		Cover: cover, Icon: icon, DefaultLocale: "en",
+	})
+}
+
+type CreateCollectionInput struct {
+	AuthorSub, Title, Slug, Description, Cover, Icon string
+	DefaultLocale, SemanticVersion                   string
+}
+
+func (s *Service) CreateCollectionWithSetup(ctx context.Context, in CreateCollectionInput) (*model.Collection, error) {
+	title, slug := strings.TrimSpace(in.Title), in.Slug
+	if title == "" {
+		return nil, docserr.InvalidInput("title required")
+	}
 	slugSource := title
 	if strings.TrimSpace(slug) != "" {
 		slugSource = slug
@@ -31,10 +47,23 @@ func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, 
 		ID:          identifier.MustNew().String(),
 		Slug:        slug,
 		Title:       title,
-		Description: description,
-		CoverURL:    cover,
-		Icon:        icon,
-		AuthorSub:   authorSub,
+		Description: in.Description,
+		CoverURL:    in.Cover,
+		Icon:        in.Icon,
+		AuthorSub:   in.AuthorSub,
+	}
+	locale := strings.TrimSpace(in.DefaultLocale)
+	if !localePattern.MatchString(locale) {
+		return nil, docserr.InvalidInput("invalid documentation locale")
+	}
+	semanticVersion := strings.TrimSpace(in.SemanticVersion)
+	if semanticVersion != "" {
+		if !semanticVersionPattern.MatchString(semanticVersion) {
+			return nil, docserr.InvalidInput("semantic version must use major.minor.patch")
+		}
+		m.ReleaseFamilyID = identifier.MustNew().String()
+		m.ReleaseFamilyName = title
+		m.SemanticVersion = semanticVersion
 	}
 	version := &model.CollectionVersion{
 		ID:           identifier.MustNew().String(),
@@ -45,11 +74,37 @@ func (s *Service) CreateCollection(ctx context.Context, authorSub, title, slug, 
 		IsDefault:    true,
 	}
 	if err := s.dao.InsertCollectionWithDefaultVersion(
-		ctx, m, version, s.urlReconcileHook(m.ID, "docs collection created"),
+		ctx, m, version, &model.CollectionLocale{
+			CollectionID: m.ID, Locale: locale, Label: localeLabel(locale), HTMLLang: locale,
+			Direction: localeDirection(locale), IsDefault: true, Enabled: true,
+		}, s.urlReconcileHook(m.ID, "docs collection created"),
 	); err != nil {
 		return nil, err
 	}
 	return s.dao.GetCollectionByID(ctx, m.ID)
+}
+
+func localeLabel(locale string) string {
+	switch locale {
+	case "zh-CN":
+		return "简体中文"
+	case "zh-TW":
+		return "繁體中文"
+	case "en", "en-US":
+		return "English"
+	case "ja", "ja-JP":
+		return "日本語"
+	default:
+		return locale
+	}
+}
+
+func localeDirection(locale string) string {
+	base := strings.ToLower(strings.SplitN(locale, "-", 2)[0])
+	if base == "ar" || base == "fa" || base == "he" || base == "ur" {
+		return "rtl"
+	}
+	return "ltr"
 }
 
 // ListCollections returns all collections ordered by sort_order then created_at.

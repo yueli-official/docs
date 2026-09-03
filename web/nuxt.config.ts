@@ -89,6 +89,11 @@ export default defineNuxtConfig({
       },
     },
   },
+  vite: {
+    resolve: {
+      dedupe: ['vue', 'vue-router', '@vue/runtime-core', '@vue/runtime-dom'],
+    },
+  },
   runtimeConfig: {
     apiBase: process.env.NUXT_API_BASE || 'http://127.0.0.1:8086',
     assetBase: process.env.NUXT_ASSET_BASE || 'http://127.0.0.1:8082',

@@ -19,10 +19,13 @@ import (
 )
 
 type ImportUploadInput struct {
-	Filename string
-	Data     []byte
-	Bearer   string
-	Author   string
+	Filename      string
+	Data          []byte
+	Bearer        string
+	Author        string
+	Collection    string
+	DefaultLocale string
+	Mode          string
 }
 
 type ImportSummary struct {
@@ -55,7 +58,7 @@ type plannedImportDoc struct {
 }
 
 func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*model.ImportBatch, ImportSummary, error) {
-	pkg, err := importkit.ParseZip(in.Data, importkit.Options{MaxImageBytes: 10 << 20})
+	pkg, err := importkit.ParseZip(in.Data, importkit.Options{MaxImageBytes: 10 << 20, Collection: in.Collection, DefaultLocale: in.DefaultLocale, Mode: in.Mode})
 	if err != nil {
 		return nil, ImportSummary{}, docserr.InvalidInput(err.Error())
 	}
@@ -108,7 +111,7 @@ func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*m
 			Title:          doc.Title,
 			Content:        doc.Content,
 			Excerpt:        doc.Excerpt,
-			Status:         plannedStatus(current),
+			Status:         plannedImportStatus(current, doc.Draft),
 			Locale:         doc.Locale,
 			TranslationKey: doc.TranslationKey,
 			SortOrder:      doc.Order,
@@ -619,6 +622,13 @@ func plannedStatus(doc *model.Doc) string {
 		return "published"
 	}
 	return doc.Status
+}
+
+func plannedImportStatus(doc *model.Doc, draft bool) string {
+	if draft {
+		return "draft"
+	}
+	return plannedStatus(doc)
 }
 
 func parentPath(p string) string {

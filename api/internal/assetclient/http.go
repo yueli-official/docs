@@ -135,18 +135,22 @@ func (c *httpClient) Upload(ctx context.Context, bearer string, in InitInput, da
 	if err != nil {
 		return View{}, err
 	}
-	cli := g.Client()
-	if in.Mime != "" {
-		cli.SetHeader("Content-Type", in.Mime)
-	}
-	for k, v := range out.UploadHeaders {
-		cli.SetHeader(k, v)
-	}
-	resp, err := cli.Put(ctx, out.UploadURL, bytes.NewReader(data))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, out.UploadURL, bytes.NewReader(data))
 	if err != nil {
 		return View{}, docserr.UpstreamFailed("asset blob upload failed")
 	}
-	defer resp.Close()
+	req.ContentLength = int64(len(data))
+	if in.Mime != "" {
+		req.Header.Set("Content-Type", in.Mime)
+	}
+	for k, v := range out.UploadHeaders {
+		req.Header.Set(k, v)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return View{}, docserr.UpstreamFailed("asset blob upload failed")
+	}
+	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return View{}, docserr.UpstreamFailed("asset blob upload failed")
 	}

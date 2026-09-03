@@ -269,6 +269,93 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.CloneCollectionLocaleReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "sourceLocale": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetDirection": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetHtmlLang": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetLabel": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetLocale": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetSortOrder": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sourceLocale",
+          "targetLocale",
+          "targetLabel"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.CloneCollectionLocaleRes": {
+        "properties": {
+          "created": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.CloneCollectionReleaseReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sourceSemanticVersion": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetSemanticVersion": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "targetSemanticVersion",
+          "title"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.CloneCollectionReleaseRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.CollectionCoverFinalizeReq": {
         "properties": {
           "id": {
@@ -345,6 +432,47 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.CollectionLocaleView": {
+        "properties": {
+          "collectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "direction": {
+            "format": "string",
+            "type": "string"
+          },
+          "docCount": {
+            "format": "int",
+            "type": "integer"
+          },
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "htmlLang": {
+            "format": "string",
+            "type": "string"
+          },
+          "isDefault": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.CollectionVersionView": {
         "properties": {
           "collectionId": {
@@ -392,6 +520,10 @@
             "format": "string",
             "type": "string"
           },
+          "derivedFromCollectionId": {
+            "format": "string",
+            "type": "string"
+          },
           "description": {
             "format": "string",
             "type": "string"
@@ -405,6 +537,18 @@
             "type": "string"
           },
           "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "releaseFamilyId": {
+            "format": "string",
+            "type": "string"
+          },
+          "releaseFamilyName": {
+            "format": "string",
+            "type": "string"
+          },
+          "semanticVersion": {
             "format": "string",
             "type": "string"
           },
@@ -622,11 +766,19 @@
             "format": "string",
             "type": "string"
           },
+          "defaultLocale": {
+            "format": "string",
+            "type": "string"
+          },
           "description": {
             "format": "string",
             "type": "string"
           },
           "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "semanticVersion": {
             "format": "string",
             "type": "string"
           },
@@ -640,7 +792,9 @@
           }
         },
         "required": [
-          "title"
+          "title",
+          "defaultLocale",
+          "semanticVersion"
         ],
         "type": "object"
       },
@@ -693,6 +847,14 @@
       },
       "github.com.yueli-official.docs.api.api.v1.CreateDocReq": {
         "properties": {
+          "badgeIcon": {
+            "format": "string",
+            "type": "string"
+          },
+          "badgeText": {
+            "format": "string",
+            "type": "string"
+          },
           "collectionId": {
             "format": "string",
             "type": "string"
@@ -955,6 +1117,32 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.DeleteCollectionLocaleReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "locale"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.DeleteCollectionLocaleRes": {
+        "properties": {
+          "deleted": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.DeleteCollectionReq": {
         "properties": {
           "id": {
@@ -1020,6 +1208,14 @@
       },
       "github.com.yueli-official.docs.api.api.v1.DocTreeNodeView": {
         "properties": {
+          "badgeIcon": {
+            "format": "string",
+            "type": "string"
+          },
+          "badgeText": {
+            "format": "string",
+            "type": "string"
+          },
           "children": {
             "format": "[]*v1.DocTreeNodeView",
             "items": {
@@ -1077,6 +1273,14 @@
       },
       "github.com.yueli-official.docs.api.api.v1.DocView": {
         "properties": {
+          "badgeIcon": {
+            "format": "string",
+            "type": "string"
+          },
+          "badgeText": {
+            "format": "string",
+            "type": "string"
+          },
           "children": {
             "format": "[]*v1.DocView",
             "items": {
@@ -1239,6 +1443,31 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.GetCollectionReleasesReq": {
+        "properties": {
+          "slug": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.GetCollectionReleasesRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.CollectionView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.GetCollectionReq": {
         "properties": {
           "slug": {
@@ -1290,6 +1519,39 @@
             "format": "[]*v1.DocTreeNodeView",
             "items": {
               "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DocTreeNodeView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.GetCollectionVariantsReq": {
+        "properties": {
+          "slug": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.GetCollectionVariantsRes": {
+        "properties": {
+          "locales": {
+            "format": "[]*v1.CollectionLocaleView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionLocaleView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "versions": {
+            "format": "[]*v1.CollectionVersionView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionVersionView",
               "description": ""
             },
             "type": "array"
@@ -1824,6 +2086,32 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.InitializeCollectionReleaseReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "semanticVersion": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "semanticVersion"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.InitializeCollectionReleaseRes": {
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.ListAuthorizationPoliciesReq": {
         "properties": {},
         "type": "object"
@@ -1990,6 +2278,15 @@
             "default": 20,
             "format": "int",
             "type": "integer"
+          },
+          "sortOrder": {
+            "default": "asc",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "format": "string",
+            "type": "string"
           }
         },
         "required": [
@@ -2018,6 +2315,31 @@
           "total": {
             "format": "int",
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.ListManageCollectionLocalesReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.ListManageCollectionLocalesRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.CollectionLocaleView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionLocaleView",
+              "description": ""
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -2203,6 +2525,14 @@
       },
       "github.com.yueli-official.docs.api.api.v1.ManageDocView": {
         "properties": {
+          "badgeIcon": {
+            "format": "string",
+            "type": "string"
+          },
+          "badgeText": {
+            "format": "string",
+            "type": "string"
+          },
           "collectionId": {
             "format": "string",
             "type": "string"
@@ -2527,6 +2857,55 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.ResolveDocumentVariantReq": {
+        "properties": {
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.ResolveDocumentVariantRes": {
+        "properties": {
+          "fallback": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "translationKey": {
+            "format": "string",
+            "type": "string"
+          },
+          "version": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.ResolveURLReq": {
         "properties": {
           "path": {
@@ -2839,8 +3218,60 @@
         },
         "type": "object"
       },
+      "github.com.yueli-official.docs.api.api.v1.UpdateCollectionVersionReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "isDefault": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "versionId",
+          "label",
+          "status"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.UpdateCollectionVersionRes": {
+        "properties": {
+          "version": {
+            "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionVersionView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
       "github.com.yueli-official.docs.api.api.v1.UpdateDocReq": {
         "properties": {
+          "badgeIcon": {
+            "format": "*string",
+            "type": "string"
+          },
+          "badgeText": {
+            "format": "*string",
+            "type": "string"
+          },
           "content": {
             "format": "*string",
             "type": "string"
@@ -2972,9 +3403,21 @@
       },
       "github.com.yueli-official.docs.api.api.v1.UploadDocsImportReq": {
         "properties": {
+          "collection": {
+            "format": "string",
+            "type": "string"
+          },
+          "defaultLocale": {
+            "format": "string",
+            "type": "string"
+          },
           "file": {
             "format": "*ghttp.UploadFile",
             "type": "file"
+          },
+          "mode": {
+            "format": "string",
+            "type": "string"
           }
         },
         "required": [
@@ -2990,6 +3433,57 @@
           },
           "summary": {
             "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ImportSummaryView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.UpsertCollectionLocaleReq": {
+        "properties": {
+          "direction": {
+            "format": "string",
+            "type": "string"
+          },
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "htmlLang": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "isDefault": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "locale",
+          "label"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.docs.api.api.v1.UpsertCollectionLocaleRes": {
+        "properties": {
+          "locale": {
+            "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionLocaleView",
             "description": ""
           }
         },
@@ -4585,6 +5079,38 @@
         ]
       }
     },
+    "/api/v1/collections/{slug}/releases": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetCollectionReleasesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List related collection releases",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
     "/api/v1/collections/{slug}/tree": {
       "get": {
         "parameters": [
@@ -4628,6 +5154,94 @@
           }
         },
         "summary": "Get collection doc tree (public)",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{slug}/variant": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "translationKey",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ResolveDocumentVariantRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Resolve the matching document in another language or version",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/collections/{slug}/variants": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetCollectionVariantsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List public languages and versions for a collection",
         "tags": [
           "docs"
         ]
@@ -4899,6 +5513,19 @@
           },
           {
             "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "page",
             "schema": {
               "default": 1,
@@ -5067,6 +5694,14 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "badgeIcon": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "badgeText": {
+                    "format": "*string",
+                    "type": "string"
+                  },
                   "content": {
                     "format": "*string",
                     "type": "string"
@@ -5538,6 +6173,409 @@
           }
         },
         "summary": "Rollback docs import",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{id}/clone-release": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "slug": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "sourceSemanticVersion": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "targetSemanticVersion": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "title": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "targetSemanticVersion",
+                  "title"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CloneCollectionReleaseRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Clone a collection as a related semantic release",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{id}/locales": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListManageCollectionLocalesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List collection locales (admin)",
+        "tags": [
+          "docs"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "direction": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "format": "bool",
+                    "type": "boolean"
+                  },
+                  "htmlLang": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "isDefault": {
+                    "format": "bool",
+                    "type": "boolean"
+                  },
+                  "label": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "locale": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "sortOrder": {
+                    "format": "int",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "locale",
+                  "label"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpsertCollectionLocaleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create or update a collection locale",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{id}/locales/clone": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sourceLocale": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "targetDirection": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "targetHtmlLang": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "targetLabel": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "targetLocale": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "targetSortOrder": {
+                    "format": "int",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "sourceLocale",
+                  "targetLocale",
+                  "targetLabel"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CloneCollectionLocaleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Clone one collection locale into translation drafts",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{id}/locales/{locale}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "locale",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteCollectionLocaleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Delete an unused non-default collection locale",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{id}/release": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "semanticVersion": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "semanticVersion"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.InitializeCollectionReleaseRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Initialize a collection as a semantic release",
+        "tags": [
+          "docs"
+        ]
+      }
+    },
+    "/api/v1/manage/collections/{id}/versions/{versionId}": {
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "versionId",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "isDefault": {
+                    "format": "bool",
+                    "type": "boolean"
+                  },
+                  "label": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "sortOrder": {
+                    "format": "int",
+                    "type": "integer"
+                  },
+                  "status": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "status"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpdateCollectionVersionRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update collection version metadata",
         "tags": [
           "docs"
         ]

@@ -43,12 +43,14 @@ type GetCollectionReleasesRes struct {
 }
 
 type CreateCollectionReq struct {
-	g.Meta      `path:"/api/v1/collections" method:"post" tags:"docs" summary:"Create collection (admin)"`
-	Title       string `json:"title" v:"required"`
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
-	Cover       string `json:"cover"`
-	Icon        string `json:"icon"`
+	g.Meta          `path:"/api/v1/collections" method:"post" tags:"docs" summary:"Create collection (admin)"`
+	Title           string `json:"title" v:"required"`
+	Slug            string `json:"slug"`
+	Description     string `json:"description"`
+	Cover           string `json:"cover"`
+	Icon            string `json:"icon"`
+	DefaultLocale   string `json:"defaultLocale" v:"required"`
+	SemanticVersion string `json:"semanticVersion" v:"required"`
 }
 type CreateCollectionRes struct {
 	Collection *CollectionView `json:"collection"`

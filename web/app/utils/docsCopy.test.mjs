@@ -202,6 +202,14 @@ test("collection settings initialize a single release and derive translation dra
   assert.match(panel, /复制后的文档全部为草稿/);
 });
 
+test("collection creation captures its initial language and semantic version", () => {
+  const page = readApp("pages/manage/collections.vue");
+  assert.match(page, /label="默认语言"/);
+  assert.match(page, /label="版本号"/);
+  assert.match(page, /defaultLocale/);
+  assert.match(page, /semanticVersion/);
+});
+
 test("docs site exposes a dedicated collections directory", () => {
   const page = readApp("pages/collections.vue");
   const home = readApp("pages/index.vue");
@@ -355,9 +363,15 @@ test("docs import is a recoverable capability-backed workflow", () => {
   assert.match(start, /DocsImportListResponse/);
   assert.match(start, /\/api\/v1\/imports\/docs/);
   assert.match(start, /最近导入/);
-  assert.match(start, /confirmError/);
+  assert.doesNotMatch(start, /confirmError|title="确认导入失败"/);
+  assert.match(start, /title: "导入失败"[\s\S]*duration: 0/);
   assert.match(start, /importStatusMeta/);
   assert.match(start, /importModeLabel/);
+  assert.match(start, /docs\.json/);
+  assert.match(start, /body\.append\("collection", collectionSlug\.value\)/);
+  assert.match(start, /body\.append\("defaultLocale", defaultLocale\.value\.trim\(\)\)/);
+  assert.match(start, /body\.append\("mode", importMode\.value\)/);
+  assert.match(start, /label="目标文档集"/);
   assert.match(start, /class="grid items-start gap-4/);
   assert.doesNotMatch(start, /xl:top-24/);
   assert.doesNotMatch(start, /ZIP only/);
@@ -483,6 +497,12 @@ test("document reader has a fuller reading surface", () => {
   const page = readApp("pages/[collection]/[...slug].vue");
   const layout = readApp("layouts/collection.vue");
   assert.match(page, /ReadingTableOfContents/);
+  assert.match(page, /can\("docs\.document\.update"\)/);
+  assert.match(page, /docManageRoute\(collectionSlug\.value, docPath\.value\)/);
+  assert.match(page, /label="编辑"/);
+  assert.match(page, /:max-level="3"/);
+  assert.match(page, /xl:grid-cols-\[minmax\(0,3fr\)_minmax\(0,1fr\)\]/);
+  assert.doesNotMatch(page, /_240px/);
   assert.match(page, /本页目录/);
   assert.match(layout, /max-w-\[1400px\]/);
   assert.doesNotMatch(

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -27,15 +28,43 @@ func (p *PG) ApplyImportDocs(
 	hook TransactionHook,
 ) error {
 	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		createByID := map[string]*model.Doc{}
+		for _, mutation := range mutations {
+			if mutation.Action == "create" && mutation.Doc != nil {
+				createByID[mutation.Doc.ID] = mutation.Doc
+			}
+		}
+		inserted := map[string]bool{}
+		for len(inserted) < len(createByID) {
+			batch := make([]g.Map, 0, len(createByID)-len(inserted))
+			batchIDs := make([]string, 0, cap(batch))
+			for id, doc := range createByID {
+				if inserted[id] {
+					continue
+				}
+				if _, parentIsNew := createByID[doc.ParentID]; parentIsNew && !inserted[doc.ParentID] {
+					continue
+				}
+				batch = append(batch, importDocInsertData(doc))
+				batchIDs = append(batchIDs, id)
+			}
+			if len(batch) == 0 {
+				return fmt.Errorf("import document hierarchy contains a cycle")
+			}
+			if _, err := tx.Model(tDocs).Ctx(ctx).Data(batch).Insert(); err != nil {
+				return err
+			}
+			for _, id := range batchIDs {
+				inserted[id] = true
+			}
+		}
 		for _, mutation := range mutations {
 			if mutation.Doc == nil {
 				continue
 			}
 			switch mutation.Action {
 			case "create":
-				if _, err := tx.Model(tDocs).Ctx(ctx).Data(importDocInsertData(mutation.Doc)).Insert(); err != nil {
-					return err
-				}
+				// Inserted in one batch above; IDs and parent IDs are prepared before the transaction.
 			case "update", "archive":
 				if err := updateImportDoc(ctx, tx, mutation.Doc); err != nil {
 					return err

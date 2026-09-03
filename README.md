@@ -1,6 +1,9 @@
 # 月离文档
 
 Docs 是独立的文档消费者产品，拥有文档集合、层级页面、版本/语言、批量导入、搜索、公开阅读和管理后台。
+
+批量导入采用 Markdown-first 的[Docs Import Package v1](docs/import-package.md)：普通目录只需 Markdown，多语言或显式导航包
+附加 `docs.json`。
 `api/` 与 `web/` 是本仓唯一实现真源；仓库不依赖 Platform 源码或工作区包。
 
 ## 边界

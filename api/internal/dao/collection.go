@@ -36,9 +36,17 @@ func (p *PG) InsertCollectionWithDefaultVersion(
 	ctx context.Context,
 	collection *model.Collection,
 	version *model.CollectionVersion,
+	locale *model.CollectionLocale,
 	hook TransactionHook,
 ) error {
 	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if collection.ReleaseFamilyID != "" {
+			if _, err := tx.Model("collection_release_families").Ctx(ctx).Data(g.Map{
+				"id": collection.ReleaseFamilyID, "name": collection.ReleaseFamilyName,
+			}).Insert(); err != nil {
+				return err
+			}
+		}
 		if _, err := tx.Model(tCollections).Ctx(ctx).Data(g.Map{
 			"id": collection.ID, "slug": collection.Slug, "title": collection.Title,
 			"description": collection.Description, "cover_asset_id": collection.CoverAssetID,
@@ -60,10 +68,10 @@ func (p *PG) InsertCollectionWithDefaultVersion(
 		}
 		if _, err := tx.Model(tCollectionLocales).Ctx(ctx).Data(g.Map{
 			"collection_id": collection.ID,
-			"locale":        "en",
-			"label":         "English",
-			"html_lang":     "en",
-			"direction":     "ltr",
+			"locale":        locale.Locale,
+			"label":         locale.Label,
+			"html_lang":     locale.HTMLLang,
+			"direction":     locale.Direction,
 			"is_default":    true,
 			"enabled":       true,
 			"sort_order":    0,

@@ -1,0 +1,9 @@
+{
+  "$schema": "../../docs-import.schema.json",
+  "schemaVersion": 1,
+  "defaultLocale": "zh-CN",
+  "locales": {
+    "zh-CN": ".",
+    "en-US": "locales/en-US"
+  }
+}

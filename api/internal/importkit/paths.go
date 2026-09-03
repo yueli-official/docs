@@ -21,8 +21,14 @@ func safeJoin(baseFile, ref string) (string, bool) {
 }
 
 func docPathFromMarkdown(locale, version, source string) string {
+	return docPathFromRoot(cleanZipPath(locale+"/"+version), source)
+}
+
+func docPathFromRoot(root, source string) string {
 	p := cleanZipPath(source)
-	p = strings.TrimPrefix(p, cleanZipPath(locale+"/"+version)+"/")
+	if root != "" {
+		p = strings.TrimPrefix(p, cleanZipPath(root)+"/")
+	}
 	p = strings.TrimSuffix(p, ".md")
 	p = strings.TrimSuffix(p, ".mdx")
 	if path.Base(p) == "index" {

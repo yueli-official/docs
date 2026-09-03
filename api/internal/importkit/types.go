@@ -2,6 +2,9 @@ package importkit
 
 type Options struct {
 	MaxImageBytes int64
+	Collection    string
+	DefaultLocale string
+	Mode          string
 }
 
 type Manifest struct {
@@ -11,6 +14,9 @@ type Manifest struct {
 	DefaultLocale string   `json:"defaultLocale"`
 	Locales       []string `json:"locales"`
 	Mode          string   `json:"mode"`
+	LocaleRoots   map[string]string
+	Navigation    []NavigationNode
+	Redirects     []Redirect
 }
 
 type Package struct {
@@ -24,6 +30,7 @@ type DocFile struct {
 	Locale         string
 	VersionKey     string
 	SourcePath     string
+	ContentRoot    string
 	Path           string
 	Slug           string
 	Title          string
@@ -32,6 +39,7 @@ type DocFile struct {
 	Excerpt        string
 	TranslationKey string
 	Order          int
+	Draft          bool
 	ImageRefs      []ImageRef
 	Links          []DocLink
 }

@@ -1,7 +1,6 @@
 package importkit
 
 import (
-	"fmt"
 	"path"
 	"sort"
 	"strings"
@@ -12,11 +11,12 @@ func ParseZip(data []byte, opts Options) (*Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	manifestRaw, ok := files["manifest.json"]
-	if !ok {
-		return nil, fmt.Errorf("manifest.json is required")
+	var manifest Manifest
+	if manifestRaw, ok := files["docs.json"]; ok {
+		manifest, err = parseDocsManifest(manifestRaw, opts)
+	} else {
+		manifest, err = manifestFromOptions(opts, "", nil)
 	}
-	manifest, err := parseManifest(manifestRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -34,11 +34,11 @@ func ParseZip(data []byte, opts Options) (*Package, error) {
 		if !isMarkdownPath(key) {
 			continue
 		}
-		locale, version, ok := localeVersionForPath(manifest, key)
+		locale, version, root, ok := docLocationForPath(manifest, key)
 		if !ok {
 			continue
 		}
-		doc, issues, err := parseDocFile(manifest, locale, version, key, string(files[key]))
+		doc, issues, err := parseDocFile(manifest, locale, version, root, key, string(files[key]))
 		if err != nil {
 			pkg.Issues = append(pkg.Issues, Issue{Severity: "error", Code: "frontmatter_invalid", Message: err.Error(), Path: key})
 			continue
@@ -47,9 +47,15 @@ func ParseZip(data []byte, opts Options) (*Package, error) {
 		docPathSet[doc.Locale+"/"+doc.VersionKey+"/"+doc.Path] = true
 		pkg.Issues = append(pkg.Issues, issues...)
 	}
+	addNavigationGroups(pkg)
+	docPathSet = map[string]bool{}
+	for _, doc := range pkg.Docs {
+		docPathSet[doc.Locale+"/"+doc.VersionKey+"/"+doc.Path] = true
+	}
 	validateDocCollisions(pkg)
 	validateImageRefs(pkg, opts)
 	validateDocLinks(pkg, docPathSet)
+	validateNavigation(pkg, docPathSet)
 	sort.SliceStable(pkg.Docs, func(i, j int) bool {
 		if pkg.Docs[i].Locale != pkg.Docs[j].Locale {
 			return pkg.Docs[i].Locale < pkg.Docs[j].Locale
@@ -62,22 +68,95 @@ func ParseZip(data []byte, opts Options) (*Package, error) {
 	return pkg, nil
 }
 
-func localeVersionForPath(manifest Manifest, source string) (string, string, bool) {
-	for _, locale := range manifest.Locales {
-		prefix := cleanZipPath(locale + "/" + manifest.Version + "/")
-		if strings.HasPrefix(cleanZipPath(source), prefix) {
-			return locale, manifest.Version, true
+func addNavigationGroups(pkg *Package) {
+	existing := map[string]bool{}
+	for _, doc := range pkg.Docs {
+		existing[doc.Locale+"/"+doc.Path] = true
+	}
+	var walk func([]NavigationNode)
+	walk = func(nodes []NavigationNode) {
+		for index, node := range nodes {
+			if node.Group == "" {
+				continue
+			}
+			dir := navigationCommonDir(node.Children)
+			if dir == "" {
+				walk(node.Children)
+				continue
+			}
+			for _, locale := range pkg.Manifest.Locales {
+				key := locale + "/" + dir
+				if existing[key] {
+					continue
+				}
+				title := node.Group
+				if translated := node.Translations[locale]; translated != "" {
+					title = translated
+				}
+				pkg.Docs = append(pkg.Docs, DocFile{
+					Locale: locale, SourcePath: "docs.json#navigation/" + locale + "/" + dir,
+					Path: dir, Slug: path.Base(dir), Title: title,
+					TranslationKey: "section:" + dir, Order: index + 1,
+				})
+				existing[key] = true
+			}
+			walk(node.Children)
 		}
 	}
-	return "", "", false
+	walk(pkg.Manifest.Navigation)
 }
 
-func parseDocFile(manifest Manifest, locale, version, source, raw string) (DocFile, []Issue, error) {
+func navigationCommonDir(nodes []NavigationNode) string {
+	var pages []string
+	var collect func([]NavigationNode)
+	collect = func(items []NavigationNode) {
+		for _, item := range items {
+			if item.Page != "" {
+				pages = append(pages, cleanZipPath(item.Page))
+			}
+			collect(item.Children)
+		}
+	}
+	collect(nodes)
+	if len(pages) == 0 {
+		return ""
+	}
+	common := path.Dir(pages[0])
+	for _, page := range pages[1:] {
+		dir := path.Dir(page)
+		for common != "." && common != "" && dir != common && !strings.HasPrefix(dir, common+"/") {
+			common = path.Dir(common)
+		}
+	}
+	if common == "." {
+		return ""
+	}
+	return common
+}
+
+func docLocationForPath(manifest Manifest, source string) (string, string, string, bool) {
+	clean := cleanZipPath(source)
+	for locale, root := range manifest.LocaleRoots {
+		if root != "" && strings.HasPrefix(clean, root+"/") {
+			return locale, "", root, true
+		}
+	}
+	defaultRoot := manifest.LocaleRoots[manifest.DefaultLocale]
+	if defaultRoot == "" {
+		return manifest.DefaultLocale, "", "", true
+	}
+	if strings.HasPrefix(clean, defaultRoot+"/") {
+		return manifest.DefaultLocale, "", defaultRoot, true
+	}
+	return "", "", "", false
+}
+
+func parseDocFile(manifest Manifest, locale, version, root, source, raw string) (DocFile, []Issue, error) {
 	fm, body, err := splitFrontmatter(raw)
 	if err != nil {
 		return DocFile{}, nil, err
 	}
-	docPath := docPathFromMarkdown(locale, version, source)
+	docPath := docPathFromRoot(root, source)
 	slug := fm.Slug
 	if slug == "" {
 		slug = slugFromPath(docPath)
@@ -90,16 +169,18 @@ func parseDocFile(manifest Manifest, locale, version, source, raw string) (DocFi
 		Locale:         locale,
 		VersionKey:     version,
 		SourcePath:     source,
+		ContentRoot:    root,
 		Path:           docPath,
 		Slug:           slug,
 		Title:          title,
 		Content:        body,
 		RawContent:     raw,
-		Excerpt:        fm.Excerpt,
-		TranslationKey: fm.TranslationKey,
+		Excerpt:        fm.Description,
+		TranslationKey: fm.ID,
 		Order:          fm.Order,
+		Draft:          fm.Draft,
 		ImageRefs:      imageRefs(source, body),
-		Links:          docLinks(source, locale, version, body),
+		Links:          docLinks(source, root, body),
 	}
 	var issues []Issue
 	if doc.Path == "" && path.Base(source) != "index.md" && path.Base(source) != "index.mdx" {
@@ -123,6 +204,33 @@ func validateDocCollisions(pkg *Package) {
 		}
 		seen[key] = doc.SourcePath
 	}
+}
+
+func validateNavigation(pkg *Package, docPathSet map[string]bool) {
+	seen := map[string]bool{}
+	var walk func([]NavigationNode)
+	walk = func(nodes []NavigationNode) {
+		for _, node := range nodes {
+			if node.Page != "" {
+				page := strings.TrimSuffix(strings.TrimSuffix(cleanZipPath(node.Page), ".md"), ".mdx")
+				if path.Base(page) == "index" {
+					page = path.Dir(page)
+					if page == "." {
+						page = ""
+					}
+				}
+				key := pkg.Manifest.DefaultLocale + "//" + page
+				if seen[page] {
+					pkg.Issues = append(pkg.Issues, Issue{Severity: "error", Code: "navigation_page_duplicate", Message: "navigation page is duplicated", Path: node.Page})
+				} else if !docPathSet[key] {
+					pkg.Issues = append(pkg.Issues, Issue{Severity: "error", Code: "navigation_page_missing", Message: "navigation page does not exist", Path: node.Page})
+				}
+				seen[page] = true
+			}
+			walk(node.Children)
+		}
+	}
+	walk(pkg.Manifest.Navigation)
 }
 
 func validateImageRefs(pkg *Package, opts Options) {

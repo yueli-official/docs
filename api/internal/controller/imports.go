@@ -51,10 +51,13 @@ func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImport
 		return nil, docserr.InvalidInput("file read failed")
 	}
 	batch, summary, err := c.svc.PreflightImport(ctx, catalog.ImportUploadInput{
-		Filename: req.File.Filename,
-		Data:     data,
-		Bearer:   bearerOf(ctx),
-		Author:   author,
+		Filename:      req.File.Filename,
+		Data:          data,
+		Bearer:        bearerOf(ctx),
+		Author:        author,
+		Collection:    req.Collection,
+		DefaultLocale: req.DefaultLocale,
+		Mode:          req.Mode,
 	})
 	if err != nil {
 		return nil, err

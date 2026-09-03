@@ -65,9 +65,9 @@ func docsHTTPImportZip(t *gtest.T) []byte {
 	var buf bytes.Buffer
 	zw := zip.NewWriter(&buf)
 	files := map[string]string{
-		"manifest.json":              `{"schemaVersion":1,"collection":"importable","version":"default","defaultLocale":"zh-CN","locales":["zh-CN"],"mode":"upsert"}`,
-		"zh-CN/default/guide.md":     "---\ntitle: 导入指南\ntranslationKey: import-guide\n---\n# 导入指南\n![截图](./images/a.png)\n",
-		"zh-CN/default/images/a.png": "png-bytes",
+		"docs.json":    `{"schemaVersion":1,"defaultLocale":"zh-CN","locales":{"zh-CN":"."}}`,
+		"guide.md":     "---\nid: import-guide\ntitle: 导入指南\n---\n# 导入指南\n![截图](./images/a.png)\n",
+		"images/a.png": "png-bytes",
 	}
 	for name, body := range files {
 		w, err := zw.Create(name)
@@ -539,6 +539,9 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		_, err = part.Write(docsHTTPImportZip(t))
 		t.AssertNil(err)
+		t.AssertNil(mw.WriteField("collection", "importable"))
+		t.AssertNil(mw.WriteField("defaultLocale", "zh-CN"))
+		t.AssertNil(mw.WriteField("mode", "upsert"))
 		t.AssertNil(mw.Close())
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/api/v1/imports/docs", &body)

@@ -55,7 +55,7 @@ func sortedKeys(files map[string][]byte) []string {
 
 func isMarkdownPath(p string) bool {
 	ext := strings.ToLower(path.Ext(p))
-	if ext != ".md" && ext != ".mdx" {
+	if ext != ".md" {
 		return false
 	}
 	for _, segment := range strings.Split(p, "/") {

@@ -6,6 +6,7 @@ import type {
   DocsImportListResponse,
   DocsImportSummary,
   DocsImportUploadResponse,
+  CollectionView,
 } from "~/types";
 import {
   formatImportDate,
@@ -25,9 +26,11 @@ const file = ref<File | null>(null);
 const uploading = ref(false);
 const confirming = ref(false);
 const errorMessage = ref("");
-const confirmError = ref("");
 const batch = ref<DocsImportBatch | null>(null);
 const summary = ref<DocsImportSummary | null>(null);
+const collectionSlug = ref("");
+const defaultLocale = ref("zh-CN");
+const importMode = ref("upsert");
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
@@ -37,10 +40,28 @@ const canUpload = computed(() =>
   Boolean(
     canManageImports.value &&
     file.value &&
+    collectionSlug.value &&
     !uploading.value &&
     !confirming.value,
   ),
 );
+
+const { data: collectionsData } = await useAsyncData(
+  "docs-import-collections",
+  () => call<{ items: CollectionView[] }>("/api/v1/collections"),
+  { server: false, default: () => ({ items: [] as CollectionView[] }) },
+);
+const collectionOptions = computed(() =>
+  (collectionsData.value?.items ?? []).map((item) => ({ label: item.title, value: item.slug })),
+);
+watch(collectionOptions, (items) => {
+  if (!collectionSlug.value && items[0]) collectionSlug.value = items[0].value;
+}, { immediate: true });
+const modeOptions = [
+  { label: "更新同路径文档", value: "upsert" },
+  { label: "仅创建，不覆盖", value: "create-only" },
+  { label: "同步并归档缺失文档", value: "replace-version" },
+];
 const canConfirm = computed(() =>
   Boolean(
     canManageImports.value &&
@@ -124,7 +145,6 @@ function onFileChange(event: Event) {
   batch.value = null;
   summary.value = null;
   errorMessage.value = "";
-  confirmError.value = "";
 }
 
 async function upload() {
@@ -138,6 +158,9 @@ async function upload() {
   try {
     const body = new FormData();
     body.append("file", file.value);
+    body.append("collection", collectionSlug.value);
+    body.append("defaultLocale", defaultLocale.value.trim());
+    body.append("mode", importMode.value);
     const res = await call<DocsImportUploadResponse>("/api/v1/imports/docs", {
       method: "POST",
       body,
@@ -161,7 +184,6 @@ async function upload() {
 async function confirmImport() {
   if (!canManageImports.value || !batch.value) return;
   confirming.value = true;
-  confirmError.value = "";
   try {
     const res = await call<DocsImportUploadResponse>(
       `/api/v1/imports/docs/${batch.value.id}/confirm`,
@@ -169,11 +191,13 @@ async function confirmImport() {
     );
     await navigateTo(`/manage/import/${res.batch.id}`);
   } catch (err: any) {
-    confirmError.value = err?.data?.message || "请检查预检结果后重试";
     toast.add({
       title: "导入失败",
-      description: confirmError.value,
+      description:
+        err?.data?.message || err?.message || "请检查预检结果后重试",
       color: "error",
+      icon: "i-tabler-alert-circle",
+      duration: 0,
     });
   } finally {
     confirming.value = false;
@@ -220,8 +244,8 @@ async function confirmImport() {
                 选择导入包
               </h2>
               <p class="mt-1 text-sm text-muted">
-                仅支持标准 ZIP 包，导入前会检查
-                manifest、Markdown、图片与内部链接。
+                上传 Markdown ZIP；多语言或显式导航包可附 docs.json。
+                导入前会检查正文、图片与内部链接。
               </p>
             </div>
             <UBadge
@@ -229,6 +253,18 @@ async function confirmImport() {
               icon="i-tabler-file-zip"
               variant="subtle"
             />
+          </div>
+
+          <div class="mb-3 grid gap-3 md:grid-cols-3">
+            <UFormField label="目标文档集" required>
+              <USelect v-model="collectionSlug" :items="collectionOptions" value-key="value" class="w-full" />
+            </UFormField>
+            <UFormField label="默认语言" required>
+              <UInput v-model="defaultLocale" placeholder="zh-CN" class="w-full" />
+            </UFormField>
+            <UFormField label="导入模式" required>
+              <USelect v-model="importMode" :items="modeOptions" value-key="value" class="w-full" />
+            </UFormField>
           </div>
 
           <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -465,16 +501,6 @@ async function confirmImport() {
         </div>
 
         <USeparator class="my-4" />
-
-        <UAlert
-          v-if="confirmError"
-          class="mb-3"
-          color="error"
-          variant="soft"
-          icon="i-tabler-alert-circle"
-          title="确认导入失败"
-          :description="confirmError"
-        />
 
         <div class="grid gap-2">
           <UButton

@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ReadingTableOfContents } from "@yueli/ui/navigation/table-of-contents";
 import type { CollectionVariantsResponse, DocDetailResponse } from "~/types";
+import { docManageRoute } from "~/utils/docsManageRoutes.mjs";
 import { createTrafficReplayKey } from "~/utils/traffic-replay-key.mjs";
 import { trafficSource } from "~/utils/traffic-source.mjs";
 
 definePageMeta({ layout: "collection", middleware: "url-lifecycle" });
 const route = useRoute();
 const { call } = useApi();
+const { loggedIn } = useAuth();
+const { me, can, refresh: refreshMe } = useMe();
+if (loggedIn.value && !me.value) await refreshMe();
 const collectionSlug = computed(() => route.params.collection as string);
 const { data: variantData } = await useAsyncData(
   () => `collection-variants-${collectionSlug.value}`,
@@ -125,6 +129,8 @@ const readingContent = computed(() =>
 );
 const toc = computed(() => renderWithToc(readingContent.value).toc);
 const isLeaf = computed(() => !node.value?.children?.length);
+const canEdit = computed(() => can("docs.document.update"));
+const editRoute = computed(() => docManageRoute(collectionSlug.value, docPath.value));
 useDiscoveryPage(() => docData.value?.discovery);
 useHead(() => ({
   htmlAttrs: {
@@ -138,7 +144,7 @@ useHead(() => ({
   <div v-if="node" class="reading-shell" data-reading-shell>
     <div
       class="grid gap-12"
-      :class="toc.length ? 'xl:grid-cols-[minmax(0,1fr)_240px]' : ''"
+      :class="toc.length ? 'xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]' : ''"
     >
       <article class="min-w-0">
         <header class="border-b border-default pb-8">
@@ -167,11 +173,21 @@ useHead(() => ({
                 {{ isLeaf ? "文档" : "章节" }}
               </span>
             </div>
-            <DocumentVariantSwitcher
-              class="sm:justify-end"
-              :collection-slug="collectionSlug"
-              :translation-key="doc?.translationKey || node.translationKey"
-            />
+            <div class="flex shrink-0 items-center gap-2 sm:justify-end">
+              <DocumentVariantSwitcher
+                :collection-slug="collectionSlug"
+                :translation-key="doc?.translationKey || node.translationKey"
+              />
+              <UButton
+                v-if="doc && canEdit"
+                :to="editRoute"
+                label="编辑"
+                icon="i-tabler-edit"
+                color="neutral"
+                variant="outline"
+                size="sm"
+              />
+            </div>
           </div>
           <h1
             class="font-display mt-4 flex flex-wrap items-center gap-3 text-balance text-[2rem] font-semibold leading-[1.18] text-highlighted md:text-[2.3125rem]"
@@ -240,13 +256,13 @@ useHead(() => ({
         <DocumentComments v-if="doc" :document-id="doc.id" />
       </article>
 
-      <aside v-if="toc.length" class="hidden xl:block">
+      <aside v-if="toc.length" class="hidden min-w-0 xl:block">
         <div class="sticky top-24">
           <ReadingTableOfContents
             :items="toc"
             title="本页目录"
             :min-level="2"
-            :max-level="4"
+            :max-level="3"
           />
         </div>
       </aside>

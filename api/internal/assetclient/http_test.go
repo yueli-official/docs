@@ -77,3 +77,32 @@ func TestHTTPClientUsesConfiguredSiteContextForAssetWrites(t *testing.T) {
 		t.Fatalf("upload spaceKey = %#v, want yueli", bodies[0]["spaceKey"])
 	}
 }
+
+func TestHTTPClientUploadPutsExactBytesBeforeFinalize(t *testing.T) {
+	payload := []byte("exact-image-bytes")
+	var uploaded []byte
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/v1/assets/upload-init":
+			_, _ = w.Write([]byte(`{"uploadUrl":"` + "http://" + r.Host + `/blob","uploadToken":"token"}`))
+		case "/blob":
+			if r.ContentLength != int64(len(payload)) {
+				t.Errorf("Content-Length = %d, want %d", r.ContentLength, len(payload))
+			}
+			uploaded, _ = io.ReadAll(r.Body)
+		case "/api/v1/assets/finalize":
+			_, _ = w.Write([]byte(`{"asset":{"id":"a1","mediaKey":"docs/test","size":17,"mime":"image/png","filename":"a.png"}}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+	client := NewHTTP(server.URL, "docs-main", "yueli")
+	if _, err := client.Upload(context.Background(), "token", InitInput{Filename: "a.png", Mime: "image/png", Category: "docs-import-image", Size: int64(len(payload))}, payload); err != nil {
+		t.Fatalf("Upload() error = %v", err)
+	}
+	if string(uploaded) != string(payload) {
+		t.Fatalf("uploaded = %q, want %q", uploaded, payload)
+	}
+}

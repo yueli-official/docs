@@ -45,14 +45,15 @@ func TestPreflightImportCreatesCheckedBatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := importZipBytes(t, map[string]string{
-		"manifest.json":                    `{"schemaVersion":1,"collection":"quickstart","version":"default","defaultLocale":"zh-CN","locales":["zh-CN"],"mode":"upsert"}`,
-		"zh-CN/default/guide/index.md":     "---\ntitle: 指南\norder: 2\n---\n![图](./images/a.png)",
-		"zh-CN/default/guide/images/a.png": "png",
+		"docs.json":          `{"schemaVersion":1,"defaultLocale":"zh-CN","locales":{"zh-CN":"."}}`,
+		"guide/index.md":     "---\nid: guide\ntitle: 指南\norder: 2\n---\n![图](./images/a.png)",
+		"guide/images/a.png": "png",
 	})
 	batch, summary, err := svc.PreflightImport(ctx, ImportUploadInput{
-		Filename: "docs.zip",
-		Data:     data,
-		Author:   "owner-sub",
+		Filename:   "docs.zip",
+		Data:       data,
+		Author:     "owner-sub",
+		Collection: "quickstart", DefaultLocale: "zh-CN", Mode: "upsert",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -93,13 +94,14 @@ func TestPreflightImportMissingImageBlocksConfirm(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := importZipBytes(t, map[string]string{
-		"manifest.json":                `{"schemaVersion":1,"collection":"quickstart","version":"default","defaultLocale":"zh-CN","locales":["zh-CN"],"mode":"upsert"}`,
-		"zh-CN/default/guide/index.md": "---\ntitle: 指南\n---\n![图](./images/missing.png)",
+		"docs.json":      `{"schemaVersion":1,"defaultLocale":"zh-CN","locales":{"zh-CN":"."}}`,
+		"guide/index.md": "---\nid: guide\ntitle: 指南\n---\n![图](./images/missing.png)",
 	})
 	batch, summary, err := svc.PreflightImport(ctx, ImportUploadInput{
-		Filename: "docs.zip",
-		Data:     data,
-		Author:   "owner-sub",
+		Filename:   "docs.zip",
+		Data:       data,
+		Author:     "owner-sub",
+		Collection: "quickstart", DefaultLocale: "zh-CN", Mode: "upsert",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -120,14 +122,15 @@ func TestConfirmImportAndRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := importZipBytes(t, map[string]string{
-		"manifest.json":                    `{"schemaVersion":1,"collection":"quickstart","version":"default","defaultLocale":"zh-CN","locales":["zh-CN"],"mode":"upsert"}`,
-		"zh-CN/default/guide/index.md":     "---\ntitle: 指南\norder: 2\n---\n![图](./images/a.png)",
-		"zh-CN/default/guide/images/a.png": "png",
+		"docs.json":          `{"schemaVersion":1,"defaultLocale":"zh-CN","locales":{"zh-CN":"."}}`,
+		"guide/index.md":     "---\nid: guide\ntitle: 指南\norder: 2\n---\n![图](./images/a.png)",
+		"guide/images/a.png": "png",
 	})
 	batch, summary, err := svc.PreflightImport(ctx, ImportUploadInput{
-		Filename: "docs.zip",
-		Data:     data,
-		Author:   "owner-sub",
+		Filename:   "docs.zip",
+		Data:       data,
+		Author:     "owner-sub",
+		Collection: "quickstart", DefaultLocale: "zh-CN", Mode: "upsert",
 	})
 	if err != nil {
 		t.Fatal(err)

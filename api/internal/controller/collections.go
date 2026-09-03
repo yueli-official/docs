@@ -24,7 +24,10 @@ func (c *Collections) CreateCollection(ctx context.Context, req *v1.CreateCollec
 	if err != nil {
 		return nil, err
 	}
-	col, err := c.svc.CreateCollection(ctx, author, req.Title, req.Slug, req.Description, req.Cover, req.Icon)
+	col, err := c.svc.CreateCollectionWithSetup(ctx, catalog.CreateCollectionInput{
+		AuthorSub: author, Title: req.Title, Slug: req.Slug, Description: req.Description,
+		Cover: req.Cover, Icon: req.Icon, DefaultLocale: req.DefaultLocale, SemanticVersion: req.SemanticVersion,
+	})
 	if err != nil {
 		return nil, err
 	}
