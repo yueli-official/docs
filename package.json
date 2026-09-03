@@ -5,6 +5,7 @@
   "scripts": {
     "test:export": "node --test scripts/export-docs-package.test.mjs",
     "export:docs": "node scripts/export-docs-package.mjs",
+    "export:docs:all": "node scripts/export-docs-package.mjs --all",
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",

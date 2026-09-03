@@ -14,6 +14,9 @@ const directiveTypes = {
   warning: "WARNING",
   caution: "CAUTION",
   danger: "CAUTION",
+  bug: "CAUTION",
+  quote: "NOTE",
+  注意: "NOTE",
 };
 
 export function convertDirectiveContainers(markdown) {
@@ -38,17 +41,31 @@ export function convertDirectiveContainers(markdown) {
     }
 
     if (container) {
-      if (/^\s*:::\s*$/.test(line)) {
+      const inlineClose = line.indexOf(":::");
+      if (inlineClose >= 0) {
+        const content = line.slice(0, inlineClose).trim();
+        const suffix = line.slice(inlineClose + 3).trim();
+        if (content) output.push(`> ${content}`);
         container = null;
+        if (suffix) lines.splice(lineNumber + 1, 0, suffix);
         continue;
       }
       output.push(line ? `> ${line}` : ">");
       continue;
     }
 
-    const start = line.match(/^\s*:::([A-Za-z][\w-]*)(?:\[([^\]]+)\])?(?:\s+(.*))?$/);
+    const start = line.match(/^\s*:::([^\s\[]+)(?:\[([^\]]+)\])?(?:\s+(.*))?$/u);
     if (!start) {
-      if (/^\s*:::\s*$/.test(line)) throw new Error(`orphan directive close at line ${lineNumber + 1}`);
+      if (/^\s*:::\s*$/.test(line)) {
+        const legacy = lines[lineNumber + 1]?.match(/^\s*([^\s]+)(?:\s+(.*))?$/u);
+        const legacyAlert = legacy && directiveTypes[legacy[1].toLowerCase()];
+        if (!legacyAlert) throw new Error(`orphan directive close at line ${lineNumber + 1}`);
+        output.push(`> [!${legacyAlert}]`);
+        if (legacy[2]) output.push(`> ${legacy[2]}`);
+        container = { type: legacy[1].toLowerCase(), lineNumber: lineNumber + 1 };
+        lineNumber += 1;
+        continue;
+      }
       output.push(line);
       continue;
     }
@@ -119,11 +136,22 @@ function buildNavigation(items, key, pageOrder, pageSet) {
 
 function copyLocale(source, target, pageOrder, pageSet) {
   const files = markdownFiles(source);
-  const relativeSet = new Set(files.map((file) => path.relative(source, file).replaceAll("\\", "/")));
-  for (const page of pageSet) if (!relativeSet.has(page)) throw new Error(`${source} is missing navigation page ${page}`);
+  const sourceByRelative = new Map(files.map((file) => [path.relative(source, file).replaceAll("\\", "/").toLowerCase(), file]));
+  const portablePath = (value) => value.toLowerCase().replace(/[()]/g, "");
+  const sourceByPortable = new Map();
+  for (const [relative, file] of sourceByRelative) {
+    const portable = portablePath(relative);
+    if (!sourceByPortable.has(portable)) sourceByPortable.set(portable, file);
+  }
+  const sourceForPage = (page) => sourceByRelative.get(page.toLowerCase())
+    || sourceByRelative.get(page.replace(/\.md$/i, "/index.md").toLowerCase())
+    || sourceByPortable.get(portablePath(page));
+  for (const page of pageSet) if (!sourceForPage(page)) throw new Error(`${source} is missing navigation page ${page}`);
+  const outputBySource = new Map();
+  for (const page of pageSet) outputBySource.set(sourceForPage(page), page);
+  for (const file of files) if (!outputBySource.has(file)) outputBySource.set(file, path.relative(source, file).replaceAll("\\", "/"));
   let directives = 0;
-  for (const relative of relativeSet) {
-    const sourceFile = path.join(source, relative);
+  for (const [sourceFile, relative] of outputBySource) {
     const raw = fs.readFileSync(sourceFile, "utf8");
     directives += (raw.match(/^:::[A-Za-z][\w-]*/gm) || []).length;
     const targetFile = path.join(target, relative);
@@ -144,7 +172,7 @@ function copyLocale(source, target, pageOrder, pageSet) {
     }
   };
   copyAssets(source, target);
-  return { documents: relativeSet.size, directives, assets };
+  return { documents: outputBySource.size, directives, assets };
 }
 
 export function exportPackage(key, repoRoot = process.cwd()) {
@@ -154,35 +182,75 @@ export function exportPackage(key, repoRoot = process.cwd()) {
   const pageSet = new Set();
   const navigation = buildNavigation(nav.items, key, pageOrder, pageSet);
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), `docs-export-${key}-`));
-  const packageRoot = path.join(tempRoot, key);
-  fs.mkdirSync(packageRoot, { recursive: true });
-  const zh = copyLocale(path.join(contentRoot, "zh-cn", key), packageRoot, pageOrder, pageSet);
-  const en = copyLocale(path.join(contentRoot, "en", key), path.join(packageRoot, "locales/en-US"), pageOrder, pageSet);
-  if (zh.documents !== en.documents) throw new Error(`locale document count mismatch: zh-CN=${zh.documents}, en-US=${en.documents}`);
-  const manifest = {
-    $schema: "https://docs.yueli.dev/schemas/docs-import-v1.json",
-    schemaVersion: 1,
-    defaultLocale: "zh-CN",
-    locales: { "zh-CN": ".", "en-US": "locales/en-US" },
-    navigation,
-  };
-  fs.writeFileSync(path.join(packageRoot, "docs.json"), JSON.stringify(manifest, null, 2) + "\n");
+  try {
+    const packageRoot = path.join(tempRoot, key);
+    fs.mkdirSync(packageRoot, { recursive: true });
+    const zh = copyLocale(path.join(contentRoot, "zh-cn", key), packageRoot, pageOrder, pageSet);
+    const en = copyLocale(path.join(contentRoot, "en", key), path.join(packageRoot, "locales/en-US"), pageOrder, pageSet);
+    if (zh.documents !== en.documents) throw new Error(`locale document count mismatch: zh-CN=${zh.documents}, en-US=${en.documents}`);
+    const manifest = {
+      $schema: "https://docs.yueli.dev/schemas/docs-import-v1.json",
+      schemaVersion: 1,
+      defaultLocale: "zh-CN",
+      locales: { "zh-CN": ".", "en-US": "locales/en-US" },
+      navigation,
+    };
+    fs.writeFileSync(path.join(packageRoot, "docs.json"), JSON.stringify(manifest, null, 2) + "\n");
+    const outputDir = path.join(repoRoot, "exports");
+    fs.mkdirSync(outputDir, { recursive: true });
+    const zipPath = path.join(outputDir, `${key}-docs-v1.zip`);
+    const reportPath = path.join(outputDir, `${key}-docs-v1.report.json`);
+    const command = `Compress-Archive -Path '${packageRoot.replaceAll("'", "''")}\\*' -DestinationPath '${zipPath.replaceAll("'", "''")}' -CompressionLevel Optimal -Force`;
+    const zipped = spawnSync("pwsh", ["-NoProfile", "-Command", command], { encoding: "utf8" });
+    if (zipped.status !== 0) throw new Error(zipped.stderr || zipped.stdout || "failed to create ZIP");
+    const report = { package: "Docs Import Package v1", key, navigationPages: pageSet.size, locales: { "zh-CN": zh, "en-US": en } };
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");
+    return { key, zipPath, reportPath, report };
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+}
+
+export function discoverDocumentKeys(repoRoot = process.cwd()) {
+  const directoryNames = (root) => new Set(
+    fs.readdirSync(root, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name),
+  );
+  const contentRoot = path.join(repoRoot, "src/content/docs");
+  const zh = directoryNames(path.join(contentRoot, "zh-cn"));
+  const en = directoryNames(path.join(contentRoot, "en"));
+  return fs.readdirSync(path.join(repoRoot, "src/nav"), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".ts"))
+    .map((entry) => path.basename(entry.name, ".ts"))
+    .filter((key) => zh.has(key) && en.has(key))
+    .sort();
+}
+
+export function exportAllPackages(repoRoot = process.cwd()) {
+  const succeeded = [];
+  const failed = [];
+  for (const key of discoverDocumentKeys(repoRoot)) {
+    try {
+      succeeded.push(exportPackage(key, repoRoot));
+    } catch (error) {
+      failed.push({ key, error: error instanceof Error ? error.message : String(error) });
+    }
+  }
   const outputDir = path.join(repoRoot, "exports");
   fs.mkdirSync(outputDir, { recursive: true });
-  const zipPath = path.join(outputDir, `${key}-docs-v1.zip`);
-  const reportPath = path.join(outputDir, `${key}-docs-v1.report.json`);
-  const command = `Compress-Archive -Path '${packageRoot.replaceAll("'", "''")}\\*' -DestinationPath '${zipPath.replaceAll("'", "''")}' -CompressionLevel Optimal -Force`;
-  const zipped = spawnSync("pwsh", ["-NoProfile", "-Command", command], { encoding: "utf8" });
-  if (zipped.status !== 0) throw new Error(zipped.stderr || zipped.stdout || "failed to create ZIP");
-  const report = { package: "Docs Import Package v1", key, navigationPages: pageSet.size, locales: { "zh-CN": zh, "en-US": en } };
-  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");
-  fs.rmSync(tempRoot, { recursive: true, force: true });
-  return { zipPath, reportPath, report };
+  const reportPath = path.join(outputDir, "docs-export-batch.report.json");
+  fs.writeFileSync(reportPath, JSON.stringify({ succeeded: succeeded.map(({ key, zipPath, reportPath: itemReportPath }) => ({ key, zipPath, reportPath: itemReportPath })), failed }, null, 2) + "\n");
+  return { succeeded, failed, reportPath };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const key = process.argv[2];
-  if (!key) throw new Error("usage: node scripts/export-docs-package.mjs <document-key>");
-  const result = exportPackage(key);
-  process.stdout.write(`${JSON.stringify(result.report)}\n${result.zipPath}\n`);
+  if (!key) throw new Error("usage: node scripts/export-docs-package.mjs <document-key|--all>");
+  if (key === "--all") {
+    const result = exportAllPackages();
+    process.stdout.write(`${JSON.stringify({ succeeded: result.succeeded.map(({ key: itemKey }) => itemKey), failed: result.failed })}\n${result.reportPath}\n`);
+    if (result.failed.length) process.exitCode = 1;
+  } else {
+    const result = exportPackage(key);
+    process.stdout.write(`${JSON.stringify(result.report)}\n${result.zipPath}\n`);
+  }
 }

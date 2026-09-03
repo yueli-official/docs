@@ -78,3 +78,11 @@ node scripts/export-docs-package.mjs ae-scripting
 
 输出位于 `exports/<document-key>-docs-v1.zip`，并生成同名报告。源 Markdown 与 `src/nav/<document-key>.ts` 保持只读。
 支持的容器为 `note`、`info`、`tip`、`important`、`warning`、`caution`、`danger`；未知或未闭合容器会中止导出。
+
+自动发现并导出所有同时具有中英文内容和导航配置的文档集：
+
+```bash
+node scripts/export-docs-package.mjs --all
+```
+
+批量结果写入 `exports/docs-export-batch.report.json`；任何文档集失败时命令返回非零状态，并在报告中保留具体错误。
