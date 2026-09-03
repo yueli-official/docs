@@ -3,6 +3,7 @@ package importkit
 import (
 	"archive/zip"
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -124,5 +125,38 @@ func TestParseImageDestinationIgnoresOptionalMarkdownTitle(t *testing.T) {
 	}
 	if got := pkg.Docs[0].ImageRefs[0].ResolvedPath; got != "_static/objectmodel.png" {
 		t.Fatalf("resolved image path = %q", got)
+	}
+}
+
+func TestParseZipEnforcesArchiveResourceBudgets(t *testing.T) {
+	data := zipBytes(t, map[string]string{"a.md": "12345", "b.md": "67890"})
+	base := Options{Collection: "docs", DefaultLocale: "zh-CN"}
+
+	archive := base
+	archive.MaxArchiveBytes = int64(len(data) - 1)
+	if _, err := ParseZip(data, archive); err == nil || !strings.Contains(err.Error(), "archive exceeds") {
+		t.Fatalf("archive limit error = %v", err)
+	}
+
+	entry := base
+	entry.MaxEntryBytes = 4
+	if _, err := ParseZip(data, entry); err == nil || !strings.Contains(err.Error(), "entry exceeds") {
+		t.Fatalf("entry limit error = %v", err)
+	}
+
+	extracted := base
+	extracted.MaxExtractedBytes = 9
+	if _, err := ParseZip(data, extracted); err == nil || !strings.Contains(err.Error(), "expands beyond") {
+		t.Fatalf("extracted limit error = %v", err)
+	}
+	extracted.MaxExtractedBytes = 4
+	if _, err := ParseZip(data, extracted); err == nil || !strings.Contains(err.Error(), "expands beyond") {
+		t.Fatalf("single entry extracted limit error = %v", err)
+	}
+
+	entries := base
+	entries.MaxEntries = 1
+	if _, err := ParseZip(data, entries); err == nil || !strings.Contains(err.Error(), "file entries") {
+		t.Fatalf("entry count error = %v", err)
 	}
 }

@@ -10,7 +10,7 @@ server:
   address: "127.0.0.1:8086"
   # Matches the Docs import gateway ceiling; ordinary JSON endpoints remain
   # constrained by their schemas and the shared BFF budget.
-  clientMaxBodySize: 33554432
+  clientMaxBodySize: 104857600
   openapiPath: "/api.json"
   swaggerPath: "/swagger"
 logger:

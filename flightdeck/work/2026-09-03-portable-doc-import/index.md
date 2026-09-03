@@ -23,7 +23,7 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 
 随后真实确认链路已完成：补齐 `docs-import-image` Asset Profile，服务端 PUT 改为发送原始字节与准确 Content-Length；导航虚拟组
 物化为双语章节入口，文档按父层级批量插入；新增 0017 让 `updated_at` 与 Search revision 保持一致，重复 upsert 不再触发幂等冲突。
-当前 Session `20260903T173220Z-2056` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
+当前 Session `20260903T181415Z-32640` ready。真实 AE 包以 120 个页面 + 24 个双语章节入口、4 张图片完成导入；确认失败只显示
 一个 `duration: 0` 的可手动关闭 Toast，不再重复渲染右侧 Alert。
 
 AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/caution/danger` 容器转换为 GFM Alerts，复制包内图片并从
@@ -90,6 +90,9 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 - 2026-09-04：修复 9.38 MiB `houdini-vex-docs-v1.zip` 超过 GoFrame 默认 8 MiB multipart 上限后返回纯文本、最终被前端显示为
   `foundation.problem.invalid_body`：Docs API 与上传网关统一为 32 MiB 门禁，Controller 同时校验实际文件大小，本地 Environment 合同
   显式渲染该值。真实临时文档集完成 2152 篇文档上传、预检、确认与删除清理，耗时 3.5 分钟；Controller tests 全绿。
+- 2026-09-04：按管理员迁移任务定稿放宽压缩包预算至 100 MiB，不设置图片数量业务上限；新增 1 GiB 解压总量、25 MiB 单文件和
+  20,000 文件条目的 ZIP 防护，确认任务预算调整为 30 分钟，Asset 仍按 429 自动等待续传。Importkit 四类资源预算和 Controller
+  tests 全绿，本地 Environment 已按 100 MiB API multipart 配置启动；格式文档同步记录正式边界。
 
 ## References
 

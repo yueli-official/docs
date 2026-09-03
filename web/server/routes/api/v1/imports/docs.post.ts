@@ -6,7 +6,7 @@ import {
   sendProxy,
 } from "h3";
 
-const MAX_IMPORT_PACKAGE_BYTES = 32 * 1024 * 1024;
+const MAX_IMPORT_PACKAGE_BYTES = 100 * 1024 * 1024;
 
 // Documentation packages are intentionally larger and slower to preflight than
 // ordinary JSON API calls. This exact route streams the multipart body while
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 411, statusMessage: "Import package size is required" });
   }
   if (declaredBytes > MAX_IMPORT_PACKAGE_BYTES) {
-    throw createError({ statusCode: 413, statusMessage: "Import package exceeds 32 MiB" });
+    throw createError({ statusCode: 413, statusMessage: "Import package exceeds 100 MiB" });
   }
   if (contentType) headers.set("content-type", contentType);
   if (contentLength) headers.set("content-length", contentLength);

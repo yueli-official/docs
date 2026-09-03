@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     fetchOptions: {
       headers,
       method: "POST",
-      signal: AbortSignal.timeout(5 * 60_000),
+      signal: AbortSignal.timeout(30 * 60_000),
     },
     sendStream: true,
   });

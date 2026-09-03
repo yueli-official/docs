@@ -13,12 +13,13 @@ import (
 	"strings"
 )
 
-func readZipFiles(data []byte) (map[string][]byte, error) {
+func readZipFiles(data []byte, opts Options) (map[string][]byte, error) {
 	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
 		return nil, fmt.Errorf("invalid zip: %w", err)
 	}
 	files := map[string][]byte{}
+	var extractedBytes uint64
 	for _, f := range zr.File {
 		if f.FileInfo().IsDir() {
 			continue
@@ -27,6 +28,16 @@ func readZipFiles(data []byte) (map[string][]byte, error) {
 		if name == "" || name == "." || strings.HasPrefix(name, "../") || strings.Contains(name, "/../") {
 			return nil, fmt.Errorf("unsafe zip path: %s", f.Name)
 		}
+		if len(files) >= opts.MaxEntries {
+			return nil, fmt.Errorf("archive exceeds %d file entries", opts.MaxEntries)
+		}
+		if f.UncompressedSize64 > uint64(opts.MaxEntryBytes) {
+			return nil, fmt.Errorf("archive entry exceeds %d bytes: %s", opts.MaxEntryBytes, name)
+		}
+		if f.UncompressedSize64 > uint64(opts.MaxExtractedBytes) || extractedBytes > uint64(opts.MaxExtractedBytes)-f.UncompressedSize64 {
+			return nil, fmt.Errorf("archive expands beyond %d bytes", opts.MaxExtractedBytes)
+		}
+		extractedBytes += f.UncompressedSize64
 		rc, err := f.Open()
 		if err != nil {
 			return nil, err

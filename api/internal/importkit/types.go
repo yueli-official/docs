@@ -1,10 +1,14 @@
 package importkit
 
 type Options struct {
-	MaxImageBytes int64
-	Collection    string
-	DefaultLocale string
-	Mode          string
+	MaxArchiveBytes   int64
+	MaxExtractedBytes int64
+	MaxEntryBytes     int64
+	MaxEntries        int
+	MaxImageBytes     int64
+	Collection        string
+	DefaultLocale     string
+	Mode              string
 }
 
 type Manifest struct {

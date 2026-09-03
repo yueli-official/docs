@@ -1,13 +1,18 @@
 package importkit
 
 import (
+	"fmt"
 	"path"
 	"sort"
 	"strings"
 )
 
 func ParseZip(data []byte, opts Options) (*Package, error) {
-	files, err := readZipFiles(data)
+	opts = withDefaultLimits(opts)
+	if int64(len(data)) > opts.MaxArchiveBytes {
+		return nil, fmt.Errorf("archive exceeds %d bytes", opts.MaxArchiveBytes)
+	}
+	files, err := readZipFiles(data, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +71,22 @@ func ParseZip(data []byte, opts Options) (*Package, error) {
 		return pkg.Docs[i].Path < pkg.Docs[j].Path
 	})
 	return pkg, nil
+}
+
+func withDefaultLimits(opts Options) Options {
+	if opts.MaxArchiveBytes <= 0 {
+		opts.MaxArchiveBytes = 100 * 1024 * 1024
+	}
+	if opts.MaxExtractedBytes <= 0 {
+		opts.MaxExtractedBytes = 1024 * 1024 * 1024
+	}
+	if opts.MaxEntryBytes <= 0 {
+		opts.MaxEntryBytes = 25 * 1024 * 1024
+	}
+	if opts.MaxEntries <= 0 {
+		opts.MaxEntries = 20_000
+	}
+	return opts
 }
 
 func addNavigationGroups(pkg *Package) {
