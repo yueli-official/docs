@@ -35,7 +35,7 @@ func (*imageAssetFake) UnregisterReference(context.Context, string, assetclient.
 
 func TestDocumentImageUsesConsumerProfileAndStableDeliveryURL(t *testing.T) {
 	fake := &imageAssetFake{view: assetclient.View{
-		ID: "asset-1", MediaKey: "docs_content_image_opaque",
+		ID: "asset-1", MediaKey: "31Pj0mXv7cfR5fdZIUvra",
 	}}
 	svc := New(nil).WithAssets(fake, "")
 
@@ -51,7 +51,7 @@ func TestDocumentImageUsesConsumerProfileAndStableDeliveryURL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FinalizeDocumentImage() error = %v", err)
 	}
-	if want := "/media/docs%2Fdocs-content-image%2Fopaque?format=webp&name=inline&v=1"; got != want {
+	if want := "/media/31Pj0mXv7cfR5fdZIUvra?format=webp&name=inline&v=1"; got != want {
 		t.Fatalf("FinalizeDocumentImage() = %q, want %q", got, want)
 	}
 }
