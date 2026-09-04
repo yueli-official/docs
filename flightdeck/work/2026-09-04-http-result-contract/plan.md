@@ -13,4 +13,4 @@
 ## P2 — 验证
 
 - [x] Go test/race/vet/govuln、Web tests/typecheck/build 与合同门禁全绿。
-- [ ] Workspace 本地组合完成公开阅读、管理、导入错误和 201/204 Playwright。
+- [x] Workspace 本地组合完成公开阅读、管理、导入错误和 201/202/204 Playwright。

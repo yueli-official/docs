@@ -6,15 +6,15 @@
 
 ## Status
 
-Open
+Finished
 
 ## Current
 
-Docs 的 13 个业务错误、70/70 operation 和 66 个业务 errors 已迁入 Foundation Project v1：`project.json` 声明 producer/输出，`operation-errors.json` 拥有路由错误事实。本地 Foundation CLI generate 与 `-check` 均通过，不需要发布。成功结果为 200×54、201×11、202×1、204×4；前端和导入 DTO 不泄漏内部错误文本。
+Docs 已完整采用 Foundation Project v1：13 个业务错误、70/70 operation、66 个业务 error 集合及六类生成物由统一配置驱动。成功结果为 200×54、201×11、202×1、204×4；前端和导入 DTO 不泄漏内部错误文本。静态、构建、管理/编辑器和真实 AE 导入浏览器验收全部通过。
 
 ## Next
 
-通过 Workspace local checkout 重建 Docs 组合，完成公开阅读、管理、导入错误及 201/202/204 Playwright；发布 Foundation 前保留旧生成命令供远端 CI 使用，不发布版本。
+None.
 
 ## Progress
 
@@ -25,6 +25,7 @@ Docs 的 13 个业务错误、70/70 operation 和 66 个业务 errors 已迁入 
 - 66/70 operation 已声明业务 errors；Web 统一 failure resolver、54 项测试、typecheck/build 与 raw message 扫描通过。
 - 明确创建与无正文删除已在 DTO 和 controller 同步状态；Idempotency-Key 角色申请保留 200。Go test/race/vet/govulncheck 全绿，gRPC 已升级到修复版本。
 - Foundation 本地固定 CLI 已从旧 manifest 提取 operation-errors，并用 Project v1 对全部六类产物完成 generate/check；旧命令仅作为 v0.4.1 远端 CI 兼容入口暂留。
+- Workspace 共享组合完成管理员、编辑器和 AE 双语导入 Playwright；创建/预检 201、确认 202、删除 204 与注入 raw message 不展示均通过。
 
 ## References
 
