@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "http.yueli.dev/project/v1",
+  "namespace": "docs",
+  "openapi": {
+    "output": "../contracts/openapi/docs.json",
+    "producer": {
+      "command": ["go", "run", "./cmd/docs"],
+      "outputEnv": "DOCS_OPENAPI_OUTPUT"
+    }
+  },
+  "errorCatalog": "contracts/http-result/error-catalog.json",
+  "operations": {
+    "output": "contracts/http-result/operations.json",
+    "errorsFile": "contracts/http-result/operation-errors.json"
+  },
+  "generate": {
+    "goOutput": "internal/docserr/catalog_gen.go",
+    "goPackage": "docserr",
+    "tsOutput": "../web/app/generated/docsFailure.ts",
+    "tsType": "DocsFailure",
+    "i18nOutput": "../web/app/generated/error-i18n-inventory.json"
+  },
+  "legacyCatalog": {
+    "output": "contracts/errors/catalog.json",
+    "schemaVersion": "docs.yueli.dev/error-catalog/v1"
+  }
+}

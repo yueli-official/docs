@@ -1,0 +1,360 @@
+{
+  "schemaVersion": "http.yueli.dev/operation-errors/v1",
+  "namespace": "docs",
+  "operations": {
+    "DELETE /api/v1/authorization/manage/grants/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.administrator_grant_protected"
+    ],
+    "DELETE /api/v1/collections/{id}": [
+      "docs.not_found",
+      "docs.forbidden"
+    ],
+    "DELETE /api/v1/docs/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "DELETE /api/v1/manage/collections/{id}/locales/{locale}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "DELETE /api/v1/manage/comments/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found",
+      "docs.upstream_failed"
+    ],
+    "GET /api/v1/authorization/applications/mine": [
+      "docs.authorization_unavailable",
+      "docs.forbidden"
+    ],
+    "GET /api/v1/authorization/manage/applications": [
+      "docs.authorization_unavailable",
+      "docs.forbidden"
+    ],
+    "GET /api/v1/authorization/manage/console": [
+      "docs.authorization_unavailable",
+      "docs.forbidden"
+    ],
+    "GET /api/v1/authorization/manage/policies": [
+      "docs.authorization_unavailable",
+      "docs.forbidden"
+    ],
+    "GET /api/v1/authorization/manage/policies/{revision}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "GET /api/v1/authorization/manage/roles": [
+      "docs.authorization_unavailable",
+      "docs.forbidden"
+    ],
+    "GET /api/v1/authorization/requestable-roles": [
+      "docs.authorization_unavailable",
+      "docs.forbidden"
+    ],
+    "GET /api/v1/collections/{id}/versions": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "GET /api/v1/collections/{slug}": [
+      "docs.not_found"
+    ],
+    "GET /api/v1/collections/{slug}/releases": [
+      "docs.not_found"
+    ],
+    "GET /api/v1/collections/{slug}/tree": [
+      "docs.not_found"
+    ],
+    "GET /api/v1/collections/{slug}/variant": [
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "GET /api/v1/collections/{slug}/variants": [
+      "docs.not_found"
+    ],
+    "GET /api/v1/dashboard/overview": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input"
+    ],
+    "GET /api/v1/docs": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input"
+    ],
+    "GET /api/v1/docs/by-path": [
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "GET /api/v1/docs/search": [
+      "docs.invalid_input"
+    ],
+    "GET /api/v1/docs/{documentId}/comments": [
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.upstream_failed"
+    ],
+    "GET /api/v1/docs/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "GET /api/v1/imports/docs": [
+      "docs.forbidden"
+    ],
+    "GET /api/v1/imports/docs/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "GET /api/v1/manage/collections/{id}/locales": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "GET /api/v1/manage/collections/{slug}/tree": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found"
+    ],
+    "GET /api/v1/manage/comments": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.upstream_failed"
+    ],
+    "GET /api/v1/manage/docs": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input"
+    ],
+    "GET /api/v1/me": [
+      "docs.authorization_unavailable"
+    ],
+    "PATCH /api/v1/collections/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "PATCH /api/v1/docs/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "PATCH /api/v1/home": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input"
+    ],
+    "PATCH /api/v1/manage/collections/{id}/versions/{versionId}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "PATCH /api/v1/manage/comments/{id}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/authorization/applications": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.rate_limited",
+      "docs.challenge_required",
+      "docs.abuse_unavailable",
+      "docs.abuse_attempt_replayed"
+    ],
+    "POST /api/v1/authorization/applications/{id}/withdraw": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/authorization/manage/applications/{id}/review": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/authorization/manage/grants": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input"
+    ],
+    "POST /api/v1/authorization/manage/policies/drafts": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input"
+    ],
+    "POST /api/v1/authorization/manage/policies/{revision}/activate": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/authorization/manage/policies/{revision}/preview": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/authorization/manage/policies/{revision}/roles": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/authorization/manage/policies/{revision}/roles/{role}/retire": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/authorization/manage/policies/{revision}/validate": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/collections": [
+      "docs.invalid_input",
+      "docs.slug_taken",
+      "docs.forbidden"
+    ],
+    "POST /api/v1/collections/{id}/cover": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/collections/{id}/cover/finalize": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.not_found",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/collections/{id}/versions": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "POST /api/v1/docs": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "POST /api/v1/docs/{documentId}/comments": [
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.rate_limited",
+      "docs.challenge_required",
+      "docs.abuse_unavailable",
+      "docs.abuse_attempt_replayed",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/docs/{id}/archive": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/docs/{id}/publish": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/docs/{id}/view": [
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/images": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/images/finalize": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/imports/docs": [
+      "docs.invalid_input",
+      "docs.import_blocked",
+      "docs.import.compression_unsupported",
+      "docs.forbidden"
+    ],
+    "POST /api/v1/imports/docs/{id}/confirm": [
+      "docs.invalid_input",
+      "docs.import_blocked",
+      "docs.forbidden",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/imports/docs/{id}/rollback": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.upstream_failed"
+    ],
+    "POST /api/v1/manage/collections/{id}/clone-release": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "POST /api/v1/manage/collections/{id}/locales": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/manage/collections/{id}/locales/clone": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "POST /api/v1/manage/collections/{id}/release": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found",
+      "docs.slug_taken"
+    ],
+    "PUT /api/v1/authorization/manage/policies/{revision}/automatic/{rule}": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ],
+    "PUT /api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities": [
+      "docs.authorization_unavailable",
+      "docs.forbidden",
+      "docs.invalid_input",
+      "docs.not_found"
+    ]
+  }
+}

@@ -10,11 +10,11 @@ Open
 
 ## Current
 
-Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成，70/70 operation 已覆盖，其中 66 个声明业务 errors。`go run ./cmd/httpcontracts` 可一键生成 OpenAPI、operation、Go/TS/i18n 和旧目录投影。成功结果已收敛为 200×54、201×11、202×1、204×4；前端和导入 DTO 不再泄漏内部错误文本。
+Docs 的 13 个业务错误、70/70 operation 和 66 个业务 errors 已迁入 Foundation Project v1：`project.json` 声明 producer/输出，`operation-errors.json` 拥有路由错误事实。本地 Foundation CLI generate 与 `-check` 均通过，不需要发布。成功结果为 200×54、201×11、202×1、204×4；前端和导入 DTO 不泄漏内部错误文本。
 
 ## Next
 
-依据 [执行计划](plan.md) 通过 Workspace local checkout 重建 Docs 组合，完成公开阅读、管理、导入错误及 201/202/204 Playwright；不发布版本。
+通过 Workspace local checkout 重建 Docs 组合，完成公开阅读、管理、导入错误及 201/202/204 Playwright；发布 Foundation 前保留旧生成命令供远端 CI 使用，不发布版本。
 
 ## Progress
 
@@ -24,6 +24,7 @@ Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成，70/70 ope
 - 授权域 operation errors 已声明；门禁会拒绝 catalog error 无消费者或错误表残留失效路由。
 - 66/70 operation 已声明业务 errors；Web 统一 failure resolver、54 项测试、typecheck/build 与 raw message 扫描通过。
 - 明确创建与无正文删除已在 DTO 和 controller 同步状态；Idempotency-Key 角色申请保留 200。Go test/race/vet/govulncheck 全绿，gRPC 已升级到修复版本。
+- Foundation 本地固定 CLI 已从旧 manifest 提取 operation-errors，并用 Project v1 对全部六类产物完成 generate/check；旧命令仅作为 v0.4.1 远端 CI 兼容入口暂留。
 
 ## References
 
