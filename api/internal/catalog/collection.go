@@ -172,7 +172,7 @@ func (s *Service) UpdateCollectionWithBearer(ctx context.Context, id, bearer, ti
 // AddCollectionCover opens an upload for a collection cover image.
 func (s *Service) AddCollectionCover(ctx context.Context, id, bearer, filename, mime string, size int64) (assetclient.InitOutput, error) {
 	if s.asset == nil {
-		return assetclient.InitOutput{}, docserr.UpstreamFailed("asset client not configured")
+		return assetclient.InitOutput{}, docserr.UpstreamFailed("asset")
 	}
 	c, err := s.dao.GetCollectionByID(ctx, id)
 	if err != nil {
@@ -193,7 +193,7 @@ func (s *Service) AddCollectionCover(ctx context.Context, id, bearer, filename, 
 // on the collection.
 func (s *Service) FinalizeCollectionCover(ctx context.Context, id, bearer, uploadToken string) (*model.Collection, error) {
 	if s.asset == nil {
-		return nil, docserr.UpstreamFailed("asset client not configured")
+		return nil, docserr.UpstreamFailed("asset")
 	}
 	c, err := s.dao.GetCollectionByID(ctx, id)
 	if err != nil {

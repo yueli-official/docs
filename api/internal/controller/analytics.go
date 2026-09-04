@@ -45,7 +45,7 @@ func (controller *PublicAnalytics) RecordDocumentView(ctx context.Context, req *
 		case err == docsanalytics.ErrDocumentNotFound:
 			return nil, docserr.NotFound(req.ID)
 		case traffic.IsKind(err, traffic.ErrorInvalidInput), traffic.IsKind(err, traffic.ErrorConflict):
-			return nil, docserr.InvalidInput(err.Error())
+			return nil, docserr.InvalidInput("traffic_event_invalid")
 		default:
 			return nil, err
 		}
@@ -78,7 +78,7 @@ func (controller *Dashboard) Overview(ctx context.Context, req *v1.DashboardOver
 	overview, err := controller.module.Overview(ctx, req.Days, time.Now())
 	if err != nil {
 		if err == docsanalytics.ErrUnsupportedWindow {
-			return nil, docserr.InvalidInput(err.Error())
+			return nil, docserr.InvalidInput("traffic_query_invalid")
 		}
 		return nil, err
 	}

@@ -23,12 +23,12 @@ export type DocsFailure =
   | { readonly code: "docs.challenge_required"; readonly status: 403; readonly params: { readonly attemptId: string; readonly challenge: string; }; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.forbidden"; readonly status: 403; readonly params?: never; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.import.compression_unsupported"; readonly status: 400; readonly params: { readonly method: number; }; readonly violations?: never; readonly traceId: string }
-  | { readonly code: "docs.import_blocked"; readonly status: 400; readonly params: { readonly detail: string; }; readonly violations?: never; readonly traceId: string }
-  | { readonly code: "docs.invalid_input"; readonly status: 400; readonly params: { readonly detail: string; }; readonly violations?: readonly { readonly pointer: string; readonly code: string; readonly params?: Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[]>> }[]; readonly traceId: string }
+  | { readonly code: "docs.import_blocked"; readonly status: 400; readonly params: { readonly reason: string; }; readonly violations?: never; readonly traceId: string }
+  | { readonly code: "docs.invalid_input"; readonly status: 400; readonly params: { readonly reason: string; }; readonly violations?: readonly { readonly pointer: string; readonly code: string; readonly params?: Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[]>> }[]; readonly traceId: string }
   | { readonly code: "docs.not_found"; readonly status: 404; readonly params: { readonly id: string; }; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.rate_limited"; readonly status: 429; readonly params?: never; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.slug_taken"; readonly status: 409; readonly params: { readonly slug: string; }; readonly violations?: never; readonly traceId: string }
-  | { readonly code: "docs.upstream_failed"; readonly status: 502; readonly params: { readonly detail: string; }; readonly violations?: never; readonly traceId: string }
+  | { readonly code: "docs.upstream_failed"; readonly status: 502; readonly params: { readonly dependency: string; }; readonly violations?: never; readonly traceId: string }
 
 export const docsFailurePresentation = {
   "docs.abuse_attempt_replayed": { messageKey: "errors.docs.abuse_attempt_replayed" },

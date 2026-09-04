@@ -45,14 +45,14 @@
       "messageKey": "errors.docs.import_blocked",
       "recoveryKey": "recovery.fix_import_package",
       "params": [
-        "detail"
+        "reason"
       ]
     },
     {
       "code": "docs.invalid_input",
       "messageKey": "errors.docs.invalid_input",
       "params": [
-        "detail"
+        "reason"
       ]
     },
     {
@@ -80,7 +80,7 @@
       "messageKey": "errors.docs.upstream_failed",
       "recoveryKey": "recovery.retry_later",
       "params": [
-        "detail"
+        "dependency"
       ]
     }
   ]

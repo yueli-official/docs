@@ -278,6 +278,6 @@ func mapCommentError(err error, id string) error {
 	case errors.Is(err, docscomments.ErrInvalidInput):
 		return docserr.InvalidInput("comment input is invalid")
 	default:
-		return docserr.UpstreamFailed("comment storage unavailable")
+		return docserr.UpstreamFailed("comment_storage")
 	}
 }

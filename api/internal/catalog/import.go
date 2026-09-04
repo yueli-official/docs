@@ -195,7 +195,7 @@ func importPackageError(err error) error {
 	if errors.As(err, &unsupported) {
 		return docserr.ImportCompressionUnsupported(int(unsupported.Method))
 	}
-	return docserr.InvalidInput(err.Error())
+	return docserr.InvalidInput("import_archive_invalid")
 }
 
 func (s *Service) ConfirmImport(ctx context.Context, batchID, bearer, author string) (*model.ImportBatch, ImportSummary, error) {
@@ -208,10 +208,10 @@ func (s *Service) ConfirmImport(ctx context.Context, batchID, bearer, author str
 	}
 	summary := parseImportSummary(batch.SummaryJSON)
 	if batch.Status != "checked" {
-		return nil, summary, docserr.InvalidInput("import batch is not ready")
+		return nil, summary, docserr.InvalidInput("import_batch_not_ready")
 	}
 	if summary.Blocking {
-		return nil, summary, docserr.ImportBlocked("preflight has blocking issues")
+		return nil, summary, docserr.ImportBlocked("preflight_blocked")
 	}
 	if err := s.dao.UpdateImportBatchStatus(ctx, batchID, "running", batch.SummaryJSON, ""); err != nil {
 		return nil, summary, err
@@ -236,7 +236,7 @@ func (s *Service) RollbackImport(ctx context.Context, batchID, author string) (*
 		return nil, docserr.NotFound(batchID)
 	}
 	if batch.Status != "completed" {
-		return nil, docserr.InvalidInput("import batch is not completed")
+		return nil, docserr.InvalidInput("import_batch_not_completed")
 	}
 	items, err := s.dao.ListImportItems(ctx, batchID)
 	if err != nil {

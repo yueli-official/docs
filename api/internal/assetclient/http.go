@@ -34,28 +34,28 @@ func (c *httpClient) post(ctx context.Context, bearer, path string, body g.Map) 
 	for attempt := 0; attempt < 3; attempt++ {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(raw))
 		if err != nil {
-			return nil, docserr.UpstreamFailed("foundation.request.invalid")
+			return nil, docserr.UpstreamFailed("asset")
 		}
 		req.Header.Set("Authorization", "Bearer "+bearer)
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return nil, docserr.UpstreamFailed("asset service unreachable")
+			return nil, docserr.UpstreamFailed("asset")
 		}
 		if resp.StatusCode == http.StatusTooManyRequests && attempt < 2 {
 			if !waitForRateLimit(ctx, resp) {
-				return nil, docserr.UpstreamFailed("common.rate_limited")
+				return nil, docserr.UpstreamFailed("asset")
 			}
 			continue
 		}
 		defer resp.Body.Close()
 		out, err := foundationhttpclient.DecodeJSON[map[string]any](resp, foundationhttpclient.Limits{})
 		if err != nil {
-			return nil, docserr.UpstreamFailed(remoteCode(err))
+			return nil, docserr.UpstreamFailed("asset")
 		}
 		return gjson.New(out), nil
 	}
-	return nil, docserr.UpstreamFailed("common.rate_limited")
+	return nil, docserr.UpstreamFailed("asset")
 }
 
 func waitForRateLimit(ctx context.Context, resp *http.Response) bool {
@@ -140,16 +140,16 @@ func (c *httpClient) UnregisterReference(ctx context.Context, bearer string, in 
 	q.Set("refId", in.RefID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.base+"/api/v1/asset-references?"+q.Encode(), nil)
 	if err != nil {
-		return docserr.UpstreamFailed("foundation.request.invalid")
+		return docserr.UpstreamFailed("asset")
 	}
 	req.Header.Set("Authorization", "Bearer "+bearer)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return docserr.UpstreamFailed("asset service unreachable")
+		return docserr.UpstreamFailed("asset")
 	}
 	defer resp.Body.Close()
 	if _, err := foundationhttpclient.DecodeJSON[any](resp, foundationhttpclient.Limits{}); err != nil {
-		return docserr.UpstreamFailed(remoteCode(err))
+		return docserr.UpstreamFailed("asset")
 	}
 	return nil
 }
@@ -170,7 +170,7 @@ func (c *httpClient) Upload(ctx context.Context, bearer string, in InitInput, da
 	for attempt := 0; attempt < 3; attempt++ {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPut, out.UploadURL, bytes.NewReader(data))
 		if err != nil {
-			return View{}, docserr.UpstreamFailed("asset blob upload failed")
+			return View{}, docserr.UpstreamFailed("asset")
 		}
 		req.ContentLength = int64(len(data))
 		if in.Mime != "" {
@@ -181,19 +181,19 @@ func (c *httpClient) Upload(ctx context.Context, bearer string, in InitInput, da
 		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return View{}, docserr.UpstreamFailed("asset blob upload failed")
+			return View{}, docserr.UpstreamFailed("asset")
 		}
 		if resp.StatusCode == http.StatusTooManyRequests && attempt < 2 {
 			if !waitForRateLimit(ctx, resp) {
-				return View{}, docserr.UpstreamFailed("common.rate_limited")
+				return View{}, docserr.UpstreamFailed("asset")
 			}
 			continue
 		}
 		_ = resp.Body.Close()
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			return View{}, docserr.UpstreamFailed("asset blob upload failed")
+			return View{}, docserr.UpstreamFailed("asset")
 		}
 		return c.Finalize(ctx, bearer, out.UploadToken)
 	}
-	return View{}, docserr.UpstreamFailed("common.rate_limited")
+	return View{}, docserr.UpstreamFailed("asset")
 }

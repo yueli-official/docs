@@ -8,6 +8,10 @@ import (
 	"github.com/yueli-official/foundation/go/problem"
 )
 
+type InvalidInputReason string
+type ImportBlockedReason string
+type Dependency string
+
 var (
 	DescriptorRateLimited = descriptor("common.rate_limited", http.StatusTooManyRequests)
 	DescriptorValidation  = descriptor("common.validation_failed", http.StatusBadRequest)
@@ -65,16 +69,16 @@ func SlugTaken(slug string) error {
 	return mapped(CodeSlugTaken, map[string]any{"slug": slug})
 }
 
-func InvalidInput(detail string) error {
-	return mapped(CodeInvalidInput, map[string]any{"detail": detail})
+func InvalidInput(reason InvalidInputReason) error {
+	return mapped(CodeInvalidInput, map[string]any{"reason": string(reason)})
 }
 
-func UpstreamFailed(detail string) error {
-	return mapped(CodeUpstreamFailed, map[string]any{"detail": detail})
+func UpstreamFailed(dependency Dependency) error {
+	return mapped(CodeUpstreamFailed, map[string]any{"dependency": string(dependency)})
 }
 
-func ImportBlocked(detail string) error {
-	return mapped(CodeImportBlocked, map[string]any{"detail": detail})
+func ImportBlocked(reason ImportBlockedReason) error {
+	return mapped(CodeImportBlocked, map[string]any{"reason": string(reason)})
 }
 
 func ImportCompressionUnsupported(method int) error {

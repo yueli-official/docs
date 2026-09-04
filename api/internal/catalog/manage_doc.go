@@ -103,7 +103,7 @@ func isCanonicalUUID(value string) bool {
 func (s *Service) ManageDocs(ctx context.Context, input ManageDocsInput) (*model.ManageDocsResult, error) {
 	query, err := normalizeManageDocsQuery(input)
 	if err != nil {
-		return nil, docserr.InvalidInput(err.Error())
+		return nil, docserr.InvalidInput("document_tree_invalid")
 	}
 	return s.dao.ManageDocs(ctx, query)
 }

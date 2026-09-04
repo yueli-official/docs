@@ -138,7 +138,7 @@ func mapAuthorizationError(err error) error {
 	case authorization.Is(err, authorization.ErrorInvalidInput),
 		authorization.Is(err, authorization.ErrorConflict),
 		authorization.Is(err, authorization.ErrorExpired):
-		return docserr.InvalidInput(err.Error())
+		return docserr.InvalidInput("authorization_request_invalid")
 	default:
 		return docserr.AuthorizationUnavailable()
 	}

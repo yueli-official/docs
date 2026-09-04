@@ -13,7 +13,7 @@ const docsContentImageProfile = "docs-content-image"
 
 func (s *Service) InitDocumentImage(ctx context.Context, bearer, filename, mime string, size int64) (assetclient.InitOutput, error) {
 	if s.asset == nil {
-		return assetclient.InitOutput{}, docserr.UpstreamFailed("asset client not configured")
+		return assetclient.InitOutput{}, docserr.UpstreamFailed("asset")
 	}
 	if mime == "" {
 		mime = "application/octet-stream"
@@ -29,7 +29,7 @@ func (s *Service) InitDocumentImage(ctx context.Context, bearer, filename, mime 
 
 func (s *Service) FinalizeDocumentImage(ctx context.Context, bearer, uploadToken string) (string, error) {
 	if s.asset == nil {
-		return "", docserr.UpstreamFailed("asset client not configured")
+		return "", docserr.UpstreamFailed("asset")
 	}
 	view, err := s.asset.Finalize(ctx, bearer, uploadToken)
 	if err != nil {

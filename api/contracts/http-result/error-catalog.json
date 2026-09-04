@@ -21,7 +21,7 @@
       "status": 400,
       "messageKey": "errors.docs.import_blocked",
       "recoveryKey": "recovery.fix_import_package",
-      "params": { "detail": { "type": "string", "required": true, "maxLength": 1024 } }
+      "params": { "reason": { "type": "string", "required": true, "maxLength": 128 } }
     },
     {
       "code": "docs.import.compression_unsupported",
@@ -34,7 +34,7 @@
       "code": "docs.invalid_input",
       "status": 400,
       "messageKey": "errors.docs.invalid_input",
-      "params": { "detail": { "type": "string", "required": true, "maxLength": 1024 } },
+      "params": { "reason": { "type": "string", "required": true, "maxLength": 128 } },
       "violations": "optional"
     },
     {
@@ -56,7 +56,7 @@
       "status": 502,
       "messageKey": "errors.docs.upstream_failed",
       "recoveryKey": "recovery.retry_later",
-      "params": { "detail": { "type": "string", "required": true, "maxLength": 1024 } }
+      "params": { "dependency": { "type": "string", "required": true, "maxLength": 32 } }
     }
   ]
 }
