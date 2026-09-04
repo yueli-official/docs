@@ -10,11 +10,11 @@ Open
 
 ## Current
 
-Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成 Go/TypeScript/i18n，旧目录仅作兼容投影；70/70 operation success 已覆盖，其中 66 个声明业务 errors，4 个纯公开读取端点仅使用 Foundation 通用失败。前端 raw message fallback 已清零，导入批次与 Front Matter issue 不再保存或展示内部错误文本。
+Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成，70/70 operation 已覆盖，其中 66 个声明业务 errors。`go run ./cmd/httpcontracts` 可一键生成 OpenAPI、operation、Go/TS/i18n 和旧目录投影。成功结果已收敛为 200×54、201×11、202×1、204×4；前端和导入 DTO 不再泄漏内部错误文本。
 
 ## Next
 
-依据 [执行计划](plan.md) 修正 canonical OpenAPI 中仍错误保留的创建/删除 200：为真实创建写 201，为无正文操作写 204，并补运行时状态测试；不发布版本。
+依据 [执行计划](plan.md) 通过 Workspace local checkout 重建 Docs 组合，完成公开阅读、管理、导入错误及 201/202/204 Playwright；不发布版本。
 
 ## Progress
 
@@ -23,6 +23,7 @@ Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成 Go/TypeScri
 - operation manifest 已自动生成 70/70，Foundation 校验、覆盖门禁、Go 全量测试/vet 与 Web 53 tests/typecheck 通过。
 - 授权域 operation errors 已声明；门禁会拒绝 catalog error 无消费者或错误表残留失效路由。
 - 66/70 operation 已声明业务 errors；Web 统一 failure resolver、54 项测试、typecheck/build 与 raw message 扫描通过。
+- 明确创建与无正文删除已在 DTO 和 controller 同步状态；Idempotency-Key 角色申请保留 200。Go test/race/vet/govulncheck 全绿，gRPC 已升级到修复版本。
 
 ## References
 

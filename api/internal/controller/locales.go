@@ -66,7 +66,8 @@ func (c *Locales) DeleteCollectionLocale(ctx context.Context, req *v1.DeleteColl
 	if err := c.svc.DeleteLocale(ctx, req.CollectionID, req.Locale); err != nil {
 		return nil, err
 	}
-	return &v1.DeleteCollectionLocaleRes{Deleted: true}, nil
+	writeNoContent(ctx)
+	return &v1.DeleteCollectionLocaleRes{}, nil
 }
 
 func (c *Locales) CloneCollectionLocale(ctx context.Context, req *v1.CloneCollectionLocaleReq) (*v1.CloneCollectionLocaleRes, error) {

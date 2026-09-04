@@ -78,6 +78,7 @@ type CollectionCoverInitReq struct {
 	Size     int64  `json:"size"`
 }
 type CollectionCoverInitRes struct {
+	g.Meta        `status:"201"`
 	UploadURL     string            `json:"uploadUrl"`
 	UploadToken   string            `json:"uploadToken"`
 	UploadHeaders map[string]string `json:"uploadHeaders,omitempty"`
@@ -110,6 +111,7 @@ type CloneCollectionReleaseReq struct {
 	Slug                  string `json:"slug"`
 }
 type CloneCollectionReleaseRes struct {
+	g.Meta     `status:"201"`
 	Collection *CollectionView `json:"collection"`
 }
 

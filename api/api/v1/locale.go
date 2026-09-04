@@ -43,7 +43,7 @@ type DeleteCollectionLocaleReq struct {
 	Locale       string `json:"locale" in:"path" v:"required"`
 }
 type DeleteCollectionLocaleRes struct {
-	Deleted bool `json:"deleted"`
+	g.Meta `status:"204"`
 }
 
 type CloneCollectionLocaleReq struct {

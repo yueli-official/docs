@@ -73,6 +73,7 @@ func (controller *Comments) CreateDocumentComment(
 		return nil, mapCommentError(err, req.DocumentID)
 	}
 	profiles := resolveCommentProfiles(ctx, controller.profiles, []string{comment.UserSub})
+	writeCreated(ctx)
 	return &v1.CreateDocumentCommentRes{Comment: commentView(comment, profiles)}, nil
 }
 
@@ -129,7 +130,8 @@ func (controller *Comments) DeleteComment(
 	if err := controller.comments.Delete(ctx, req.ID); err != nil {
 		return nil, mapCommentError(err, req.ID)
 	}
-	return &v1.DeleteCommentRes{Deleted: true}, nil
+	writeNoContent(ctx)
+	return &v1.DeleteCommentRes{}, nil
 }
 
 func requireCommentManagement(ctx context.Context) error {

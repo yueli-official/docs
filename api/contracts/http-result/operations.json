@@ -37,9 +37,8 @@
       "method": "DELETE",
       "path": "/api/v1/docs/{id}",
       "success": {
-        "status": 200,
-        "kind": "resource",
-        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteDocRes"
+        "status": 204,
+        "kind": "empty"
       },
       "errors": [
         "docs.authorization_unavailable",
@@ -52,9 +51,8 @@
       "method": "DELETE",
       "path": "/api/v1/manage/collections/{id}/locales/{locale}",
       "success": {
-        "status": 200,
-        "kind": "resource",
-        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteCollectionLocaleRes"
+        "status": 204,
+        "kind": "empty"
       },
       "errors": [
         "docs.authorization_unavailable",
@@ -68,9 +66,8 @@
       "method": "DELETE",
       "path": "/api/v1/manage/comments/{id}",
       "success": {
-        "status": 200,
-        "kind": "resource",
-        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteCommentRes"
+        "status": 204,
+        "kind": "empty"
       },
       "errors": [
         "docs.authorization_unavailable",
@@ -627,7 +624,7 @@
       "method": "POST",
       "path": "/api/v1/authorization/manage/grants",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GrantAuthorizationRoleRes"
       },
@@ -674,7 +671,7 @@
       "method": "POST",
       "path": "/api/v1/authorization/manage/policies/{revision}/roles",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateAuthorizationRoleRes"
       },
@@ -722,7 +719,7 @@
       "method": "POST",
       "path": "/api/v1/authorization/manage/policies/drafts",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateAuthorizationPolicyDraftRes"
       },
@@ -752,7 +749,7 @@
       "method": "POST",
       "path": "/api/v1/collections/{id}/cover",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionCoverInitRes"
       },
@@ -784,7 +781,7 @@
       "method": "POST",
       "path": "/api/v1/collections/{id}/versions",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateCollectionVersionRes"
       },
@@ -801,7 +798,7 @@
       "method": "POST",
       "path": "/api/v1/docs",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateDocRes"
       },
@@ -818,7 +815,7 @@
       "method": "POST",
       "path": "/api/v1/docs/{documentId}/comments",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateDocumentCommentRes"
       },
@@ -883,7 +880,7 @@
       "method": "POST",
       "path": "/api/v1/images",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ImageInitRes"
       },
@@ -962,7 +959,7 @@
       "method": "POST",
       "path": "/api/v1/manage/collections/{id}/clone-release",
       "success": {
-        "status": 200,
+        "status": 201,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CloneCollectionReleaseRes"
       },

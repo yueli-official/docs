@@ -154,7 +154,8 @@ type GrantAuthorizationRoleReq struct {
 	Role    string `json:"role" v:"required"`
 }
 type GrantAuthorizationRoleRes struct {
-	Grant AuthorizationGrantView `json:"grant"`
+	g.Meta `status:"201"`
+	Grant  AuthorizationGrantView `json:"grant"`
 }
 
 type RevokeAuthorizationGrantReq struct {
@@ -180,6 +181,7 @@ type CreateAuthorizationPolicyDraftReq struct {
 	ExpectedActiveRevision uint64 `json:"expectedActiveRevision" v:"required|min:1"`
 }
 type CreateAuthorizationPolicyDraftRes struct {
+	g.Meta `status:"201"`
 	Policy AuthorizationPolicyView `json:"policy"`
 }
 
@@ -202,7 +204,8 @@ type CreateAuthorizationRoleReq struct {
 	Sources      []string `json:"assignmentSources"`
 }
 type CreateAuthorizationRoleRes struct {
-	Role AuthorizationRoleView `json:"role"`
+	g.Meta `status:"201"`
+	Role   AuthorizationRoleView `json:"role"`
 }
 
 type RetireAuthorizationRoleReq struct {

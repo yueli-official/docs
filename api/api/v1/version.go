@@ -30,6 +30,7 @@ type CreateCollectionVersionReq struct {
 	SourceVersionID string `json:"sourceVersionId"`
 }
 type CreateCollectionVersionRes struct {
+	g.Meta  `status:"201"`
 	Version *CollectionVersionView `json:"version"`
 }
 

@@ -150,6 +150,7 @@ func (c *Docs) CreateDoc(ctx context.Context, req *v1.CreateDocReq) (*v1.CreateD
 	if err := ensureDocumentScope(ctx, d.ID, d.CollectionID); err != nil {
 		return nil, err
 	}
+	writeCreated(ctx)
 	return &v1.CreateDocRes{Doc: docView(d)}, nil
 }
 
@@ -191,6 +192,7 @@ func (c *Docs) ImageInit(ctx context.Context, req *v1.ImageInitReq) (*v1.ImageIn
 	if err != nil {
 		return nil, err
 	}
+	writeCreated(ctx)
 	return &v1.ImageInitRes{
 		UploadURL:     out.UploadURL,
 		UploadToken:   out.UploadToken,
@@ -304,7 +306,8 @@ func (c *Docs) DeleteDoc(ctx context.Context, req *v1.DeleteDocReq) (*v1.DeleteD
 	if err := c.svc.DeleteDoc(ctx, req.ID); err != nil {
 		return nil, err
 	}
-	return &v1.DeleteDocRes{Deleted: true}, nil
+	writeNoContent(ctx)
+	return &v1.DeleteDocRes{}, nil
 }
 
 // ── view helpers ──────────────────────────────────────────────────────────────

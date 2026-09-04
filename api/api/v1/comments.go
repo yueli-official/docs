@@ -52,6 +52,7 @@ type CreateDocumentCommentReq struct {
 }
 
 type CreateDocumentCommentRes struct {
+	g.Meta  `status:"201"`
 	Comment *CommentView `json:"comment"`
 }
 
@@ -88,5 +89,5 @@ type DeleteCommentReq struct {
 }
 
 type DeleteCommentRes struct {
-	Deleted bool `json:"deleted"`
+	g.Meta `status:"204"`
 }

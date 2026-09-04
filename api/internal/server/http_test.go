@@ -228,7 +228,7 @@ func TestAuthorizationApplicationFlow(t *testing.T) {
 		})
 		t.AssertNil(err)
 		defer granted.Close()
-		t.Assert(granted.StatusCode, http.StatusOK)
+		t.Assert(granted.StatusCode, http.StatusCreated)
 		grantID := gjson.New(granted.ReadAllString()).Get("grant.id").String()
 		t.AssertNE(grantID, "")
 
@@ -295,7 +295,7 @@ func TestDocumentCommentsFlow(t *testing.T) {
 		created, err := client(memberSub).Post(ctx, "/api/v1/docs/"+documentID+"/comments", g.Map{"content": "这篇文档很有帮助"})
 		t.AssertNil(err)
 		defer created.Close()
-		t.Assert(created.StatusCode, http.StatusOK)
+		t.Assert(created.StatusCode, http.StatusCreated)
 		createdJSON := gjson.New(created.ReadAllString())
 		commentID := createdJSON.Get("comment.id").String()
 		t.AssertNE(commentID, "")
@@ -307,7 +307,7 @@ func TestDocumentCommentsFlow(t *testing.T) {
 		})
 		t.AssertNil(err)
 		defer replied.Close()
-		t.Assert(replied.StatusCode, http.StatusOK)
+		t.Assert(replied.StatusCode, http.StatusCreated)
 		replyID := gjson.New(replied.ReadAllString()).Get("comment.id").String()
 
 		listed, err := anonymous.Get(ctx, "/api/v1/docs/"+documentID+"/comments")
@@ -347,7 +347,7 @@ func TestDocumentCommentsFlow(t *testing.T) {
 		deleted, err := client(testSub).Delete(ctx, "/api/v1/manage/comments/"+commentID)
 		t.AssertNil(err)
 		defer deleted.Close()
-		t.Assert(deleted.StatusCode, http.StatusOK)
+		t.Assert(deleted.StatusCode, http.StatusNoContent)
 	})
 }
 

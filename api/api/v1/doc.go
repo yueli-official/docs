@@ -170,7 +170,8 @@ type CreateDocReq struct {
 	SortOrder      int    `json:"sortOrder"`
 }
 type CreateDocRes struct {
-	Doc *DocView `json:"doc"`
+	g.Meta `status:"201"`
+	Doc    *DocView `json:"doc"`
 }
 
 type UpdateDocReq struct {
@@ -216,7 +217,7 @@ type DeleteDocReq struct {
 	ID     string `json:"id" in:"path" v:"required"`
 }
 type DeleteDocRes struct {
-	Deleted bool `json:"deleted"`
+	g.Meta `status:"204"`
 }
 
 type GetCollectionTreeReq struct {

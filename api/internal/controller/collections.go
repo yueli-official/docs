@@ -87,6 +87,7 @@ func (c *Collections) CollectionCoverInit(ctx context.Context, req *v1.Collectio
 	if err != nil {
 		return nil, err
 	}
+	writeCreated(ctx)
 	return &v1.CollectionCoverInitRes{UploadURL: out.UploadURL, UploadToken: out.UploadToken, UploadHeaders: out.UploadHeaders}, nil
 }
 
@@ -139,6 +140,7 @@ func (c *Collections) CloneCollectionRelease(ctx context.Context, req *v1.CloneC
 	if err := ensureCollectionScope(ctx, collection.ID); err != nil {
 		return nil, err
 	}
+	writeCreated(ctx)
 	return &v1.CloneCollectionReleaseRes{Collection: collectionView(collection)}, nil
 }
 

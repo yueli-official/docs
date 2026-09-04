@@ -44,6 +44,7 @@ func (c *Versions) CreateCollectionVersion(ctx context.Context, req *v1.CreateCo
 	if err != nil {
 		return nil, err
 	}
+	writeCreated(ctx)
 	return &v1.CreateCollectionVersionRes{Version: versionView(v)}, nil
 }
 

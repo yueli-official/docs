@@ -1183,12 +1183,7 @@
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteCollectionLocaleRes": {
-        "properties": {
-          "deleted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteCollectionReq": {
@@ -1220,12 +1215,7 @@
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteCommentRes": {
-        "properties": {
-          "deleted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteDocReq": {
@@ -1241,12 +1231,7 @@
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteDocRes": {
-        "properties": {
-          "deleted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DocTreeNodeView": {
@@ -4284,7 +4269,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4368,7 +4353,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4610,7 +4595,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4996,7 +4981,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5138,7 +5123,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5478,7 +5463,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5707,7 +5692,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5739,7 +5724,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6073,7 +6058,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6341,7 +6326,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6559,7 +6544,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6843,7 +6828,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {

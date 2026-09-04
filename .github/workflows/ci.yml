@@ -91,6 +91,7 @@ jobs:
           ./cmd/bindingcheck
           ./cmd/healthcheck
           ./cmd/httpcontractcheck
+          ./cmd/httpcontracts
           ./cmd/httpoperations
 
   web:
