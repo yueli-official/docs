@@ -3,52 +3,731 @@
   "namespace": "docs",
   "operations": [
     {
-      "id": "docs.collections.list",
-      "method": "GET",
-      "path": "/api/v1/collections",
-      "success": { "status": 200, "kind": "collection", "schemaRef": "#/components/schemas/CollectionView" }
+      "id": "docs.delete.api.v1.authorization.manage.grants.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/authorization/manage/grants/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.RevokeAuthorizationGrantRes"
+      }
     },
     {
-      "id": "docs.collections.get",
-      "method": "GET",
-      "path": "/api/v1/collections/{slug}",
-      "success": { "status": 200, "kind": "resource", "schemaRef": "#/components/schemas/CollectionView" },
-      "errors": ["docs.not_found"]
-    },
-    {
-      "id": "docs.collections.create",
-      "method": "POST",
-      "path": "/api/v1/collections",
-      "success": { "status": 201, "kind": "resource", "schemaRef": "#/components/schemas/CollectionView" },
-      "errors": ["docs.invalid_input", "docs.slug_taken", "docs.forbidden"]
-    },
-    {
-      "id": "docs.collections.delete",
+      "id": "docs.delete.api.v1.collections.by-id",
       "method": "DELETE",
       "path": "/api/v1/collections/{id}",
-      "success": { "status": 204, "kind": "empty" },
-      "errors": ["docs.not_found", "docs.forbidden"]
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteCollectionRes"
+      },
+      "errors": [
+        "docs.not_found",
+        "docs.forbidden"
+      ]
     },
     {
-      "id": "docs.imports.preflight",
-      "method": "POST",
-      "path": "/api/v1/imports/docs",
-      "success": { "status": 201, "kind": "resource", "schemaRef": "#/components/schemas/ImportPreflightView" },
-      "errors": ["docs.invalid_input", "docs.import_blocked", "docs.import.compression_unsupported", "docs.forbidden"]
+      "id": "docs.delete.api.v1.docs.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/docs/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteDocRes"
+      }
     },
     {
-      "id": "docs.imports.list",
+      "id": "docs.delete.api.v1.manage.collections.by-id.locales.by-locale",
+      "method": "DELETE",
+      "path": "/api/v1/manage/collections/{id}/locales/{locale}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteCollectionLocaleRes"
+      }
+    },
+    {
+      "id": "docs.delete.api.v1.manage.comments.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/manage/comments/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteCommentRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.applications.mine",
+      "method": "GET",
+      "path": "/api/v1/authorization/applications/mine",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListMyApplicationsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.manage.applications",
+      "method": "GET",
+      "path": "/api/v1/authorization/manage/applications",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListRoleApplicationsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.manage.console",
+      "method": "GET",
+      "path": "/api/v1/authorization/manage/console",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetAuthorizationConsoleRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.manage.policies",
+      "method": "GET",
+      "path": "/api/v1/authorization/manage/policies",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListAuthorizationPoliciesRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.manage.policies.by-revision",
+      "method": "GET",
+      "path": "/api/v1/authorization/manage/policies/{revision}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetAuthorizationPolicyRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.manage.roles",
+      "method": "GET",
+      "path": "/api/v1/authorization/manage/roles",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListAuthorizationRolesRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.authorization.requestable-roles",
+      "method": "GET",
+      "path": "/api/v1/authorization/requestable-roles",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListRequestableRolesRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.collections",
+      "method": "GET",
+      "path": "/api/v1/collections",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListCollectionsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.collections.by-id.versions",
+      "method": "GET",
+      "path": "/api/v1/collections/{id}/versions",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListCollectionVersionsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.collections.by-slug",
+      "method": "GET",
+      "path": "/api/v1/collections/{slug}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetCollectionRes"
+      },
+      "errors": [
+        "docs.not_found"
+      ]
+    },
+    {
+      "id": "docs.get.api.v1.collections.by-slug.releases",
+      "method": "GET",
+      "path": "/api/v1/collections/{slug}/releases",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetCollectionReleasesRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.collections.by-slug.tree",
+      "method": "GET",
+      "path": "/api/v1/collections/{slug}/tree",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetCollectionTreeRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.collections.by-slug.variant",
+      "method": "GET",
+      "path": "/api/v1/collections/{slug}/variant",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ResolveDocumentVariantRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.collections.by-slug.variants",
+      "method": "GET",
+      "path": "/api/v1/collections/{slug}/variants",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetCollectionVariantsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.dashboard.overview",
+      "method": "GET",
+      "path": "/api/v1/dashboard/overview",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DashboardOverviewRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.discovery.artifact",
+      "method": "GET",
+      "path": "/api/v1/discovery/artifact",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetDiscoveryArtifactRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.docs",
+      "method": "GET",
+      "path": "/api/v1/docs",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListDocsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.docs.by-documentId.comments",
+      "method": "GET",
+      "path": "/api/v1/docs/{documentId}/comments",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListDocumentCommentsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.docs.by-id",
+      "method": "GET",
+      "path": "/api/v1/docs/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetDocRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.docs.by-path",
+      "method": "GET",
+      "path": "/api/v1/docs/by-path",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetPublicDocByPathRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.docs.search",
+      "method": "GET",
+      "path": "/api/v1/docs/search",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SearchDocsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.home",
+      "method": "GET",
+      "path": "/api/v1/home",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetHomeConfigRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.imports.docs",
       "method": "GET",
       "path": "/api/v1/imports/docs",
-      "success": { "status": 200, "kind": "page", "schemaRef": "#/components/schemas/ImportBatchView" },
-      "errors": ["docs.forbidden"]
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListDocsImportsRes"
+      },
+      "errors": [
+        "docs.forbidden"
+      ]
     },
     {
-      "id": "docs.imports.confirm",
+      "id": "docs.get.api.v1.imports.docs.by-id",
+      "method": "GET",
+      "path": "/api/v1/imports/docs/{id}",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetDocsImportRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.manage.collections.by-id.locales",
+      "method": "GET",
+      "path": "/api/v1/manage/collections/{id}/locales",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListManageCollectionLocalesRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.manage.collections.by-slug.tree",
+      "method": "GET",
+      "path": "/api/v1/manage/collections/{slug}/tree",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetManageCollectionTreeRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.manage.comments",
+      "method": "GET",
+      "path": "/api/v1/manage/comments",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ManageCommentsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.manage.docs",
+      "method": "GET",
+      "path": "/api/v1/manage/docs",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ManageDocsRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.me",
+      "method": "GET",
+      "path": "/api/v1/me",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.MeRes"
+      }
+    },
+    {
+      "id": "docs.get.api.v1.url-lifecycle.resolve",
+      "method": "GET",
+      "path": "/api/v1/url-lifecycle/resolve",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ResolveURLRes"
+      }
+    },
+    {
+      "id": "docs.patch.api.v1.collections.by-id",
+      "method": "PATCH",
+      "path": "/api/v1/collections/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpdateCollectionRes"
+      }
+    },
+    {
+      "id": "docs.patch.api.v1.docs.by-id",
+      "method": "PATCH",
+      "path": "/api/v1/docs/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpdateDocRes"
+      }
+    },
+    {
+      "id": "docs.patch.api.v1.home",
+      "method": "PATCH",
+      "path": "/api/v1/home",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpdateHomeConfigRes"
+      }
+    },
+    {
+      "id": "docs.patch.api.v1.manage.collections.by-id.versions.by-versionId",
+      "method": "PATCH",
+      "path": "/api/v1/manage/collections/{id}/versions/{versionId}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpdateCollectionVersionRes"
+      }
+    },
+    {
+      "id": "docs.patch.api.v1.manage.comments.by-id",
+      "method": "PATCH",
+      "path": "/api/v1/manage/comments/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ModerateCommentRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.applications",
+      "method": "POST",
+      "path": "/api/v1/authorization/applications",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ApplyForRoleRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.applications.by-id.withdraw",
+      "method": "POST",
+      "path": "/api/v1/authorization/applications/{id}/withdraw",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.WithdrawRoleApplicationRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.applications.by-id.review",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/applications/{id}/review",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ReviewRoleApplicationRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.grants",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/grants",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GrantAuthorizationRoleRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.policies.by-revision.activate",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/activate",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ActivateAuthorizationPolicyRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.policies.by-revision.preview",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/preview",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.PreviewAuthorizationPolicyRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.policies.by-revision.roles",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/roles",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateAuthorizationRoleRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.policies.by-revision.roles.by-role.retire",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/roles/{role}/retire",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.RetireAuthorizationRoleRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.policies.by-revision.validate",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/validate",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ValidateAuthorizationPolicyRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.authorization.manage.policies.drafts",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/drafts",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateAuthorizationPolicyDraftRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.collections",
+      "method": "POST",
+      "path": "/api/v1/collections",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateCollectionRes"
+      },
+      "errors": [
+        "docs.invalid_input",
+        "docs.slug_taken",
+        "docs.forbidden"
+      ]
+    },
+    {
+      "id": "docs.post.api.v1.collections.by-id.cover",
+      "method": "POST",
+      "path": "/api/v1/collections/{id}/cover",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionCoverInitRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.collections.by-id.cover.finalize",
+      "method": "POST",
+      "path": "/api/v1/collections/{id}/cover/finalize",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionCoverFinalizeRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.collections.by-id.versions",
+      "method": "POST",
+      "path": "/api/v1/collections/{id}/versions",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateCollectionVersionRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.docs",
+      "method": "POST",
+      "path": "/api/v1/docs",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateDocRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.docs.by-documentId.comments",
+      "method": "POST",
+      "path": "/api/v1/docs/{documentId}/comments",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateDocumentCommentRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.docs.by-id.archive",
+      "method": "POST",
+      "path": "/api/v1/docs/{id}/archive",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ArchiveDocRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.docs.by-id.publish",
+      "method": "POST",
+      "path": "/api/v1/docs/{id}/publish",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.PublishDocRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.docs.by-id.view",
+      "method": "POST",
+      "path": "/api/v1/docs/{id}/view",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.RecordDocumentViewRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.images",
+      "method": "POST",
+      "path": "/api/v1/images",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ImageInitRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.images.finalize",
+      "method": "POST",
+      "path": "/api/v1/images/finalize",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ImageFinalizeRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.imports.docs",
+      "method": "POST",
+      "path": "/api/v1/imports/docs",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UploadDocsImportRes"
+      },
+      "errors": [
+        "docs.invalid_input",
+        "docs.import_blocked",
+        "docs.import.compression_unsupported",
+        "docs.forbidden"
+      ]
+    },
+    {
+      "id": "docs.post.api.v1.imports.docs.by-id.confirm",
       "method": "POST",
       "path": "/api/v1/imports/docs/{id}/confirm",
-      "success": { "status": 202, "kind": "operation", "schemaRef": "#/components/schemas/ImportBatchView" },
-      "errors": ["docs.invalid_input", "docs.import_blocked", "docs.forbidden", "docs.upstream_failed"]
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ConfirmDocsImportRes"
+      },
+      "errors": [
+        "docs.invalid_input",
+        "docs.import_blocked",
+        "docs.forbidden",
+        "docs.upstream_failed"
+      ]
+    },
+    {
+      "id": "docs.post.api.v1.imports.docs.by-id.rollback",
+      "method": "POST",
+      "path": "/api/v1/imports/docs/{id}/rollback",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.RollbackDocsImportRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.manage.collections.by-id.clone-release",
+      "method": "POST",
+      "path": "/api/v1/manage/collections/{id}/clone-release",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CloneCollectionReleaseRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.manage.collections.by-id.locales",
+      "method": "POST",
+      "path": "/api/v1/manage/collections/{id}/locales",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpsertCollectionLocaleRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.manage.collections.by-id.locales.clone",
+      "method": "POST",
+      "path": "/api/v1/manage/collections/{id}/locales/clone",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CloneCollectionLocaleRes"
+      }
+    },
+    {
+      "id": "docs.post.api.v1.manage.collections.by-id.release",
+      "method": "POST",
+      "path": "/api/v1/manage/collections/{id}/release",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.InitializeCollectionReleaseRes"
+      }
+    },
+    {
+      "id": "docs.put.api.v1.authorization.manage.policies.by-revision.automatic.by-rule",
+      "method": "PUT",
+      "path": "/api/v1/authorization/manage/policies/{revision}/automatic/{rule}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SetAuthorizationAutomaticRuleRes"
+      }
+    },
+    {
+      "id": "docs.put.api.v1.authorization.manage.policies.by-revision.roles.by-role.capabilities",
+      "method": "PUT",
+      "path": "/api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SetAuthorizationRoleCapabilitiesRes"
+      }
     }
   ]
 }
