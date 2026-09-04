@@ -1,4 +1,4 @@
-import { assetUploadURL } from "@yueli/asset-nuxt/upload";
+import { assetUploadURL, createAssetUploadMemo } from "@yueli/asset-nuxt/upload";
 
 type UploadInit = {
   uploadUrl: string;
@@ -13,6 +13,7 @@ type DocumentImageScope = {
 
 export function useDocsUpload() {
   const { call } = useApi();
+  const scopes = new Map<string, ReturnType<typeof createAssetUploadMemo<{ result?: Promise<string> }>>>();
 
   function put(
     url: string,
@@ -42,7 +43,7 @@ export function useDocsUpload() {
     });
   }
 
-  async function uploadDocumentImage(
+  async function sendDocumentImage(
     file: File,
     scope: DocumentImageScope,
   ): Promise<string> {
@@ -63,5 +64,12 @@ export function useDocsUpload() {
     return result.url;
   }
 
+  async function uploadDocumentImage(file: File, scope: DocumentImageScope): Promise<string> {
+    const key = JSON.stringify([scope.collectionId || '', scope.documentId || '']);
+    let memo = scopes.get(key);
+    if (!memo) { memo = createAssetUploadMemo(); scopes.set(key, memo); }
+    const attempt = await memo.get(file, () => ({}));
+    return attempt.result ||= sendDocumentImage(file, scope).catch(error => { delete attempt.result; throw error; });
+  }
   return { uploadDocumentImage };
 }
