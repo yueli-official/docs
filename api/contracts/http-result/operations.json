@@ -10,7 +10,14 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.RevokeAuthorizationGrantRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found",
+        "docs.administrator_grant_protected"
+      ]
     },
     {
       "id": "docs.delete.api.v1.collections.by-id",
@@ -64,7 +71,11 @@
         "status": 200,
         "kind": "page",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListMyApplicationsRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden"
+      ]
     },
     {
       "id": "docs.get.api.v1.authorization.manage.applications",
@@ -74,7 +85,11 @@
         "status": 200,
         "kind": "page",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListRoleApplicationsRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden"
+      ]
     },
     {
       "id": "docs.get.api.v1.authorization.manage.console",
@@ -84,7 +99,11 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetAuthorizationConsoleRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden"
+      ]
     },
     {
       "id": "docs.get.api.v1.authorization.manage.policies",
@@ -94,7 +113,11 @@
         "status": 200,
         "kind": "page",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListAuthorizationPoliciesRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden"
+      ]
     },
     {
       "id": "docs.get.api.v1.authorization.manage.policies.by-revision",
@@ -104,7 +127,12 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetAuthorizationPolicyRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.get.api.v1.authorization.manage.roles",
@@ -114,7 +142,11 @@
         "status": 200,
         "kind": "page",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListAuthorizationRolesRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden"
+      ]
     },
     {
       "id": "docs.get.api.v1.authorization.requestable-roles",
@@ -124,7 +156,11 @@
         "status": 200,
         "kind": "collection",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListRequestableRolesRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden"
+      ]
     },
     {
       "id": "docs.get.api.v1.collections",
@@ -420,7 +456,16 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ApplyForRoleRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.rate_limited",
+        "docs.challenge_required",
+        "docs.abuse_unavailable",
+        "docs.abuse_attempt_replayed"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.applications.by-id.withdraw",
@@ -430,7 +475,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.WithdrawRoleApplicationRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.applications.by-id.review",
@@ -440,7 +491,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ReviewRoleApplicationRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.grants",
@@ -450,7 +507,12 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GrantAuthorizationRoleRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.policies.by-revision.activate",
@@ -460,7 +522,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ActivateAuthorizationPolicyRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.policies.by-revision.preview",
@@ -470,7 +538,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.PreviewAuthorizationPolicyRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.policies.by-revision.roles",
@@ -480,7 +554,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateAuthorizationRoleRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.policies.by-revision.roles.by-role.retire",
@@ -490,7 +570,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.RetireAuthorizationRoleRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.policies.by-revision.validate",
@@ -500,7 +586,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ValidateAuthorizationPolicyRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.post.api.v1.authorization.manage.policies.drafts",
@@ -510,7 +602,12 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateAuthorizationPolicyDraftRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input"
+      ]
     },
     {
       "id": "docs.post.api.v1.collections",
@@ -717,7 +814,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SetAuthorizationAutomaticRuleRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     },
     {
       "id": "docs.put.api.v1.authorization.manage.policies.by-revision.roles.by-role.capabilities",
@@ -727,7 +830,13 @@
         "status": 200,
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SetAuthorizationRoleCapabilitiesRes"
-      }
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.not_found"
+      ]
     }
   ]
 }

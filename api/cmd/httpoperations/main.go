@@ -96,12 +96,32 @@ func project(doc document) []httpcontract.Operation {
 }
 
 var operationErrors = map[string][]string{
-	"GET /api/v1/collections/{slug}":         {"docs.not_found"},
-	"POST /api/v1/collections":               {"docs.invalid_input", "docs.slug_taken", "docs.forbidden"},
-	"DELETE /api/v1/collections/{id}":        {"docs.not_found", "docs.forbidden"},
-	"GET /api/v1/imports/docs":               {"docs.forbidden"},
-	"POST /api/v1/imports/docs":              {"docs.invalid_input", "docs.import_blocked", "docs.import.compression_unsupported", "docs.forbidden"},
-	"POST /api/v1/imports/docs/{id}/confirm": {"docs.invalid_input", "docs.import_blocked", "docs.forbidden", "docs.upstream_failed"},
+	"GET /api/v1/authorization/applications/mine":                                    {"docs.authorization_unavailable", "docs.forbidden"},
+	"GET /api/v1/authorization/manage/applications":                                  {"docs.authorization_unavailable", "docs.forbidden"},
+	"GET /api/v1/authorization/manage/console":                                       {"docs.authorization_unavailable", "docs.forbidden"},
+	"GET /api/v1/authorization/manage/policies":                                      {"docs.authorization_unavailable", "docs.forbidden"},
+	"GET /api/v1/authorization/manage/policies/{revision}":                           {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"GET /api/v1/authorization/manage/roles":                                         {"docs.authorization_unavailable", "docs.forbidden"},
+	"GET /api/v1/authorization/requestable-roles":                                    {"docs.authorization_unavailable", "docs.forbidden"},
+	"POST /api/v1/authorization/applications":                                        {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.rate_limited", "docs.challenge_required", "docs.abuse_unavailable", "docs.abuse_attempt_replayed"},
+	"POST /api/v1/authorization/applications/{id}/withdraw":                          {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/authorization/manage/applications/{id}/review":                     {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/authorization/manage/grants":                                       {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"DELETE /api/v1/authorization/manage/grants/{id}":                                {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.administrator_grant_protected"},
+	"POST /api/v1/authorization/manage/policies/drafts":                              {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"POST /api/v1/authorization/manage/policies/{revision}/activate":                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/authorization/manage/policies/{revision}/preview":                  {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/authorization/manage/policies/{revision}/roles":                    {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/authorization/manage/policies/{revision}/roles/{role}/retire":      {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/authorization/manage/policies/{revision}/validate":                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"PUT /api/v1/authorization/manage/policies/{revision}/automatic/{rule}":          {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"PUT /api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities": {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"GET /api/v1/collections/{slug}":                                                 {"docs.not_found"},
+	"POST /api/v1/collections":                                                       {"docs.invalid_input", "docs.slug_taken", "docs.forbidden"},
+	"DELETE /api/v1/collections/{id}":                                                {"docs.not_found", "docs.forbidden"},
+	"GET /api/v1/imports/docs":                                                       {"docs.forbidden"},
+	"POST /api/v1/imports/docs":                                                      {"docs.invalid_input", "docs.import_blocked", "docs.import.compression_unsupported", "docs.forbidden"},
+	"POST /api/v1/imports/docs/{id}/confirm":                                         {"docs.invalid_input", "docs.import_blocked", "docs.forbidden", "docs.upstream_failed"},
 }
 
 func successResponse(responses map[string]response) (int, response, bool) {

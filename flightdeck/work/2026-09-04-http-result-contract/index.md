@@ -10,17 +10,18 @@ Open
 
 ## Current
 
-Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成 Go/TypeScript/i18n，旧目录仅作兼容投影；`invalid_input`、`import_blocked` 与 `upstream_failed` 已改用稳定 reason/dependency。operation manifest 已按 canonical OpenAPI 自动生成并完成 70/70 success 覆盖，CI 已加入生成 freshness、双向覆盖和 compatibility diff；业务 errors 当前只保留原有代表性声明，尚待扩展。
+Docs 的 13 个业务错误已由 Foundation v1 catalog 单向生成 Go/TypeScript/i18n，旧目录仅作兼容投影；`invalid_input`、`import_blocked` 与 `upstream_failed` 已改用稳定 reason/dependency。operation manifest 已完成 70/70 success 覆盖；授权域与原有核心 operation 的业务 errors 已完成 26/70。
 
 ## Next
 
-依据 [执行计划](plan.md) 为 70 个 operation 补齐实际业务 errors，并清理 Web raw message fallback；不发布版本。
+依据 [执行计划](plan.md) 继续为 collection/doc/import/comment 等 operation 补业务 errors，随后清理 Web raw message fallback；不发布版本。
 
 ## Progress
 
 - v1 catalog 已成为唯一事实源，旧目录和生成 Go/TypeScript/i18n freshness 通过。
 - 公开动态错误参数改为命名类型；已知 `err.Error()` 与上游响应文本不再进入 Problem。
 - operation manifest 已自动生成 70/70，Foundation 校验、覆盖门禁、Go 全量测试/vet 与 Web 53 tests/typecheck 通过。
+- 授权域 operation errors 已声明；门禁会拒绝 catalog error 无消费者或错误表残留失效路由。
 
 ## References
 
