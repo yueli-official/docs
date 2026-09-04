@@ -259,7 +259,7 @@ test("文档集语言与版本保持同一逻辑页面上下文", async ({ brows
       data: { title: "E2E 多语言版本", slug, description: "variant acceptance" },
     });
     expect(created.ok()).toBeTruthy();
-    collectionId = (await created.json() as { collection: { id: string } }).collection.id;
+    collectionId = (await created.json() as { id: string }).id;
 
     const initialVersions = await context.request.get(new URL(`/api/v1/collections/${collectionId}/versions`, site.url).toString());
     const defaultVersion = (await initialVersions.json() as { items: Array<{ id: string; key: string }> }).items[0]!;
@@ -389,8 +389,7 @@ test("文档列表支持把所选层级文档批量改为共同语言", async ({
       { data: { title: "E2E 批量语言", slug, description: "bulk locale" } },
     );
     expect(created.ok()).toBeTruthy();
-    collectionId = (await created.json() as { collection: { id: string } })
-      .collection.id;
+    collectionId = (await created.json() as { id: string }).id;
     const localeCreated = await context.request.post(
       new URL(`/api/v1/manage/collections/${collectionId}/locales`, site.url).toString(),
       {

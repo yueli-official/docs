@@ -415,10 +415,10 @@ func TestDocsRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		t.Assert(rc.StatusCode, 200)
-		colID := jc.Get("collection.id").String()
+		t.Assert(rc.StatusCode, http.StatusCreated)
+		colID := jc.Get("id").String()
 		t.AssertNE(colID, "")
-		t.Assert(jc.Get("collection.slug").String(), "sapphire")
+		t.Assert(jc.Get("slug").String(), "sapphire")
 
 		// 2. Create root doc "Adjust" inside the collection.
 		rd, err := admin().Post(ctx, "/api/v1/docs", g.Map{
@@ -531,7 +531,7 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		rc, err := admin().Post(ctx, "/api/v1/collections", g.Map{"title": "Importable", "slug": "importable"})
 		t.AssertNil(err)
 		rc.Close()
-		t.Assert(rc.StatusCode, 200)
+		t.Assert(rc.StatusCode, http.StatusCreated)
 
 		var body bytes.Buffer
 		mw := multipart.NewWriter(&body)
@@ -553,7 +553,7 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		uploadBody, err := io.ReadAll(uploadResp.Body)
 		t.AssertNil(err)
 		uploadResp.Body.Close()
-		t.Assert(uploadResp.StatusCode, 200)
+		t.Assert(uploadResp.StatusCode, http.StatusCreated)
 		uploadJSON := gjson.New(uploadBody)
 		batchID := uploadJSON.Get("batch.id").String()
 		t.AssertNE(batchID, "")
@@ -573,7 +573,7 @@ func TestDocsImportHTTPRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		confirmJSON := gjson.New(confirmResp.ReadAllString())
 		confirmResp.Close()
-		t.Assert(confirmResp.StatusCode, 200)
+		t.Assert(confirmResp.StatusCode, http.StatusAccepted)
 		t.Assert(confirmJSON.Get("batch.status").String(), "completed")
 
 		treeResp, err := anon().Get(ctx, "/api/v1/collections/importable/tree?locale=zh-CN")
@@ -646,7 +646,7 @@ func TestCollectionDocCount(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 
 		for _, title := range []string{"Draft Doc", "Published Doc", "Archived Doc"} {
 			rd, err := admin().Post(ctx, "/api/v1/docs", g.Map{
@@ -682,7 +682,7 @@ func TestCollectionDocCount(t *testing.T) {
 		getJSON := gjson.New(getResp.ReadAllString())
 		getResp.Close()
 		t.Assert(getResp.StatusCode, 200)
-		t.Assert(getJSON.Get("collection.docCount").Int(), 3)
+		t.Assert(getJSON.Get("docCount").Int(), 3)
 	})
 }
 
@@ -846,7 +846,7 @@ func TestPublicTreeOnlyPublishedAndLightweight(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 
 		pubResp, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId": colID,
@@ -942,7 +942,7 @@ func TestManageTreeIncludesDraftDocs(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 		draftResp, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId": colID,
 			"title":        "Visible To Managers",
@@ -1022,7 +1022,7 @@ func TestPublicDocByPathReturnsOnlyPublishedBody(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 
 		rootResp, err := admin().Post(ctx, "/api/v1/docs", g.Map{"collectionId": colID, "title": "Guide", "locale": "en"})
 		t.AssertNil(err)
@@ -1129,7 +1129,7 @@ func TestPatchDocIsPartialSafe(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 
 		rd, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId": colID,
@@ -1221,7 +1221,7 @@ func TestDocSEOFieldsArePartialSafe(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 
 		rd, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId":   colID,
@@ -1303,12 +1303,12 @@ func TestPublicSearchPublishedDocs(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		searchableID := jc.Get("collection.id").String()
+		searchableID := jc.Get("id").String()
 		rcOther, err := admin().Post(ctx, "/api/v1/collections", g.Map{"title": "Other"})
 		t.AssertNil(err)
 		jo := gjson.New(rcOther.ReadAllString())
 		rcOther.Close()
-		otherID := jo.Get("collection.id").String()
+		otherID := jo.Get("id").String()
 
 		publishedResp, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId": searchableID,
@@ -1413,7 +1413,7 @@ func TestPublicSearchRanksTitleMatchesFirst(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 
 		titleResp, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId": colID,
@@ -1506,12 +1506,12 @@ func TestPublicSearchReturnsTotalsAndCollectionFacets(t *testing.T) {
 		t.AssertNil(err)
 		alphaJSON := gjson.New(alphaResp.ReadAllString())
 		alphaResp.Close()
-		alphaID := alphaJSON.Get("collection.id").String()
+		alphaID := alphaJSON.Get("id").String()
 		betaResp, err := admin().Post(ctx, "/api/v1/collections", g.Map{"title": "Beta"})
 		t.AssertNil(err)
 		betaJSON := gjson.New(betaResp.ReadAllString())
 		betaResp.Close()
-		betaID := betaJSON.Get("collection.id").String()
+		betaID := betaJSON.Get("id").String()
 
 		for _, in := range []struct {
 			collectionID string
@@ -1603,7 +1603,7 @@ func TestPublicSearchRecordsQueryEvent(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 		rd, err := admin().Post(ctx, "/api/v1/docs", g.Map{
 			"collectionId": colID,
 			"title":        "Needle Event",
@@ -1702,7 +1702,7 @@ func TestPublishArchiveEndpointsPreserveContent(t *testing.T) {
 		t.AssertNil(err)
 		jc := gjson.New(rc.ReadAllString())
 		rc.Close()
-		colID := jc.Get("collection.id").String()
+		colID := jc.Get("id").String()
 		rd, err := admin().Post(ctx, "/api/v1/docs", g.Map{"collectionId": colID, "title": "Lifecycle Doc", "content": "keep", "locale": "en"})
 		t.AssertNil(err)
 		jd := gjson.New(rd.ReadAllString())
@@ -1843,7 +1843,7 @@ func TestPublicTreeUsesRequestedVersion(t *testing.T) {
 
 		rc, err := admin().Post(ctx, "/api/v1/collections", g.Map{"title": "Versioned"})
 		t.AssertNil(err)
-		colID := gjson.New(rc.ReadAllString()).Get("collection.id").String()
+		colID := gjson.New(rc.ReadAllString()).Get("id").String()
 		rc.Close()
 
 		v2, err := admin().Post(ctx, "/api/v1/collections/"+colID+"/versions", g.Map{

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "http.yueli.dev/operations/v1",
+  "namespace": "docs",
+  "operations": [
+    {
+      "id": "docs.collections.list",
+      "method": "GET",
+      "path": "/api/v1/collections",
+      "success": { "status": 200, "kind": "collection", "schemaRef": "#/components/schemas/CollectionView" }
+    },
+    {
+      "id": "docs.collections.get",
+      "method": "GET",
+      "path": "/api/v1/collections/{slug}",
+      "success": { "status": 200, "kind": "resource", "schemaRef": "#/components/schemas/CollectionView" },
+      "errors": ["docs.not_found"]
+    },
+    {
+      "id": "docs.collections.create",
+      "method": "POST",
+      "path": "/api/v1/collections",
+      "success": { "status": 201, "kind": "resource", "schemaRef": "#/components/schemas/CollectionView" },
+      "errors": ["docs.invalid_input", "docs.slug_taken", "docs.forbidden"]
+    },
+    {
+      "id": "docs.collections.delete",
+      "method": "DELETE",
+      "path": "/api/v1/collections/{id}",
+      "success": { "status": 204, "kind": "empty" },
+      "errors": ["docs.not_found", "docs.forbidden"]
+    },
+    {
+      "id": "docs.imports.preflight",
+      "method": "POST",
+      "path": "/api/v1/imports/docs",
+      "success": { "status": 201, "kind": "resource", "schemaRef": "#/components/schemas/ImportPreflightView" },
+      "errors": ["docs.invalid_input", "docs.import_blocked", "docs.import.compression_unsupported", "docs.forbidden"]
+    },
+    {
+      "id": "docs.imports.list",
+      "method": "GET",
+      "path": "/api/v1/imports/docs",
+      "success": { "status": 200, "kind": "page", "schemaRef": "#/components/schemas/ImportBatchView" },
+      "errors": ["docs.forbidden"]
+    },
+    {
+      "id": "docs.imports.confirm",
+      "method": "POST",
+      "path": "/api/v1/imports/docs/{id}/confirm",
+      "success": { "status": 202, "kind": "operation", "schemaRef": "#/components/schemas/ImportBatchView" },
+      "errors": ["docs.invalid_input", "docs.import_blocked", "docs.forbidden", "docs.upstream_failed"]
+    }
+  ]
+}

@@ -34,6 +34,11 @@ Foundation/Identity/Asset/Docs 依赖合同已对齐，Docs Shared Session `2026
 ZIP 读取现兼容 Bandizip 生成的 XZ method 95 条目，并为 XZ 字典设置 64 MiB 内存上限；原有 100 MiB 包、1 GiB 解压总量、
 25 MiB 单文件和 20,000 条目门禁继续生效。用户原始 `user-guide.zip` 已通过解析：11 篇文档、6 张图片、零问题。
 
+Docs 已成为 Foundation HTTP Result Contract 首个试点：错误 code/status 由声明式 catalog 生成 Go/TypeScript/i18n inventory；
+集合创建改为 raw `CollectionView` + 201，删除为无正文 204，导入预检为 201，确认完成响应为 202。真实 LAN Playwright
+使用 Bandizip XZ 包验证四种状态、无 wrapper DTO 与空 204，完整确认耗时约 2.1 分钟。未知 ZIP method 现由 typed cause 映射为
+`docs.import.compression_unsupported(method)`，不再退化为 `docs.invalid_input(detail)`。
+
 AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/caution/danger` 容器转换为 GFM Alerts，复制包内图片并从
 `src/nav/ae-scripting.ts` 生成顺序；未知或未闭合容器会直接中止。Docs 图片仍按 10 MiB 文件大小限制，产品原有 3000 万像素
 限制已取消，`maxPixels` 与 Asset 基础设施的 8000 万安全护栏对齐。
@@ -109,6 +114,8 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 - 2026-09-04：ZIP 导入增加 Bandizip XZ method 95 解压，使用纯 Go 解码器并限制 64 MiB 字典；生成式 XZ 回归与用户原始
   `user-guide.zip` 均通过；后者经 LAN Playwright 上传并预检为 11 篇文档、6 张图片、零问题。格式文档同步声明
   Store/Deflate/XZ 支持范围。
+- 2026-09-04：接入 Foundation HTTP Result 试点声明与生成物；集合创建/删除、导入预检/确认兑现 raw DTO + 201/204/201/202，
+  Playwright 用真实 XZ 包完成确认并断言状态与空正文。未知 ZIP method 使用独立稳定错误码和整数 method 参数。
 
 ## References
 

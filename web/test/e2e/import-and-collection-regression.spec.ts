@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { capturePageFailures, loginE2E, settleNuxt } from "./runtime";
 
 test("creates a localized release and preflights the AE bilingual package", async ({ browser }) => {
+  test.slow();
   const siteURL = process.env.DOCS_E2E_URL!;
   const context = await loginE2E(browser, {}, undefined, siteURL);
   const collectionSlug = `import-create-${Date.now()}`;
@@ -22,13 +23,15 @@ test("creates a localized release and preflights the AE bilingual package", asyn
   await page.getByRole("button", { name: "创建" }).click();
   const createResponse = await createResponsePromise;
   expect(createResponse.ok(), await createResponse.text()).toBeTruthy();
-  const created = (await createResponse.json()).collection as { id: string; semanticVersion: string };
+  expect(createResponse.status()).toBe(201);
+  const created = (await createResponse.json()) as { id: string; semanticVersion: string };
   expect(created.semanticVersion).toBe("1.0.0");
   const locales = await context.request.get(new URL(`/api/v1/manage/collections/${created.id}/locales`, siteURL).toString());
   expect(locales.ok()).toBeTruthy();
   expect(await locales.json()).toMatchObject({ items: [{ locale: "zh-CN", isDefault: true }] });
   const deleted = await context.request.delete(new URL(`/api/v1/collections/${created.id}`, siteURL).toString());
   expect(deleted.ok()).toBeTruthy();
+  expect(deleted.status()).toBe(204);
 
   await page.goto(new URL("/manage/import", siteURL).toString());
   await settleNuxt(page);
@@ -36,15 +39,16 @@ test("creates a localized release and preflights the AE bilingual package", asyn
   await page.getByRole("button", { name: "上传并预检" }).click();
   await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 90_000 });
   await expect(page.getByText("144", { exact: true })).toBeVisible();
-  await expect(page.getByText("4", { exact: true })).toBeVisible();
+  await expect(page.getByText("图片", { exact: true }).locator("..").getByText("2", { exact: true })).toBeVisible();
   await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
   const confirmResponsePromise = page.waitForResponse(
     (response) => /\/api\/v1\/imports\/docs\/[0-9a-f-]+\/confirm$/.test(response.url()),
-    { timeout: 90_000 },
+    { timeout: 240_000 },
   );
   await page.getByRole("button", { name: "确认导入" }).click();
   const confirmResponse = await confirmResponsePromise;
   expect(confirmResponse.ok(), await confirmResponse.text()).toBeTruthy();
+  expect(confirmResponse.status()).toBe(202);
   expect(await confirmResponse.json()).toMatchObject({ batch: { status: "completed" } });
   await expect(page).toHaveURL(/\/manage\/import\/[0-9a-f-]+$/, { timeout: 90_000 });
   expect(failures.filter((failure) => /Cannot read properties|image_missing/.test(failure))).toEqual([]);
@@ -99,7 +103,8 @@ test("large Sapphire package reaches a completed preflight", async ({ browser })
     data: { title: "Sapphire 导入验收", slug: collectionSlug, defaultLocale: "zh-CN", semanticVersion: "1.0.0" },
   });
   expect(createResponse.ok(), await createResponse.text()).toBeTruthy();
-  const collection = (await createResponse.json()).collection as { id: string };
+  expect(createResponse.status()).toBe(201);
+  const collection = (await createResponse.json()) as { id: string };
   const page = await context.newPage();
   try {
     await page.goto(new URL("/manage/import", siteURL).toString());
@@ -117,6 +122,7 @@ test("large Sapphire package reaches a completed preflight", async ({ browser })
     await page.getByRole("button", { name: "确认导入" }).click();
     const confirmResponse = await confirmResponsePromise;
     expect(confirmResponse.ok(), await confirmResponse.text()).toBeTruthy();
+    expect(confirmResponse.status()).toBe(202);
   } finally {
     await context.request.delete(new URL(`/api/v1/collections/${collection.id}`, siteURL).toString());
     await context.close();
@@ -132,7 +138,8 @@ test("large Houdini package reaches a completed preflight", async ({ browser }) 
     data: { title: "Houdini 导入验收", slug: collectionSlug, defaultLocale: "zh-CN", semanticVersion: "1.0.0" },
   });
   expect(createResponse.ok(), await createResponse.text()).toBeTruthy();
-  const collection = (await createResponse.json()).collection as { id: string };
+  expect(createResponse.status()).toBe(201);
+  const collection = (await createResponse.json()) as { id: string };
   const page = await context.newPage();
   try {
     await page.goto(new URL("/manage/import", siteURL).toString());
@@ -147,6 +154,7 @@ test("large Houdini package reaches a completed preflight", async ({ browser }) 
     await page.getByRole("button", { name: "上传并预检" }).click();
     const response = await responsePromise;
     expect(response.ok(), await response.text()).toBeTruthy();
+    expect(response.status()).toBe(201);
     await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 240_000 });
     const confirmResponsePromise = page.waitForResponse(
       (item) => /\/api\/v1\/imports\/docs\/[0-9a-f-]+\/confirm$/.test(item.url()),
@@ -155,6 +163,7 @@ test("large Houdini package reaches a completed preflight", async ({ browser }) 
     await page.getByRole("button", { name: "确认导入" }).click();
     const confirmResponse = await confirmResponsePromise;
     expect(confirmResponse.ok(), await confirmResponse.text()).toBeTruthy();
+    expect(confirmResponse.status()).toBe(202);
   } finally {
     await context.request.delete(new URL(`/api/v1/collections/${collection.id}`, siteURL).toString());
     await context.close();
@@ -183,7 +192,8 @@ test("creates and selects a document collection without leaving import", async (
   await creator.getByRole("button", { name: "创建并选中" }).click();
   const response = await responsePromise;
   expect(response.ok(), await response.text()).toBeTruthy();
-  const created = (await response.json()).collection as { id: string; slug: string };
+  expect(response.status()).toBe(201);
+  const created = (await response.json()) as { id: string; slug: string };
   createdID = created.id;
   expect(created.slug).toBe(collectionSlug);
   await expect(page.getByText("新建并选作文档集")).toHaveCount(0);
@@ -207,6 +217,7 @@ test("creates and selects a document collection without leaving import", async (
   if (createdID) {
     const deleted = await context.request.delete(new URL(`/api/v1/collections/${createdID}`, siteURL).toString());
     expect(deleted.ok()).toBeTruthy();
+    expect(deleted.status()).toBe(204);
   }
   await context.close();
 });

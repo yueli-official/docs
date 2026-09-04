@@ -63,6 +63,7 @@ type UploadDocsImportReq struct {
 	Mode          string            `json:"mode"`
 }
 type UploadDocsImportRes struct {
+	g.Meta  `status:"201"`
 	Batch   *ImportBatchView  `json:"batch"`
 	Summary ImportSummaryView `json:"summary"`
 }
@@ -94,6 +95,7 @@ type ConfirmDocsImportReq struct {
 	ID     string `json:"id" in:"path" v:"required"`
 }
 type ConfirmDocsImportRes struct {
+	g.Meta  `status:"202"`
 	Batch   *ImportBatchView  `json:"batch"`
 	Summary ImportSummaryView `json:"summary"`
 }

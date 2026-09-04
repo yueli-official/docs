@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"net/http"
 
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/yueli-official/foundation/go/authorization"
 
 	v1 "github.com/yueli-official/docs/api/api/v1"
@@ -34,7 +36,8 @@ func (c *Collections) CreateCollection(ctx context.Context, req *v1.CreateCollec
 	if err := ensureCollectionScope(ctx, col.ID); err != nil {
 		return nil, err
 	}
-	return &v1.CreateCollectionRes{Collection: collectionView(col)}, nil
+	g.RequestFromCtx(ctx).Response.WriteHeader(http.StatusCreated)
+	return &v1.CreateCollectionRes{CollectionView: collectionView(col)}, nil
 }
 
 func (c *Collections) UpdateHomeConfig(ctx context.Context, req *v1.UpdateHomeConfigReq) (*v1.UpdateHomeConfigRes, error) {
@@ -111,7 +114,8 @@ func (c *Collections) DeleteCollection(ctx context.Context, req *v1.DeleteCollec
 	if err := c.svc.DeleteCollectionWithBearer(ctx, req.ID, bearerOf(ctx)); err != nil {
 		return nil, err
 	}
-	return &v1.DeleteCollectionRes{Deleted: true}, nil
+	g.RequestFromCtx(ctx).Response.WriteHeader(http.StatusNoContent)
+	return &v1.DeleteCollectionRes{}, nil
 }
 
 func (c *Collections) CloneCollectionRelease(ctx context.Context, req *v1.CloneCollectionReleaseReq) (*v1.CloneCollectionReleaseRes, error) {

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "errors.yueli.dev/i18n-inventory/v1",
+  "namespace": "docs",
+  "messages": [
+    {
+      "code": "docs.abuse_attempt_replayed",
+      "messageKey": "errors.docs.abuse_attempt_replayed"
+    },
+    {
+      "code": "docs.abuse_unavailable",
+      "messageKey": "errors.docs.abuse_unavailable",
+      "recoveryKey": "recovery.retry_later"
+    },
+    {
+      "code": "docs.administrator_grant_protected",
+      "messageKey": "errors.docs.administrator_grant_protected"
+    },
+    {
+      "code": "docs.authorization_unavailable",
+      "messageKey": "errors.docs.authorization_unavailable",
+      "recoveryKey": "recovery.retry_later"
+    },
+    {
+      "code": "docs.challenge_required",
+      "messageKey": "errors.docs.challenge_required",
+      "params": [
+        "attemptId",
+        "challenge"
+      ]
+    },
+    {
+      "code": "docs.forbidden",
+      "messageKey": "errors.docs.forbidden"
+    },
+    {
+      "code": "docs.import.compression_unsupported",
+      "messageKey": "errors.docs.import.compression_unsupported",
+      "recoveryKey": "recovery.repack_archive",
+      "params": [
+        "method"
+      ]
+    },
+    {
+      "code": "docs.import_blocked",
+      "messageKey": "errors.docs.import_blocked",
+      "recoveryKey": "recovery.fix_import_package",
+      "params": [
+        "detail"
+      ]
+    },
+    {
+      "code": "docs.invalid_input",
+      "messageKey": "errors.docs.invalid_input",
+      "params": [
+        "detail"
+      ]
+    },
+    {
+      "code": "docs.not_found",
+      "messageKey": "errors.docs.not_found",
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "code": "docs.rate_limited",
+      "messageKey": "errors.docs.rate_limited",
+      "recoveryKey": "recovery.retry_later"
+    },
+    {
+      "code": "docs.slug_taken",
+      "messageKey": "errors.docs.slug_taken",
+      "recoveryKey": "recovery.choose_another_slug",
+      "params": [
+        "slug"
+      ]
+    },
+    {
+      "code": "docs.upstream_failed",
+      "messageKey": "errors.docs.upstream_failed",
+      "recoveryKey": "recovery.retry_later",
+      "params": [
+        "detail"
+      ]
+    }
+  ]
+}

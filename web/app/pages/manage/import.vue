@@ -112,7 +112,7 @@ async function createCollection() {
   creatingCollection.value = true;
   createCollectionError.value = "";
   try {
-    const res = await call<{ collection: CollectionView }>("/api/v1/collections", {
+    const collection = await call<CollectionView>("/api/v1/collections", {
       method: "POST",
       body: {
         title: newCollection.title.trim(),
@@ -125,14 +125,14 @@ async function createCollection() {
       },
     });
     await refreshCollections();
-    collectionSlug.value = res.collection.slug;
+    collectionSlug.value = collection.slug;
     defaultLocale.value = newCollection.defaultLocale;
     batch.value = null;
     summary.value = null;
     showCreateCollection.value = false;
     toast.add({
       title: "文档集已创建",
-      description: `${res.collection.title} 已设为本次导入目标`,
+      description: `${collection.title} 已设为本次导入目标`,
       color: "success",
       icon: "i-tabler-circle-check",
     });

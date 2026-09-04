@@ -10,7 +10,19 @@ import (
 	"github.com/yueli-official/docs/api/internal/assetclient"
 	"github.com/yueli-official/docs/api/internal/importkit"
 	"github.com/yueli-official/docs/api/internal/model"
+	"github.com/yueli-official/foundation/go/problem"
 )
+
+func TestImportPackageErrorPreservesUnsupportedCompressionSemantics(t *testing.T) {
+	err := importPackageError(&importkit.UnsupportedCompressionError{Method: 99})
+	value, ok, resolveErr := problem.FromError(err, "trace-import")
+	if resolveErr != nil || !ok {
+		t.Fatalf("FromError() = %#v, %v, %v", value, ok, resolveErr)
+	}
+	if value.Code != "docs.import.compression_unsupported" || value.Params["method"] != 99 {
+		t.Fatalf("Problem = %#v", value)
+	}
+}
 
 func TestImportAssetUsesDedicatedImageProfile(t *testing.T) {
 	in := assetclientInput(&model.ImportAsset{SourcePath: "guide/images/hero.gif", Data: []byte("gif")})

@@ -46,7 +46,7 @@ func (c *PublicCollections) GetCollection(ctx context.Context, req *v1.GetCollec
 	if err != nil {
 		return nil, err
 	}
-	return &v1.GetCollectionRes{Collection: collectionView(col)}, nil
+	return &v1.GetCollectionRes{CollectionView: collectionView(col)}, nil
 }
 
 func (c *PublicCollections) GetCollectionReleases(ctx context.Context, req *v1.GetCollectionReleasesReq) (*v1.GetCollectionReleasesRes, error) {

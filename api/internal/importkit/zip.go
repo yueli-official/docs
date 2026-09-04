@@ -20,6 +20,14 @@ const (
 	zipXZDictionaryCap        = 64 * 1024 * 1024
 )
 
+type UnsupportedCompressionError struct {
+	Method uint16
+}
+
+func (err *UnsupportedCompressionError) Error() string {
+	return fmt.Sprintf("unsupported zip compression method %d", err.Method)
+}
+
 type xzReadCloser struct {
 	reader io.Reader
 	err    error
@@ -70,7 +78,7 @@ func readZipFiles(data []byte, opts Options) (map[string][]byte, error) {
 			return nil, fmt.Errorf("archive expands beyond %d bytes", opts.MaxExtractedBytes)
 		}
 		if f.Method != zip.Store && f.Method != zip.Deflate && f.Method != zipMethodXZ {
-			return nil, fmt.Errorf("unsupported zip compression method %d: %s", f.Method, name)
+			return nil, &UnsupportedCompressionError{Method: f.Method}
 		}
 		extractedBytes += f.UncompressedSize64
 		rc, err := f.Open()

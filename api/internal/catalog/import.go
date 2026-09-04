@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"path"
 	"sort"
 	"strings"
@@ -60,7 +61,7 @@ type plannedImportDoc struct {
 func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*model.ImportBatch, ImportSummary, error) {
 	pkg, err := importkit.ParseZip(in.Data, importkit.Options{MaxImageBytes: 10 << 20, Collection: in.Collection, DefaultLocale: in.DefaultLocale, Mode: in.Mode})
 	if err != nil {
-		return nil, ImportSummary{}, docserr.InvalidInput(err.Error())
+		return nil, ImportSummary{}, importPackageError(err)
 	}
 	col, err := s.dao.GetCollectionBySlug(ctx, pkg.Manifest.Collection)
 	if err != nil {
@@ -187,6 +188,14 @@ func (s *Service) PreflightImport(ctx context.Context, in ImportUploadInput) (*m
 	}
 	created, err := s.dao.GetImportBatch(ctx, batchID)
 	return created, summary, err
+}
+
+func importPackageError(err error) error {
+	var unsupported *importkit.UnsupportedCompressionError
+	if errors.As(err, &unsupported) {
+		return docserr.ImportCompressionUnsupported(int(unsupported.Method))
+	}
+	return docserr.InvalidInput(err.Error())
 }
 
 func (s *Service) ConfirmImport(ctx context.Context, batchID, bearer, author string) (*model.ImportBatch, ImportSummary, error) {

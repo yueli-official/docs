@@ -10,6 +10,10 @@
       "status": 503
     },
     {
+      "code": "docs.administrator_grant_protected",
+      "status": 409
+    },
+    {
       "code": "docs.authorization_unavailable",
       "status": 503
     },
@@ -20,6 +24,10 @@
     {
       "code": "docs.forbidden",
       "status": 403
+    },
+    {
+      "code": "docs.import.compression_unsupported",
+      "status": 400
     },
     {
       "code": "docs.import_blocked",

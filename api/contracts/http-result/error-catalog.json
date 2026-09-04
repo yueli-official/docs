@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "errors.yueli.dev/catalog/v1",
+  "namespace": "docs",
+  "errors": [
+    { "code": "docs.abuse_attempt_replayed", "status": 409, "messageKey": "errors.docs.abuse_attempt_replayed" },
+    { "code": "docs.abuse_unavailable", "status": 503, "messageKey": "errors.docs.abuse_unavailable", "recoveryKey": "recovery.retry_later" },
+    { "code": "docs.authorization_unavailable", "status": 503, "messageKey": "errors.docs.authorization_unavailable", "recoveryKey": "recovery.retry_later" },
+    { "code": "docs.administrator_grant_protected", "status": 409, "messageKey": "errors.docs.administrator_grant_protected" },
+    {
+      "code": "docs.challenge_required",
+      "status": 403,
+      "messageKey": "errors.docs.challenge_required",
+      "params": {
+        "attemptId": { "type": "string", "required": true, "maxLength": 128 },
+        "challenge": { "type": "string", "required": true, "maxLength": 32 }
+      }
+    },
+    { "code": "docs.forbidden", "status": 403, "messageKey": "errors.docs.forbidden" },
+    {
+      "code": "docs.import_blocked",
+      "status": 400,
+      "messageKey": "errors.docs.import_blocked",
+      "recoveryKey": "recovery.fix_import_package",
+      "params": { "detail": { "type": "string", "required": true, "maxLength": 1024 } }
+    },
+    {
+      "code": "docs.import.compression_unsupported",
+      "status": 400,
+      "messageKey": "errors.docs.import.compression_unsupported",
+      "recoveryKey": "recovery.repack_archive",
+      "params": { "method": { "type": "integer", "required": true } }
+    },
+    {
+      "code": "docs.invalid_input",
+      "status": 400,
+      "messageKey": "errors.docs.invalid_input",
+      "params": { "detail": { "type": "string", "required": true, "maxLength": 1024 } },
+      "violations": "optional"
+    },
+    {
+      "code": "docs.not_found",
+      "status": 404,
+      "messageKey": "errors.docs.not_found",
+      "params": { "id": { "type": "string", "required": true, "maxLength": 128 } }
+    },
+    { "code": "docs.rate_limited", "status": 429, "messageKey": "errors.docs.rate_limited", "recoveryKey": "recovery.retry_later" },
+    {
+      "code": "docs.slug_taken",
+      "status": 409,
+      "messageKey": "errors.docs.slug_taken",
+      "recoveryKey": "recovery.choose_another_slug",
+      "params": { "slug": { "type": "string", "required": true, "maxLength": 160 } }
+    },
+    {
+      "code": "docs.upstream_failed",
+      "status": 502,
+      "messageKey": "errors.docs.upstream_failed",
+      "recoveryKey": "recovery.retry_later",
+      "params": { "detail": { "type": "string", "required": true, "maxLength": 1024 } }
+    }
+  ]
+}

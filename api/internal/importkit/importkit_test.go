@@ -3,6 +3,7 @@ package importkit
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"hash/crc32"
 	"strings"
 	"testing"
@@ -60,6 +61,26 @@ func xzZipBytes(t *testing.T, name, body string) []byte {
 		t.Fatal(err)
 	}
 	return archive.Bytes()
+}
+
+func TestParseZipRejectsUnknownCompressionWithTypedError(t *testing.T) {
+	data := xzZipBytes(t, "index.md", "# Guide")
+	// The method appears in both the local and central file headers.
+	for index := 0; index+12 < len(data); index++ {
+		if bytes.Equal(data[index:index+4], []byte{'P', 'K', 3, 4}) {
+			data[index+8] = 99
+			data[index+9] = 0
+		}
+		if bytes.Equal(data[index:index+4], []byte{'P', 'K', 1, 2}) {
+			data[index+10] = 99
+			data[index+11] = 0
+		}
+	}
+	_, err := ParseZip(data, Options{Collection: "guide", DefaultLocale: "en", Mode: "upsert"})
+	var unsupported *UnsupportedCompressionError
+	if !errors.As(err, &unsupported) || unsupported.Method != 99 {
+		t.Fatalf("error = %#v", err)
+	}
 }
 
 func TestParseZipSupportsXZCompressedEntries(t *testing.T) {

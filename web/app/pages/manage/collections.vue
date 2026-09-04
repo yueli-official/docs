@@ -406,17 +406,19 @@ async function save() {
           }
         : {}),
     };
-    const res = current.value
-      ? await call<{ collection: CollectionView }>(
-          `/api/v1/collections/${current.value.id}`,
-          { method: "PATCH", body },
-        )
-      : await call<{ collection: CollectionView }>("/api/v1/collections", {
-          method: "POST",
-          body,
-        });
-
-    let saved = res.collection;
+    let saved: CollectionView;
+    if (current.value) {
+      const response = await call<{ collection: CollectionView }>(
+        `/api/v1/collections/${current.value.id}`,
+        { method: "PATCH", body },
+      );
+      saved = response.collection;
+    } else {
+      saved = await call<CollectionView>("/api/v1/collections", {
+        method: "POST",
+        body,
+      });
+    }
     if (file && saved?.id) {
       const coverRes = await uploadCollectionCover(saved.id, file);
       saved = coverRes.collection;

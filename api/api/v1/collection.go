@@ -31,7 +31,7 @@ type GetCollectionReq struct {
 	Slug   string `json:"slug" in:"path" v:"required"`
 }
 type GetCollectionRes struct {
-	Collection *CollectionView `json:"collection"`
+	*CollectionView
 }
 
 type GetCollectionReleasesReq struct {
@@ -53,7 +53,8 @@ type CreateCollectionReq struct {
 	SemanticVersion string `json:"semanticVersion" v:"required"`
 }
 type CreateCollectionRes struct {
-	Collection *CollectionView `json:"collection"`
+	g.Meta `status:"201"`
+	*CollectionView
 }
 
 type UpdateCollectionReq struct {
@@ -97,7 +98,7 @@ type DeleteCollectionReq struct {
 	ID     string `json:"id" in:"path" v:"required"`
 }
 type DeleteCollectionRes struct {
-	Deleted bool `json:"deleted"`
+	g.Meta `status:"204"`
 }
 
 type CloneCollectionReleaseReq struct {

@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"net/http"
 
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/yueli-official/foundation/go/authorization"
 
 	v1 "github.com/yueli-official/docs/api/api/v1"
@@ -67,6 +69,7 @@ func (c *Imports) UploadDocsImport(ctx context.Context, req *v1.UploadDocsImport
 	if err != nil {
 		return nil, err
 	}
+	g.RequestFromCtx(ctx).Response.WriteHeader(http.StatusCreated)
 	return &v1.UploadDocsImportRes{
 		Batch:   importBatchView(batch),
 		Summary: importSummaryView(summary),
@@ -99,6 +102,7 @@ func (c *Imports) ConfirmDocsImport(ctx context.Context, req *v1.ConfirmDocsImpo
 	if err := authorizationService(ctx).SyncCatalogScopes(ctx); err != nil {
 		return nil, docserr.AuthorizationUnavailable()
 	}
+	g.RequestFromCtx(ctx).Response.WriteHeader(http.StatusAccepted)
 	return &v1.ConfirmDocsImportRes{Batch: importBatchView(batch), Summary: importSummaryView(summary)}, nil
 }
 

@@ -4,72 +4,15 @@ package docserr
 import (
 	"fmt"
 	"net/http"
-	"sort"
 
 	"github.com/yueli-official/foundation/go/problem"
-)
-
-const (
-	CodeNotFound                    = "docs.not_found"
-	CodeForbidden                   = "docs.forbidden"
-	CodeSlugTaken                   = "docs.slug_taken"
-	CodeInvalidInput                = "docs.invalid_input"
-	CodeUpstream                    = "docs.upstream_failed"
-	CodeImportBlocked               = "docs.import_blocked"
-	CodeAuthorizationUnavailable    = "docs.authorization_unavailable"
-	CodeAdministratorGrantProtected = "docs.administrator_grant_protected"
-	CodeRateLimited                 = "docs.rate_limited"
-	CodeChallengeRequired           = "docs.challenge_required"
-	CodeAbuseUnavailable            = "docs.abuse_unavailable"
-	CodeAbuseReplay                 = "docs.abuse_attempt_replayed"
 )
 
 var (
 	DescriptorRateLimited = descriptor("common.rate_limited", http.StatusTooManyRequests)
 	DescriptorValidation  = descriptor("common.validation_failed", http.StatusBadRequest)
 	DescriptorInternal    = descriptor("common.internal", http.StatusInternalServerError)
-
-	descriptors = map[string]problem.Descriptor{
-		CodeNotFound:                    descriptor(CodeNotFound, http.StatusNotFound),
-		CodeForbidden:                   descriptor(CodeForbidden, http.StatusForbidden),
-		CodeSlugTaken:                   descriptor(CodeSlugTaken, http.StatusConflict),
-		CodeInvalidInput:                descriptor(CodeInvalidInput, http.StatusBadRequest),
-		CodeUpstream:                    descriptor(CodeUpstream, http.StatusBadGateway),
-		CodeImportBlocked:               descriptor(CodeImportBlocked, http.StatusBadRequest),
-		CodeAuthorizationUnavailable:    descriptor(CodeAuthorizationUnavailable, http.StatusServiceUnavailable),
-		CodeAdministratorGrantProtected: descriptor(CodeAdministratorGrantProtected, http.StatusConflict),
-		CodeRateLimited:                 descriptor(CodeRateLimited, http.StatusTooManyRequests),
-		CodeChallengeRequired:           descriptor(CodeChallengeRequired, http.StatusForbidden),
-		CodeAbuseUnavailable:            descriptor(CodeAbuseUnavailable, http.StatusServiceUnavailable),
-		CodeAbuseReplay:                 descriptor(CodeAbuseReplay, http.StatusConflict),
-	}
 )
-
-func descriptor(code string, status int) problem.Descriptor {
-	return problem.MustDescriptor(
-		problem.MustKind(code, status),
-		"https://errors.yueli.dev/problems/"+code,
-	)
-}
-
-func DescriptorForCode(code string) (problem.Descriptor, bool) {
-	value, ok := descriptors[code]
-	return value, ok
-}
-
-type CatalogEntry struct {
-	Code   string `json:"code"`
-	Status int    `json:"status"`
-}
-
-func Catalog() []CatalogEntry {
-	result := make([]CatalogEntry, 0, len(descriptors))
-	for code, value := range descriptors {
-		result = append(result, CatalogEntry{Code: code, Status: value.Kind().Status()})
-	}
-	sort.Slice(result, func(i, j int) bool { return result[i].Code < result[j].Code })
-	return result
-}
 
 func mapped(code string, params problem.Parameters) error {
 	value, ok := DescriptorForCode(code)
@@ -115,7 +58,7 @@ func AbuseUnavailable() error {
 }
 
 func AbuseAttemptReplayed() error {
-	return mapped(CodeAbuseReplay, nil)
+	return mapped(CodeAbuseAttemptReplayed, nil)
 }
 
 func SlugTaken(slug string) error {
@@ -127,9 +70,13 @@ func InvalidInput(detail string) error {
 }
 
 func UpstreamFailed(detail string) error {
-	return mapped(CodeUpstream, map[string]any{"detail": detail})
+	return mapped(CodeUpstreamFailed, map[string]any{"detail": detail})
 }
 
 func ImportBlocked(detail string) error {
 	return mapped(CodeImportBlocked, map[string]any{"detail": detail})
+}
+
+func ImportCompressionUnsupported(method int) error {
+	return mapped(CodeImportCompressionUnsupported, map[string]any{"method": method})
 }
