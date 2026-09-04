@@ -371,7 +371,7 @@ async function save() {
     markSaved();
   } catch (e: any) {
     resetSave();
-    saveError.value = e?.data?.message || "请稍后重试";
+    saveError.value = docsFailureMessage(e, "请稍后重试");
     toast.add({
       title: "设置保存失败",
       description: saveError.value,

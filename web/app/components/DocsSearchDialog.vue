@@ -184,7 +184,7 @@ async function runSearch() {
   }
   catch (err: any) {
     if (seq !== searchSeq) return
-    error.value = err?.data?.message || '搜索失败，请稍后重试'
+    error.value = docsFailureMessage(err, '搜索失败，请稍后重试')
     results.value = []
     total.value = 0
   }

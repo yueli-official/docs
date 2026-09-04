@@ -116,6 +116,46 @@ var operationErrors = map[string][]string{
 	"POST /api/v1/authorization/manage/policies/{revision}/validate":                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
 	"PUT /api/v1/authorization/manage/policies/{revision}/automatic/{rule}":          {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
 	"PUT /api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities": {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"GET /api/v1/collections/{slug}/releases":                                        {"docs.not_found"},
+	"GET /api/v1/collections/{slug}/tree":                                            {"docs.not_found"},
+	"GET /api/v1/collections/{slug}/variant":                                         {"docs.invalid_input", "docs.not_found"},
+	"GET /api/v1/collections/{slug}/variants":                                        {"docs.not_found"},
+	"PATCH /api/v1/collections/{id}":                                                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"POST /api/v1/collections/{id}/cover":                                            {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found", "docs.upstream_failed"},
+	"POST /api/v1/collections/{id}/cover/finalize":                                   {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found", "docs.upstream_failed"},
+	"GET /api/v1/collections/{id}/versions":                                          {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"POST /api/v1/collections/{id}/versions":                                         {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"GET /api/v1/dashboard/overview":                                                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"GET /api/v1/docs":                                                               {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"POST /api/v1/docs":                                                              {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"GET /api/v1/docs/by-path":                                                       {"docs.invalid_input", "docs.not_found"},
+	"GET /api/v1/docs/search":                                                        {"docs.invalid_input"},
+	"GET /api/v1/docs/{id}":                                                          {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"PATCH /api/v1/docs/{id}":                                                        {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"DELETE /api/v1/docs/{id}":                                                       {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"POST /api/v1/docs/{id}/archive":                                                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/docs/{id}/publish":                                                 {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/docs/{id}/view":                                                    {"docs.invalid_input", "docs.not_found"},
+	"GET /api/v1/docs/{documentId}/comments":                                         {"docs.invalid_input", "docs.not_found", "docs.upstream_failed"},
+	"POST /api/v1/docs/{documentId}/comments":                                        {"docs.invalid_input", "docs.not_found", "docs.rate_limited", "docs.challenge_required", "docs.abuse_unavailable", "docs.abuse_attempt_replayed", "docs.upstream_failed"},
+	"PATCH /api/v1/home":                                                             {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"POST /api/v1/images":                                                            {"docs.authorization_unavailable", "docs.forbidden", "docs.upstream_failed"},
+	"POST /api/v1/images/finalize":                                                   {"docs.authorization_unavailable", "docs.forbidden", "docs.upstream_failed"},
+	"GET /api/v1/imports/docs/{id}":                                                  {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"POST /api/v1/imports/docs/{id}/rollback":                                        {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.upstream_failed"},
+	"POST /api/v1/manage/collections/{id}/clone-release":                             {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"GET /api/v1/manage/collections/{id}/locales":                                    {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"POST /api/v1/manage/collections/{id}/locales":                                   {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/manage/collections/{id}/locales/clone":                             {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"DELETE /api/v1/manage/collections/{id}/locales/{locale}":                        {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found"},
+	"POST /api/v1/manage/collections/{id}/release":                                   {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"PATCH /api/v1/manage/collections/{id}/versions/{versionId}":                     {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.slug_taken"},
+	"GET /api/v1/manage/collections/{slug}/tree":                                     {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found"},
+	"GET /api/v1/manage/comments":                                                    {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.upstream_failed"},
+	"PATCH /api/v1/manage/comments/{id}":                                             {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.not_found", "docs.upstream_failed"},
+	"DELETE /api/v1/manage/comments/{id}":                                            {"docs.authorization_unavailable", "docs.forbidden", "docs.not_found", "docs.upstream_failed"},
+	"GET /api/v1/manage/docs":                                                        {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"GET /api/v1/me":                                                                 {"docs.authorization_unavailable"},
 	"GET /api/v1/collections/{slug}":                                                 {"docs.not_found"},
 	"POST /api/v1/collections":                                                       {"docs.invalid_input", "docs.slug_taken", "docs.forbidden"},
 	"DELETE /api/v1/collections/{id}":                                                {"docs.not_found", "docs.forbidden"},
@@ -156,6 +196,9 @@ func schemaRef(res response) string {
 func responseKind(status int, ref string, schemas map[string]schema) string {
 	if status == 204 {
 		return "empty"
+	}
+	if status == 202 {
+		return "operation"
 	}
 	properties := schemas[strings.TrimPrefix(ref, "#/components/schemas/")].Properties
 	_, items := properties["items"]

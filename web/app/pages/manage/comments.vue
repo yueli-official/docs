@@ -197,7 +197,7 @@ async function emptyTrash() {
   } catch (error: any) {
     toast.add({
       title: "回收站未清空",
-      description: error?.message || "请稍后重试。",
+      description: docsFailureMessage(error, "请稍后重试。"),
       color: "error",
     });
     return false;

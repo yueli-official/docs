@@ -114,9 +114,7 @@ const isAuthError = computed(() => {
 const loadErrorMessage = computed(() =>
   isAuthError.value
     ? "登录已失效，请重新登录后继续管理文档集。"
-    : loadError.value?.data?.message ||
-      loadError.value?.message ||
-      "加载文档集失败，请稍后重试。",
+    : docsFailureMessage(loadError.value, "加载文档集失败，请稍后重试。"),
 );
 const showSkeleton = useMinimumLoading(
   computed(() => !loadError.value && (!mounted.value || pending.value)),
@@ -431,7 +429,7 @@ async function save() {
   } catch (e: any) {
     toast.add({
       title: current.value ? "更新失败" : "创建失败",
-      description: e?.data?.message || "请重试",
+      description: docsFailureMessage(e, "请重试"),
       color: "error",
     });
   } finally {
@@ -450,7 +448,7 @@ async function doDelete() {
   } catch (e: any) {
     toast.add({
       title: "删除失败",
-      description: e?.data?.message || "请重试",
+      description: docsFailureMessage(e, "请重试"),
       color: "error",
     });
   } finally {

@@ -217,7 +217,7 @@ func (s *Service) ConfirmImport(ctx context.Context, batchID, bearer, author str
 		return nil, summary, err
 	}
 	if err := s.executeImport(ctx, batch, bearer, author); err != nil {
-		_ = s.dao.UpdateImportBatchStatus(ctx, batchID, "failed", batch.SummaryJSON, err.Error())
+		_ = s.dao.UpdateImportBatchStatus(ctx, batchID, "failed", batch.SummaryJSON, "import_execution_failed")
 		return nil, summary, err
 	}
 	if err := s.dao.UpdateImportBatchStatus(ctx, batchID, "completed", batch.SummaryJSON, ""); err != nil {

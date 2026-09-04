@@ -143,12 +143,11 @@ async function save(event: FormSubmitEvent<Schema>) {
     emit("saved", response.doc);
     open.value = false;
   } catch (error) {
-    const apiError = error as { data?: { code?: string; message?: string } };
-    if (apiError.data?.code === "docs.slug_taken") {
+    const feedback = docsFailureFeedback(error, "保存失败，请检查标题、路径和父级后重试。");
+    if (feedback.technical.code === "docs.slug_taken") {
       submitError.value = "同一父级下已经存在这个 Slug，请换一个。";
     } else {
-      submitError.value =
-        apiError.data?.message || "保存失败，请检查标题、路径和父级后重试。";
+      submitError.value = feedback.recovery ? `${feedback.message}${feedback.recovery}` : feedback.message;
     }
   } finally {
     saving.value = false;

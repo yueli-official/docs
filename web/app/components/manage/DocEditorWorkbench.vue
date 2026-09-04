@@ -488,7 +488,7 @@ async function setStatus(status: "draft" | "published" | "archived") {
   } catch (e: any) {
     toast.add({
       title: "操作失败",
-      description: e?.data?.message || "请重试",
+      description: docsFailureMessage(e, "请重试"),
       color: "error",
     });
   } finally {
@@ -646,7 +646,7 @@ async function save() {
     resetSave();
     toast.add({
       title: isNew.value ? "创建失败" : "保存失败",
-      description: e?.data?.message || "请重试",
+      description: docsFailureMessage(e, "请重试"),
       color: "error",
     });
   }

@@ -800,9 +800,57 @@
       },
       "github.com.yueli-official.docs.api.api.v1.CreateCollectionRes": {
         "properties": {
-          "collection": {
-            "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionView",
-            "description": ""
+          "coverAssetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "coverUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "derivedFromCollectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "docCount": {
+            "format": "int",
+            "type": "integer"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "releaseFamilyId": {
+            "format": "string",
+            "type": "string"
+          },
+          "releaseFamilyName": {
+            "format": "string",
+            "type": "string"
+          },
+          "semanticVersion": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
           }
         },
         "type": "object"
@@ -1156,12 +1204,7 @@
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteCollectionRes": {
-        "properties": {
-          "deleted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.docs.api.api.v1.DeleteCommentReq": {
@@ -1482,9 +1525,57 @@
       },
       "github.com.yueli-official.docs.api.api.v1.GetCollectionRes": {
         "properties": {
-          "collection": {
-            "$ref": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CollectionView",
-            "description": ""
+          "coverAssetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "coverUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "derivedFromCollectionId": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "docCount": {
+            "format": "int",
+            "type": "integer"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "releaseFamilyId": {
+            "format": "string",
+            "type": "string"
+          },
+          "releaseFamilyName": {
+            "format": "string",
+            "type": "string"
+          },
+          "semanticVersion": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
           }
         },
         "type": "object"
@@ -2207,10 +2298,16 @@
             "format": "string",
             "type": "string"
           },
-          "limit": {
-            "default": 20,
+          "page": {
+            "default": 1,
             "format": "int",
-            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "size": {
+            "default": 8,
+            "format": "int",
+            "maximum": 50,
             "minimum": 1,
             "type": "integer"
           }
@@ -2226,6 +2323,18 @@
               "description": ""
             },
             "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -4736,7 +4845,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4768,7 +4877,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6026,9 +6135,18 @@
           },
           {
             "in": "query",
-            "name": "limit",
+            "name": "page",
             "schema": {
-              "default": 20,
+              "default": 1,
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 8,
               "format": "int",
               "type": "integer"
             }
@@ -6064,7 +6182,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6128,7 +6246,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {

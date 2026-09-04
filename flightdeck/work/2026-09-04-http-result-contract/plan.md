@@ -7,8 +7,8 @@
 
 ## P1 — 实现与前端
 
-- [ ] 审计 typed cause、稳定公开参数和 raw message fallback。
-- [ ] 接入生成物 freshness、统一 failure feedback 和 compatibility diff。
+- [x] 审计 typed cause、稳定公开参数和 raw message fallback。
+- [x] 接入生成物 freshness、统一 failure feedback 和 compatibility diff。
 
 ## P2 — 验证
 

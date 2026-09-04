@@ -160,7 +160,7 @@ async function submitLocaleClone() {
     localeCloneOpen.value = false;
     await load();
   } catch (error: any) {
-    toast.add({ title: "语言复制失败", description: error?.data?.message || "目标语言已有文档，或源语言没有可复制内容", color: "error" });
+    toast.add({ title: "语言复制失败", description: docsFailureMessage(error, "目标语言已有文档，或源语言没有可复制内容"), color: "error" });
   } finally {
     saving.value = false;
   }
@@ -197,7 +197,7 @@ async function saveLocale() {
     localeEditorOpen.value = false;
     await load();
   } catch (error: any) {
-    toast.add({ title: "语言设置保存失败", description: error?.data?.message || "请检查设置后重试", color: "error" });
+    toast.add({ title: "语言设置保存失败", description: docsFailureMessage(error, "请检查设置后重试"), color: "error" });
   } finally {
     saving.value = false;
   }
@@ -211,7 +211,7 @@ async function deleteLocale() {
     localeEditorOpen.value = false;
     await load();
   } catch (error: any) {
-    toast.add({ title: "无法删除语言", description: error?.data?.message || "默认语言或已有文档的语言不能删除", color: "error" });
+    toast.add({ title: "无法删除语言", description: docsFailureMessage(error, "默认语言或已有文档的语言不能删除"), color: "error" });
   } finally {
     deletingLocale.value = false;
   }
@@ -246,7 +246,7 @@ async function cloneRelease() {
     await load();
     emit("changed", response.collection);
   } catch (error: any) {
-    toast.add({ title: "新版本创建失败", description: error?.data?.message || "请检查版本号和路径后重试", color: "error" });
+    toast.add({ title: "新版本创建失败", description: docsFailureMessage(error, "请检查版本号和路径后重试"), color: "error" });
   } finally {
     saving.value = false;
   }
@@ -264,7 +264,7 @@ async function initializeRelease() {
     await load();
     emit("changed", response.collection);
   } catch (error: any) {
-    toast.add({ title: "版本设置失败", description: error?.data?.message || "版本号必须使用 x.y.z 格式", color: "error" });
+    toast.add({ title: "版本设置失败", description: docsFailureMessage(error, "版本号必须使用 x.y.z 格式"), color: "error" });
   } finally {
     saving.value = false;
   }

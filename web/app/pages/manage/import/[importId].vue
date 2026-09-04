@@ -152,7 +152,7 @@ async function rollback() {
   } catch (err: any) {
     toast.add({
       title: "回滚失败",
-      description: err?.data?.message || "请稍后重试",
+      description: docsFailureMessage(err, "请稍后重试"),
       color: "error",
     });
   } finally {
@@ -218,7 +218,7 @@ async function rollback() {
           导入批次加载失败
         </h2>
         <p class="mt-2 text-sm leading-6 text-muted">
-          {{ loadError.data?.message || loadError.message || "请稍后重试" }}
+          {{ docsFailureMessage(loadError, "请稍后重试") }}
         </p>
         <UButton
           class="mt-5"
@@ -384,7 +384,7 @@ async function rollback() {
             variant="soft"
             icon="i-tabler-alert-circle"
             title="导入执行失败"
-            :description="batch.errorMessage"
+            description="导入执行失败，请检查预检结果后重试。"
           />
 
           <div

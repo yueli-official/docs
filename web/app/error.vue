@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  error: { statusCode?: number, statusMessage?: string, message?: string }
+  error: { statusCode?: number }
 }>()
 </script>
 
@@ -12,7 +12,7 @@ defineProps<{
       </p>
       <h1 class="text-3xl font-bold">页面暂时不可用</h1>
       <p class="text-muted">
-        {{ error.statusMessage || error.message || '请稍后重试。' }}
+        {{ error.statusCode === 404 ? '页面不存在或已经移动。' : '请稍后重试。' }}
       </p>
       <UButton to="/" icon="i-tabler-home">返回首页</UButton>
     </main>

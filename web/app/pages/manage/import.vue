@@ -137,7 +137,7 @@ async function createCollection() {
       icon: "i-tabler-circle-check",
     });
   } catch (err: any) {
-    createCollectionError.value = err?.data?.message || err?.message || "创建文档集失败";
+    createCollectionError.value = docsFailureMessage(err, "创建文档集失败");
   } finally {
     creatingCollection.value = false;
   }
@@ -258,7 +258,7 @@ async function upload() {
     historyPage.value = 1;
     await refreshHistory();
   } catch (err: any) {
-    errorMessage.value = err?.data?.message || err?.message || "上传失败";
+    errorMessage.value = docsFailureMessage(err, "上传失败");
   } finally {
     uploading.value = false;
   }
@@ -279,7 +279,7 @@ async function confirmImport() {
     toast.add({
       title: "导入失败",
       description:
-        err?.data?.message || err?.message || "请检查预检结果后重试",
+        docsFailureMessage(err, "请检查预检结果后重试"),
       color: "error",
       icon: "i-tabler-alert-circle",
       duration: 0,

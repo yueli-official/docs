@@ -242,8 +242,7 @@ async function loadDocPage(
     }
     activeWorkflow.resolveLoad(token, { items, total: response.total });
   } catch (error) {
-    const apiError = error as { data?: { message?: string } };
-    docsError.value = apiError.data?.message || "加载文档失败";
+    docsError.value = docsFailureMessage(error, "加载文档失败");
     activeWorkflow.rejectLoad(token, { key: "docs.manage.load_failed" });
   } finally {
     docsPending.value = false;
@@ -838,15 +837,13 @@ async function applyBulkAction() {
     bulkAction.value = undefined;
     await Promise.all([reloadDocPage(), refreshTree()]);
   } catch (error) {
-    const apiError = error as { data?: { message?: string } };
     replaceSelection(requestedIds);
     bulkResult.value = {
       changed: 0,
       failedIds: requestedIds,
       interrupted: true,
       message:
-        apiError.data?.message ||
-        "批量请求中断，已保留选择，请核对当前状态后重试。",
+        docsFailureMessage(error, "批量请求中断，已保留选择，请核对当前状态后重试。"),
     };
     await Promise.all([reloadDocPage(), refreshTree()]);
   } finally {
@@ -883,15 +880,13 @@ async function confirmBulkLocale() {
     bulkLocaleOpen.value = false;
     await Promise.all([reloadDocPage(), refreshTree()]);
   } catch (error) {
-    const apiError = error as { data?: { message?: string } };
     replaceSelection(requestedIds);
     bulkResult.value = {
       changed,
       failedIds: requestedIds,
       interrupted: true,
       message:
-        apiError.data?.message ||
-        "批量请求中断，已保留选择，请核对当前语言后重试。",
+        docsFailureMessage(error, "批量请求中断，已保留选择，请核对当前语言后重试。"),
     };
     await Promise.all([reloadDocPage(), refreshTree()]);
   } finally {
@@ -1185,7 +1180,7 @@ async function onDelete(id: string) {
   } catch (err: any) {
     toast.add({
       title: "删除失败",
-      description: err?.data?.message || "请重试",
+      description: docsFailureMessage(err, "请重试"),
       color: "error",
     });
   }

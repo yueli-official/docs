@@ -45,7 +45,7 @@ func ParseZip(data []byte, opts Options) (*Package, error) {
 		}
 		doc, issues, err := parseDocFile(manifest, locale, version, root, key, string(files[key]))
 		if err != nil {
-			pkg.Issues = append(pkg.Issues, Issue{Severity: "error", Code: "frontmatter_invalid", Message: err.Error(), Path: key})
+			pkg.Issues = append(pkg.Issues, Issue{Severity: "error", Code: "frontmatter_invalid", Message: "front matter is invalid", Path: key})
 			continue
 		}
 		pkg.Docs = append(pkg.Docs, doc)
