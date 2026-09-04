@@ -89,7 +89,7 @@ test("converted AE package preflights with alerts and images", async ({ browser 
   await page.getByRole("button", { name: "上传并预检" }).click();
   await expect(page.getByText("可导入", { exact: true })).toBeVisible({ timeout: 90_000 });
   await expect(page.getByText("144", { exact: true })).toBeVisible();
-  await expect(page.getByText("4", { exact: true })).toBeVisible();
+  await expect(page.getByText("图片", { exact: true }).locator("..").getByText("2", { exact: true })).toBeVisible();
   await expect(page.getByText("预检问题", { exact: true })).toHaveCount(0);
   await context.close();
 });

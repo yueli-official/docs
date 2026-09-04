@@ -117,6 +117,7 @@ AE 源仓库现提供一键导出脚本，将 `note/info/tip/important/warning/c
 - 2026-09-04：接入 Foundation HTTP Result 试点声明与生成物；集合创建/删除、导入预检/确认兑现 raw DTO + 201/204/201/202，
   Playwright 用真实 XZ 包完成确认并断言状态与空正文。未知 ZIP method 使用独立稳定错误码和整数 method 参数。
 - 2026-09-04：本地依赖切到 Foundation Go v0.4.1 / JS 0.7.2，并继续通过 Workspace local checkout overlay 消费未发布的 Asset/Identity/Foundation 源码。媒体测试改用 Asset 正式 opaque base-62 MediaKey；Go 全量与 Web 53 tests/typecheck 通过。直接 `pnpm install` 会破坏跨仓 overlay，必须由 Workspace `dev prepare --local ...` 恢复。
+- 2026-09-04：以重建后的本地 Asset Provider 完成 AE 创建文档集→预检→202 确认→图片处理→清理 Playwright（2.4m）；定向预检通过。修正另一条测试仍写死旧图片数 4 的陈旧断言，统一按“图片”指标断言当前夹具的 2。
 
 ## References
 
