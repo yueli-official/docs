@@ -2201,10 +2201,6 @@
               "description": ""
             },
             "type": "array"
-          },
-          "total": {
-            "format": "int",
-            "type": "integer"
           }
         },
         "type": "object"
@@ -2227,10 +2223,6 @@
               "description": ""
             },
             "type": "array"
-          },
-          "total": {
-            "format": "int",
-            "type": "integer"
           }
         },
         "type": "object"
@@ -2467,6 +2459,14 @@
             },
             "type": "array"
           },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
           "total": {
             "format": "int",
             "type": "integer"
@@ -2519,6 +2519,14 @@
               "description": ""
             },
             "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
           },
           "total": {
             "format": "int",

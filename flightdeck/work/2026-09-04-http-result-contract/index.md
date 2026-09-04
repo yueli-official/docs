@@ -26,6 +26,7 @@ None.
 - 明确创建与无正文删除已在 DTO 和 controller 同步状态；Idempotency-Key 角色申请保留 200。Go test/race/vet/govulncheck 全绿，gRPC 已升级到修复版本。
 - Foundation 本地固定 CLI 已从旧 manifest 提取 operation-errors，并用 Project v1 对全部六类产物完成 generate/check；旧命令仅作为 v0.4.1 远端 CI 兼容入口暂留。
 - Workspace 共享组合完成管理员、编辑器和 AE 双语导入 Playwright；创建/预检 201、确认 202、删除 204 与注入 raw message 不展示均通过。
+- Review 后按严格集合规则修正授权申请页为 `{items,page,size,total}`，角色/策略为有界 `{items}`，带 facets 的搜索结果显式保持 resource；新版 Project generate/check 通过。
 
 ## References
 

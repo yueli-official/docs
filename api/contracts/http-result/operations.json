@@ -124,7 +124,7 @@
       "path": "/api/v1/authorization/manage/policies",
       "success": {
         "status": 200,
-        "kind": "page",
+        "kind": "collection",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListAuthorizationPoliciesRes"
       },
       "errors": [
@@ -153,7 +153,7 @@
       "path": "/api/v1/authorization/manage/roles",
       "success": {
         "status": 200,
-        "kind": "page",
+        "kind": "collection",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListAuthorizationRolesRes"
       },
       "errors": [
@@ -356,7 +356,7 @@
       "path": "/api/v1/docs/search",
       "success": {
         "status": 200,
-        "kind": "page",
+        "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SearchDocsRes"
       },
       "errors": [

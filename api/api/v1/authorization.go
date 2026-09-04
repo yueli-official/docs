@@ -61,6 +61,8 @@ type ListMyApplicationsReq struct {
 type ListMyApplicationsRes struct {
 	Items []AuthorizationApplicationView `json:"items"`
 	Total int                            `json:"total"`
+	Page  int                            `json:"page"`
+	Size  int                            `json:"size"`
 }
 
 type WithdrawRoleApplicationReq struct {
@@ -80,6 +82,8 @@ type ListRoleApplicationsReq struct {
 type ListRoleApplicationsRes struct {
 	Items []AuthorizationApplicationView `json:"items"`
 	Total int                            `json:"total"`
+	Page  int                            `json:"page"`
+	Size  int                            `json:"size"`
 }
 
 type ReviewRoleApplicationReq struct {
@@ -107,7 +111,6 @@ type ListAuthorizationRolesReq struct {
 }
 type ListAuthorizationRolesRes struct {
 	Items []AuthorizationRoleView `json:"items"`
-	Total int                     `json:"total"`
 }
 
 type ListAuthorizationPoliciesReq struct {
@@ -115,7 +118,6 @@ type ListAuthorizationPoliciesReq struct {
 }
 type ListAuthorizationPoliciesRes struct {
 	Items []AuthorizationPolicyView `json:"items"`
-	Total int                       `json:"total"`
 }
 
 type AuthorizationAutomaticRuleView struct {

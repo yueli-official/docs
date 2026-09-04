@@ -356,5 +356,14 @@
       "docs.invalid_input",
       "docs.not_found"
     ]
+  },
+  "overrides": {
+    "GET /api/v1/docs/search": {
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SearchDocsRes"
+      }
+    }
   }
 }

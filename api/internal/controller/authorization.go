@@ -170,6 +170,7 @@ func (controller *Authorization) ListMyApplications(
 	}
 	return &v1.ListMyApplicationsRes{
 		Items: authorizationApplicationViews(page.Applications), Total: page.Total,
+		Page: applicationPage(req.Offset, req.Limit), Size: applicationPageSize(req.Limit),
 	}, nil
 }
 
@@ -201,6 +202,7 @@ func (controller *Authorization) ListRoleApplications(
 	}
 	return &v1.ListRoleApplicationsRes{
 		Items: authorizationApplicationViews(page.Applications), Total: page.Total,
+		Page: applicationPage(req.Offset, req.Limit), Size: applicationPageSize(req.Limit),
 	}, nil
 }
 
@@ -235,7 +237,7 @@ func (controller *Authorization) ListAuthorizationRoles(
 	for index, role := range page.Roles {
 		items[index] = authorizationRoleView(role)
 	}
-	return &v1.ListAuthorizationRolesRes{Items: items, Total: page.Total}, nil
+	return &v1.ListAuthorizationRolesRes{Items: items}, nil
 }
 
 func (controller *Authorization) ListAuthorizationPolicies(
@@ -253,7 +255,20 @@ func (controller *Authorization) ListAuthorizationPolicies(
 	for index, revision := range page.Revisions {
 		items[index] = authorizationPolicyView(revision)
 	}
-	return &v1.ListAuthorizationPoliciesRes{Items: items, Total: page.Total}, nil
+	return &v1.ListAuthorizationPoliciesRes{Items: items}, nil
+}
+
+func applicationPageSize(limit int) int {
+	if limit <= 0 || limit > 100 {
+		return 100
+	}
+	return limit
+}
+func applicationPage(offset, limit int) int {
+	if offset < 0 {
+		offset = 0
+	}
+	return offset/applicationPageSize(limit) + 1
 }
 
 func (controller *Authorization) GetAuthorizationPolicy(
