@@ -97,13 +97,13 @@ func (p *PG) CloneCollectionAsRelease(
 		}
 		if _, err := tx.Ctx(ctx).Exec(`
 INSERT INTO collection_locales (
-    collection_id, locale, label, html_lang, direction,
+    collection_id, locale, label, title, html_lang, direction,
     is_default, enabled, sort_order, created_at, updated_at
 )
-SELECT ?::uuid, locale, label, html_lang, direction,
+SELECT ?::uuid, locale, label, CASE WHEN is_default THEN ? ELSE title END, html_lang, direction,
        is_default, enabled, sort_order, NOW(), NOW()
 FROM collection_locales
-WHERE collection_id = ?::uuid`, in.Target.ID, in.Source.ID); err != nil {
+WHERE collection_id = ?::uuid`, in.Target.ID, in.Target.Title, in.Source.ID); err != nil {
 			return err
 		}
 

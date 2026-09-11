@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { collectionCoverThumbUrl } from "~/utils/coverImage";
 import { SkeletonCards } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import type { CollectionList } from "~/types";
@@ -168,11 +169,7 @@ useSeoMeta({ title: "文档集", description: "浏览和搜索公开文档集" }
                 class="size-full object-cover"
                 @error="markCoverFailed(c.id)"
               />
-              <UIcon
-                v-else
-                :name="c.icon || 'i-tabler-book-2'"
-                class="size-5"
-              />
+              <UIcon v-else :name="c.icon || 'i-tabler-book-2'" class="size-5" />
             </span>
             <span class="min-w-0 flex-1">
               <span

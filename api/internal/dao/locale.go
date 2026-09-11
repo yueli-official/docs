@@ -61,6 +61,7 @@ func (p *PG) UpsertCollectionLocale(ctx context.Context, locale *model.Collectio
 			"collection_id": locale.CollectionID,
 			"locale":        locale.Locale,
 			"label":         locale.Label,
+			"title":         locale.Title,
 			"html_lang":     locale.HTMLLang,
 			"direction":     locale.Direction,
 			"is_default":    locale.IsDefault,
@@ -69,6 +70,11 @@ func (p *PG) UpsertCollectionLocale(ctx context.Context, locale *model.Collectio
 			"updated_at":    gtime.Now(),
 		}).OnConflict("collection_id,locale").Save(); err != nil {
 			return err
+		}
+		if locale.IsDefault {
+			if _, err := tx.Model(tCollections).Ctx(ctx).Where("id", locale.CollectionID).Data(g.Map{"title": locale.Title, "updated_at": gtime.Now()}).Update(); err != nil {
+				return err
+			}
 		}
 		return runTransactionHook(ctx, tx, hook)
 	})
@@ -108,7 +114,7 @@ func (p *PG) CloneCollectionLocale(
 		} else if existing == 0 {
 			if _, err := tx.Model(tCollectionLocales).Ctx(ctx).Data(g.Map{
 				"collection_id": collectionID,
-				"locale":        targetLocale.Locale, "label": targetLocale.Label,
+				"locale":        targetLocale.Locale, "label": targetLocale.Label, "title": targetLocale.Title,
 				"html_lang": targetLocale.HTMLLang, "direction": targetLocale.Direction,
 				"is_default": false, "enabled": true, "sort_order": targetLocale.SortOrder,
 			}).Insert(); err != nil {

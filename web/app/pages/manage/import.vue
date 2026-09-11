@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createDocsNotifier } from "~/utils/feedback";
 import { ManageEmpty } from "~/utils/manageComponents";
-import { CollectionPagination } from "@yueli/ui/collection/pattern";
+import { CollectionPaginationBar } from "@yueli/ui/collection/pattern";
 import type {
   DocsImportBatch,
   DocsImportListResponse,
@@ -17,7 +17,7 @@ import {
 } from "~/utils/docsImportPresentation.mjs";
 
 definePageMeta({ layout: "manage" });
-useSeoMeta({ title: "批量导入 · 控制台" });
+useSeoMeta({ title: "文档导入 · 控制台" });
 
 const { call } = useApi();
 const { can } = useMe();
@@ -293,11 +293,12 @@ async function confirmImport() {
 <template>
   <ManagePage
     id="import"
-    title="批量导入"
+    title="文档导入"
     icon="i-tabler-file-import"
     main-id="manage-main"
     body-class="w-full"
   >
+    <ManageImportNavigation>
     <div
       v-if="!canManageImports"
       class="rounded-lg border border-default bg-default p-8"
@@ -619,13 +620,7 @@ async function confirmImport() {
             </NuxtLink>
           </div>
           <ManageEmpty v-else icon="i-tabler-history" text="还没有导入记录" />
-          <div
-            v-if="historyTotalPages > 1"
-            class="flex items-center justify-between gap-3 border-t border-default px-5 py-3"
-          >
-            <p class="text-xs text-muted">共 {{ historyTotal }} 个批次</p>
-            <CollectionPagination v-model="historyPage" :total-pages="historyTotalPages" />
-          </div>
+          <div class="border-t border-default p-3"><CollectionPaginationBar :page="historyPage" :page-size="historySize" :page-sizes="[historySize]" :total="historyTotal" :page-size-option="value => `${value} 批`" @page-change="historyPage = $event" /></div>
         </section>
       </section>
 
@@ -702,5 +697,6 @@ async function confirmImport() {
         </div>
       </aside>
     </div>
+    </ManageImportNavigation>
   </ManagePage>
 </template>

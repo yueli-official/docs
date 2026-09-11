@@ -28,6 +28,15 @@ database:
     name: "docs"
 
 docs:
+  projectDocs:
+    # Dedicated base64 32-byte AES key for revocable source PATs; empty disables sync.
+    encryptionKey: ""
+    # Optional token for GitHub public API quota; never forwarded to asset hosts.
+    githubToken: ""
+  personalTokens:
+    # Must equal this site's OIDC audience; empty disables personal-token access.
+    siteId: ""
+    allowHTTP: false
   siteSlug: "docs-local"
   brand: "文档库"
   domain: "docs.localhost"
@@ -42,10 +51,9 @@ docs:
   assetNamespace: "docs"
   assetProfile: "docs-default"
   authorization:
-    # Used only if this consumer-local instance does not exist. Later role
-    # changes are persisted in this Docs database through the management API.
-    bootstrapAdministratorSubs:
-      - "TestA123"   # test@example.com
+    # Empty: an authenticated user explicitly claims /manage/setup once.
+    # Set existing Identity subjects only for unattended bootstrap/recovery.
+    bootstrapAdministratorSubs: []
   abuse:
     turnstile:
       secret: ""            # optional; enable challenge escalation when configured

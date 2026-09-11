@@ -41,6 +41,7 @@ func (c *Locales) UpsertCollectionLocale(ctx context.Context, req *v1.UpsertColl
 		return nil, err
 	}
 	value, err := c.svc.UpsertLocale(ctx, catalog.UpsertLocaleInput{
+		Title:        req.Title,
 		CollectionID: req.CollectionID,
 		Locale:       req.Locale,
 		Label:        req.Label,
@@ -98,6 +99,7 @@ func localeView(value *model.CollectionLocale) *v1.CollectionLocaleView {
 		return nil
 	}
 	return &v1.CollectionLocaleView{
+		Title:        value.Title,
 		CollectionID: value.CollectionID,
 		Locale:       value.Locale,
 		Label:        value.Label,

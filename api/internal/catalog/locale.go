@@ -12,6 +12,7 @@ import (
 var localePattern = regexp.MustCompile(`^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$`)
 
 type UpsertLocaleInput struct {
+	Title        *string
 	CollectionID string
 	Locale       string
 	Label        string
@@ -99,7 +100,18 @@ func (s *Service) UpsertLocale(ctx context.Context, in UpsertLocaleInput) (*mode
 	if existing != nil && existing.IsDefault && (!in.IsDefault || !in.Enabled) {
 		return nil, docserr.InvalidInput("choose another default locale before disabling this locale")
 	}
+	title := collection.Title
+	if existing != nil {
+		title = existing.Title
+	}
+	if in.Title != nil {
+		title = strings.TrimSpace(*in.Title)
+		if title == "" {
+			return nil, docserr.InvalidInput("collection locale title is required")
+		}
+	}
 	value := &model.CollectionLocale{
+		Title:        title,
 		CollectionID: in.CollectionID,
 		Locale:       in.Locale,
 		Label:        in.Label,
@@ -200,7 +212,7 @@ func (s *Service) CloneLocale(ctx context.Context, authorSub string, in CloneLoc
 	}
 	locale := &model.CollectionLocale{
 		CollectionID: in.CollectionID, Locale: in.TargetLocale,
-		Label: in.TargetLabel, HTMLLang: in.TargetHTMLLang,
+		Label: in.TargetLabel, Title: source.Title, HTMLLang: in.TargetHTMLLang,
 		Direction: in.TargetDirection, Enabled: true, SortOrder: in.TargetSortOrder,
 	}
 	return s.dao.CloneCollectionLocale(

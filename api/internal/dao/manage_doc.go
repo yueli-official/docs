@@ -46,6 +46,22 @@ func manageDocsOrder(query model.ManageDocsQuery) (string, error) {
 func manageDocsConditions(query model.ManageDocsQuery, includeLifecycle bool) (string, []any) {
 	conditions := []string{"d.deleted_at IS NULL"}
 	args := []any{}
+	if query.ID != "" {
+		conditions = append(conditions, "d.id = ?")
+		args = append(args, query.ID)
+	}
+	if query.Path != "" {
+		conditions = append(conditions, "paths.slug_path = ?")
+		args = append(args, query.Path)
+	}
+	if query.ExcludeID != "" {
+		conditions = append(conditions, `d.id NOT IN (WITH RECURSIVE excluded AS (
+            SELECT id FROM docs WHERE id = ?::uuid
+            UNION ALL SELECT child.id FROM docs child JOIN excluded ON child.parent_id = excluded.id
+        ) SELECT id FROM excluded)`)
+		args = append(args, query.ExcludeID)
+	}
+
 	if query.CollectionID != "" {
 		conditions = append(conditions, "d.collection_id = ?")
 		args = append(args, query.CollectionID)

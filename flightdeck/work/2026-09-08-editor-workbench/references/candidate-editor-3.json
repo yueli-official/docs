@@ -1,0 +1,13 @@
+{
+  "webImage": "yueli/docs-web:server-20260908-editor-3",
+  "source": {
+    "app/components/manage/DocEditorWorkbench.vue": "f1ecb3c97c178c3959fcbf1680f34169cbd92e14554f672639bdde67f2647db2"
+  },
+  "webArchiveSHA256": "50d3221baf62c7df1d581288e78c2435690a9990e534a79abe9dea453a0e6754",
+  "types": "passed",
+  "build": "passed",
+  "health": "healthy",
+  "apiImage": "yueli/docs-api:server-20260908-editor-3",
+  "apiArchiveSHA256": "9afea8b8aa2240e097fa6d995489f1d76ab07ff16dc07cf88f613b7320a0e92c",
+  "apiSourceSHA256": "920a132052dc077af702741dc4877fc77a5e598162d8e2544bcbfbe984117091"
+}

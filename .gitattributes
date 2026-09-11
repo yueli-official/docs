@@ -3,3 +3,9 @@
 # whitespace defect during diff checks.
 api/manifest/sql/migrations/0012_traffic_v1.up.sql whitespace=-blank-at-eof
 api/manifest/sql/migrations/0012_traffic_v1.down.sql whitespace=-blank-at-eof
+api/manifest/sql/migrations/0018_collection_locale_titles.down.sql -text whitespace=cr-at-eol
+api/manifest/sql/migrations/0018_collection_locale_titles.up.sql -text whitespace=cr-at-eol
+api/manifest/sql/migrations/0019_project_doc_sources.down.sql -text whitespace=cr-at-eol
+api/manifest/sql/migrations/0019_project_doc_sources.up.sql -text whitespace=cr-at-eol
+api/manifest/sql/migrations/0020_project_doc_auto_check.down.sql -text whitespace=cr-at-eol
+api/manifest/sql/migrations/0020_project_doc_auto_check.up.sql -text whitespace=cr-at-eol

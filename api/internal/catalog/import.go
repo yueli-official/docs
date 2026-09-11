@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	"database/sql"
+
 	"github.com/yueli-official/docs/api/internal/assetclient"
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docsaudit"
@@ -207,20 +209,24 @@ func (s *Service) ConfirmImport(ctx context.Context, batchID, bearer, author str
 		return nil, ImportSummary{}, docserr.NotFound(batchID)
 	}
 	summary := parseImportSummary(batch.SummaryJSON)
+	if batch.Status == "completed" {
+		return batch, summary, nil
+	}
 	if batch.Status != "checked" {
 		return nil, summary, docserr.InvalidInput("import_batch_not_ready")
 	}
 	if summary.Blocking {
 		return nil, summary, docserr.ImportBlocked("preflight_blocked")
 	}
-	if err := s.dao.UpdateImportBatchStatus(ctx, batchID, "running", batch.SummaryJSON, ""); err != nil {
+	claimed, err := s.dao.ClaimImportBatch(ctx, batchID)
+	if err != nil {
 		return nil, summary, err
+	}
+	if !claimed {
+		return nil, summary, docserr.InvalidInput("import_batch_not_ready")
 	}
 	if err := s.executeImport(ctx, batch, bearer, author); err != nil {
 		_ = s.dao.UpdateImportBatchStatus(ctx, batchID, "failed", batch.SummaryJSON, "import_execution_failed")
-		return nil, summary, err
-	}
-	if err := s.dao.UpdateImportBatchStatus(ctx, batchID, "completed", batch.SummaryJSON, ""); err != nil {
 		return nil, summary, err
 	}
 	done, err := s.dao.GetImportBatch(ctx, batchID)
@@ -378,10 +384,20 @@ func (s *Service) executeImport(ctx context.Context, batch *model.ImportBatch, b
 		}
 	}
 	return s.dao.ApplyImportDocs(
-		ctx, mutations, s.importMutationHook(
+		ctx, mutations, dao.ComposeTransactionHooks(s.importMutationHook(
 			ctx, docsaudit.ActionImportConfirmed, batch, len(mutations), author,
 			"docs import applied",
-		),
+		), func(ctx context.Context, _ *sql.Tx) error {
+			if s.importGuard != nil {
+				if err := s.importGuard(ctx, bearer); err != nil {
+					return err
+				}
+			}
+			if check, ok := ctx.Value(importCommitCheckKey{}).(func(context.Context) error); ok {
+				return check(ctx)
+			}
+			return nil
+		}, dao.CompleteImportHook(batch.ID)),
 	)
 }
 
@@ -399,6 +415,10 @@ func summarizePackage(pkg *importkit.Package) ImportSummary {
 }
 
 func (s *Service) existingImportDocs(ctx context.Context, collectionID, versionID string, locales []string) (map[string]*model.Doc, error) {
+	sourcePaths, err := s.dao.ImportedDocumentPaths(ctx, collectionID, versionID)
+	if err != nil {
+		return nil, err
+	}
 	out := map[string]*model.Doc{}
 	for _, locale := range locales {
 		docs, err := s.dao.ListDocsByCollection(ctx, collectionID, versionID, locale)
@@ -406,7 +426,11 @@ func (s *Service) existingImportDocs(ctx context.Context, collectionID, versionI
 			return nil, err
 		}
 		for _, item := range flattenDocPaths(BuildTree(docs), "") {
-			out[importDocKey(item.doc.Locale, item.path)] = item.doc
+			p := item.path
+			if source, ok := sourcePaths[item.doc.ID]; ok {
+				p = source
+			}
+			out[importDocKey(item.doc.Locale, p)] = item.doc
 		}
 	}
 	return out, nil
@@ -555,14 +579,16 @@ func (s *Service) existingParentIDs(ctx context.Context, collectionID, versionID
 		locales[item.Locale] = true
 	}
 	out := map[string]string{}
+	localeList := make([]string, 0, len(locales))
 	for locale := range locales {
-		docs, err := s.dao.ListDocsByCollection(ctx, collectionID, versionID, locale)
-		if err != nil {
-			return nil, err
-		}
-		for _, item := range flattenDocPaths(BuildTree(docs), "") {
-			out[importDocKey(item.doc.Locale, item.path)] = item.doc.ID
-		}
+		localeList = append(localeList, locale)
+	}
+	docs, err := s.existingImportDocs(ctx, collectionID, versionID, localeList)
+	if err != nil {
+		return nil, err
+	}
+	for key, doc := range docs {
+		out[key] = doc.ID
 	}
 	return out, nil
 }
@@ -579,7 +605,12 @@ func (s *Service) prepareImportMutation(
 	}
 	content := rewriteImageRefs(planned.Content, refs, assetURLs)
 	planned.Content = content
-	planned.ParentID = parentIDs[importDocKey(planned.Locale, planned.ParentPath)]
+	// The package root is not a document parent; otherwise a repeated root
+	// index import can parent itself, and top-level pages move under it.
+	planned.ParentID = ""
+	if planned.ParentPath != "" {
+		planned.ParentID = parentIDs[importDocKey(planned.Locale, planned.ParentPath)]
+	}
 	doc := &model.Doc{}
 	if item.Action == "create" {
 		doc.ID = identifier.MustNew().String()

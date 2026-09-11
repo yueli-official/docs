@@ -1,0 +1,21 @@
+name: Documentation release asset
+on:
+  release:
+    types: [published]
+permissions:
+  contents: write
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Package documentation
+        run: python scripts/yueli_docs_publish.py pack docs --output docs.zip
+      - name: Attach documentation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" docs.zip --clobber

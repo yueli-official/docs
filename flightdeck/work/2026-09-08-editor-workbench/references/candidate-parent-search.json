@@ -1,0 +1,21 @@
+{
+  "apiImage": "yueli/docs-api:server-20260909-parent-1",
+  "webImage": "yueli/docs-web:server-20260909-parent-1",
+  "source": {
+    "api/api/v1/doc.go": "6a2dbab43329d729c3402b345580b78f5263d12da5181c12cf2c9722ddafcb93",
+    "api/internal/catalog/manage_doc.go": "bc91976aa318f09b0472fe6555e08a4184233251ca21236e2622a1860c301206",
+    "api/internal/controller/docs.go": "989f941a2365bd98e53894440aec172014eae6a17bef2f70e318c7a0903ddf8e",
+    "api/internal/dao/manage_doc.go": "012be2cbe20d745b5eb766cdb654c7c8dec196586dff2982bed8fd71e27616da",
+    "api/internal/model/manage_doc.go": "3bf818ba35d12f90d1cc378148bdfb1e0de8182e33f5d9994563b61ef951c3b3",
+    "contracts/openapi/docs.json": "6e858daa82474083695a7dc58e9e534fbb3771e417007d21bc80507cc2b87912",
+    "web/app/components/manage/DocEditorWorkbench.vue": "228824c2cc887c83a591c3c3aab251095739d4f9972a59da21c14dd520c763c3"
+  },
+  "archives": "96b5da323e0e7e4468c5f1af64d466c1908279d29e5eb5ed63c2fa429d651e42  docs-api-parent-search.tar.gz\nef1a4ff918592c163bcd69e2e60060876e63a4190f1440f14b587eaccb013675  docs-parent-search-web.tar.gz\n",
+  "validation": [
+    "go test -timeout 60s ./... passed",
+    "HTTP contracts generated and coverage check passed (72 operations)",
+    "frontend typecheck and independent build passed",
+    "CLI Playwright large collection search, exclusion, save/reload, new publication, mobile/desktop passed",
+    "production public pages passed; API/Web healthy"
+  ]
+}

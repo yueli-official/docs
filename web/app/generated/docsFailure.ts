@@ -9,8 +9,10 @@ export type DocsFailureCode =
   | "docs.forbidden"
   | "docs.import.compression_unsupported"
   | "docs.import_blocked"
+  | "docs.initial_administrator_already_claimed"
   | "docs.invalid_input"
   | "docs.not_found"
+  | "docs.project_sync_unavailable"
   | "docs.rate_limited"
   | "docs.slug_taken"
   | "docs.upstream_failed"
@@ -24,8 +26,10 @@ export type DocsFailure =
   | { readonly code: "docs.forbidden"; readonly status: 403; readonly params?: never; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.import.compression_unsupported"; readonly status: 400; readonly params: { readonly method: number; }; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.import_blocked"; readonly status: 400; readonly params: { readonly reason: string; }; readonly violations?: never; readonly traceId: string }
+  | { readonly code: "docs.initial_administrator_already_claimed"; readonly status: 409; readonly params?: never; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.invalid_input"; readonly status: 400; readonly params: { readonly reason: string; }; readonly violations?: readonly { readonly pointer: string; readonly code: string; readonly params?: Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[]>> }[]; readonly traceId: string }
   | { readonly code: "docs.not_found"; readonly status: 404; readonly params: { readonly id: string; }; readonly violations?: never; readonly traceId: string }
+  | { readonly code: "docs.project_sync_unavailable"; readonly status: 503; readonly params?: never; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.rate_limited"; readonly status: 429; readonly params?: never; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.slug_taken"; readonly status: 409; readonly params: { readonly slug: string; }; readonly violations?: never; readonly traceId: string }
   | { readonly code: "docs.upstream_failed"; readonly status: 502; readonly params: { readonly dependency: string; }; readonly violations?: never; readonly traceId: string }
@@ -39,8 +43,10 @@ export const docsFailurePresentation = {
   "docs.forbidden": { messageKey: "errors.docs.forbidden" },
   "docs.import.compression_unsupported": { messageKey: "errors.docs.import.compression_unsupported", recoveryKey: "recovery.repack_archive" },
   "docs.import_blocked": { messageKey: "errors.docs.import_blocked", recoveryKey: "recovery.fix_import_package" },
+  "docs.initial_administrator_already_claimed": { messageKey: "errors.docs.initial_administrator_already_claimed" },
   "docs.invalid_input": { messageKey: "errors.docs.invalid_input" },
   "docs.not_found": { messageKey: "errors.docs.not_found" },
+  "docs.project_sync_unavailable": { messageKey: "errors.docs.project_sync_unavailable" },
   "docs.rate_limited": { messageKey: "errors.docs.rate_limited", recoveryKey: "recovery.retry_later" },
   "docs.slug_taken": { messageKey: "errors.docs.slug_taken", recoveryKey: "recovery.choose_another_slug" },
   "docs.upstream_failed": { messageKey: "errors.docs.upstream_failed", recoveryKey: "recovery.retry_later" },

@@ -1,5 +1,7 @@
 import {
   createError,
+  getRequestHeader,
+  getRequestWebStream,
   defineEventHandler,
   getRouterParam,
   sendProxy,
@@ -16,11 +18,12 @@ export default defineEventHandler(async (event) => {
 
   const config = oidcConfig(event);
   const target = identityBffTarget(config.downstreamBase);
-  let authHeaders = await sessionAuthHeaders(event);
-  if (!authHeaders.authorization) {
+  const personal = identityPersonalTokenCredential(getRequestHeader(event, "authorization"));
+  let authHeaders = personal ? {} : await sessionAuthHeaders(event);
+  if (!personal && !authHeaders.authorization) {
     authHeaders = await guestSessionAuthHeaders(event, config.clientId);
   }
-  const credential = identityBffCredential(authHeaders);
+  const credential = personal || identityBffCredential(authHeaders);
   const headers = new Headers();
   if (credential.kind === "bearer") headers.set("authorization", `Bearer ${credential.token}`);
 
@@ -30,6 +33,8 @@ export default defineEventHandler(async (event) => {
   );
   return await sendProxy(event, targetURL.toString(), {
     fetchOptions: {
+      body: getRequestWebStream(event),
+      duplex: "half",
       headers,
       method: "POST",
       signal: AbortSignal.timeout(30 * 60_000),

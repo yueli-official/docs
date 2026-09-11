@@ -75,7 +75,7 @@ func (s *Service) CreateCollectionWithSetup(ctx context.Context, in CreateCollec
 	}
 	if err := s.dao.InsertCollectionWithDefaultVersion(
 		ctx, m, version, &model.CollectionLocale{
-			CollectionID: m.ID, Locale: locale, Label: localeLabel(locale), HTMLLang: locale,
+			CollectionID: m.ID, Locale: locale, Title: title, Label: localeLabel(locale), HTMLLang: locale,
 			Direction: localeDirection(locale), IsDefault: true, Enabled: true,
 		}, s.urlInitializeHook(m.ID, "docs collection created"),
 	); err != nil {

@@ -2,6 +2,10 @@
   "schemaVersion": "docs.yueli.dev/error-catalog/v1",
   "errors": [
     {
+      "code": "docs.project_sync_unavailable",
+      "status": 503
+    },
+    {
       "code": "docs.abuse_attempt_replayed",
       "status": 409
     },
@@ -20,6 +24,10 @@
     {
       "code": "docs.challenge_required",
       "status": 403
+    },
+    {
+      "code": "docs.initial_administrator_already_claimed",
+      "status": 409
     },
     {
       "code": "docs.forbidden",

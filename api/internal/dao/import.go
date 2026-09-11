@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/gogf/gf/v2/database/gdb"
@@ -17,6 +18,31 @@ type ImportDocMutation struct {
 	ItemID                 string
 	AfterDocJSON           string
 	TransformedContentHash string
+}
+
+func CompleteImportHook(batchID string) TransactionHook {
+	return func(ctx context.Context, tx *sql.Tx) error {
+		_, err := tx.ExecContext(ctx, `UPDATE doc_import_batches SET status='completed',error_message='',updated_at=NOW(),completed_at=NOW() WHERE id=$1`, batchID)
+		return err
+	}
+}
+
+// ImportedDocumentPaths retains source identity separately from public slugs.
+// Importing index.md or a page with custom front matter must update the same row.
+func (p *PG) ImportedDocumentPaths(ctx context.Context, collectionID, versionID string) (map[string]string, error) {
+	rows, err := p.db.GetAll(ctx, `SELECT DISTINCT ON (i.target_doc_id) i.target_doc_id::text AS id, i.path
+	 FROM doc_import_items i JOIN doc_import_batches b ON b.id=i.batch_id
+	 WHERE b.collection_id=? AND b.version_id=? AND b.status='completed'
+	 AND i.target_doc_id IS NOT NULL AND i.action IN ('create','update')
+	 ORDER BY i.target_doc_id, b.completed_at DESC, b.id DESC`, collectionID, versionID)
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[string]string, len(rows))
+	for _, row := range rows {
+		out[row["id"].String()] = row["path"].String()
+	}
+	return out, nil
 }
 
 // ApplyImportDocs commits all document rows, import receipts, and the URL
@@ -171,6 +197,18 @@ func (p *PG) UpdateImportBatchStatus(ctx context.Context, id, status, summaryJSO
 	}
 	_, err := p.db.Model(tDocImportBatches).Ctx(ctx).Where("id", id).Data(data).Update()
 	return err
+}
+
+// ClaimImportBatch admits one confirmer; repeated concurrent requests must not
+// upload assets or apply the same preflight snapshot twice.
+func (p *PG) ClaimImportBatch(ctx context.Context, id string) (bool, error) {
+	result, err := p.db.Model(tDocImportBatches).Ctx(ctx).Where("id", id).Where("status", "checked").
+		Data(g.Map{"status": "running", "updated_at": gtime.Now()}).Update()
+	if err != nil {
+		return false, err
+	}
+	count, err := result.RowsAffected()
+	return count == 1, err
 }
 
 func (p *PG) GetImportBatch(ctx context.Context, id string) (*model.ImportBatch, error) {

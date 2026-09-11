@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { EditorCommandBar } from "@yueli/ui/admin";
 import { createDocsNotifier } from "~/utils/feedback";
 import { EditorInspector } from "@yueli/ui/admin";
 import { AdminIconPicker } from "@yueli/ui/admin";
@@ -11,15 +12,13 @@ import type {
   CollectionVersion,
   CollectionVersionsResponse,
   CollectionView,
-  CollectionManageTree,
+  ManageDocListItem,
+  ManageDocsResponse,
   DocDetail,
   DocDetailResponse,
 } from "~/types";
 import {
-  buildDocTree,
   docManageRoute,
-  findDocBySlugPath,
-  findDocSlugPathById,
   normalizeDocSlugPath,
 } from "~/utils/docsManageRoutes.mjs";
 
@@ -298,49 +297,30 @@ watch(
   { immediate: true },
 );
 
-// ── tree for parent dropdown ───────────────────────────────────────────────────
-const { data: treeDocsData, refresh: refreshTree } = await useAsyncData(
-  () =>
-    `doc-editor-docs-${treeCollectionId.value}-${selectedVersionKey.value || "default"}-${form.locale || defaultLocale.value}`,
-  () =>
-    treeCollectionId.value
-      ? call<{ items: DocDetail[] }>("/api/v1/docs", {
-          query: {
-            collectionId: treeCollectionId.value,
-            locale: form.locale || defaultLocale.value,
-            ...(selectedVersionKey.value
-              ? { version: selectedVersionKey.value }
-              : {}),
-          },
-        })
-      : Promise.resolve({ items: [] as DocDetail[] }),
-  {
-    watch: [treeCollectionId, selectedVersionKey, () => form.locale],
-    server: false,
-    default: () => ({ items: [] as DocDetail[] }),
-  },
+// Resolve only the selected document; never fetch the collection tree.
+const { data: currentRowData, error: rowError, status: rowStatus, refresh: refreshCurrentRow } = await useAsyncData(
+  () => `doc-editor-location-${route.path}-${String(route.query.locale || '')}-${String(route.query.version || '')}`,
+  () => isNew.value ? Promise.resolve(null) : call<ManageDocsResponse>('/api/v1/manage/docs', {
+    query: isSemanticEdit.value ? {
+      collectionId: treeCollectionId.value, path: semanticDocPath.value.join('/'),
+      locale: String(route.query.locale || form.locale || defaultLocale.value),
+      version: String(route.query.version || selectedVersionKey.value), size: 1, page: 1,
+    } : { id: routeId.value, size: 1, page: 1 },
+  }),
+  { server: false, immediate: false },
 );
-const treeData = computed<CollectionManageTree | null>(() =>
-  selectedCollection.value
-    ? {
-        collection: selectedCollection.value,
-        tree: buildDocTree(treeDocsData.value?.items ?? []),
-      }
-    : null,
+const currentRow = computed(() => currentRowData.value?.items[0]);
+const docId = computed(() => isNew.value ? '' : isSemanticEdit.value ? (currentRow.value?.id || '') : routeId.value);
+watch(
+  () => isNew.value ? '' : isSemanticEdit.value
+    ? (treeCollectionId.value && locales.value.length && versions.value.length ? `${route.path}:${String(route.query.locale || defaultLocale.value)}:${String(route.query.version || selectedVersionKey.value)}` : '')
+    : routeId.value,
+  (key) => { if (key) void refreshCurrentRow(); }, { immediate: true },
 );
-
-const semanticDoc = computed(() =>
-  isSemanticEdit.value
-    ? findDocBySlugPath(treeData.value?.tree ?? [], semanticDocPath.value)
-    : null,
-);
-const docId = computed(() =>
-  isSemanticEdit.value ? (semanticDoc.value?.id ?? "") : routeId.value,
-);
-
 // ── load existing doc (edit mode) ──────────────────────────────────────────────
 const {
   data: docData,
+  error: loadError,
   pending,
   refresh,
 } = await useAsyncData(
@@ -353,6 +333,7 @@ const {
   { server: false, watch: [docId] },
 );
 const doc = computed(() => docData.value?.doc ?? null);
+const editorReady = computed(() => isNew.value || !!doc.value);
 
 // Init form once data arrives
 watch(
@@ -396,42 +377,65 @@ watch(
   { immediate: true },
 );
 
-// Flatten a doc tree into path-style select options; exclude editing node + descendants.
-function flattenTree(
-  nodes: DocDetail[],
-  excludeId: string,
-  prefix = "",
-): { label: string; value: string }[] {
-  const out: { label: string; value: string }[] = [];
-  for (const node of nodes) {
-    if (node.id === excludeId) continue; // also skips descendants
-    const label = prefix ? `${prefix} / ${node.title}` : node.title;
-    out.push({ label, value: node.id });
-    if (node.children?.length)
-      out.push(...flattenTree(node.children, excludeId, label));
-  }
-  return out;
+const parentOpen = ref(false);
+const parentSearch = ref('');
+const parentQuery = ref('');
+const parentLoading = ref(false);
+const parentFailure = ref('');
+const parentRows = ref<ManageDocListItem[]>([]);
+const selectedParent = shallowRef<{ id: string; title: string; slugPath: string } | null>(null);
+watch(() => isNew.value ? form.parentId : ROOT, async (id) => {
+  if (id === ROOT || selectedParent.value?.id === id) return;
+  const result = await call<ManageDocsResponse>('/api/v1/manage/docs', { query: { id, size: 1, page: 1 } }).catch(() => null);
+  if (form.parentId === id && result?.items[0]) selectedParent.value = result.items[0];
+}, { immediate: true });
+let parentRequest = 0;
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(parentSearch, (value) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { parentQuery.value = value.trim(); }, 250);
+});
+onBeforeUnmount(() => { clearTimeout(searchTimer); parentRequest++; });
+watch(currentRow, (row) => {
+  if (!row) return;
+  selectedParent.value = row.parentId ? { id: row.parentId, title: row.parentTitle, slugPath: row.slugPath.split('/').slice(0, -1).join('/') } : null;
+}, { immediate: true });
+async function loadParents() {
+  const request = ++parentRequest;
+  if (!parentOpen.value || !treeCollectionId.value || !selectedVersionKey.value || !form.locale) { parentLoading.value = false; return; }
+  parentLoading.value = true; parentFailure.value = ''; parentRows.value = [];
+  try {
+    const result = await call<ManageDocsResponse>('/api/v1/manage/docs', { query: {
+      collectionId: treeCollectionId.value, locale: form.locale, version: selectedVersionKey.value,
+      q: parentQuery.value, excludeId: docId.value || undefined, size: 20, page: 1, sort: 'title', direction: 'asc',
+    } });
+    if (request === parentRequest) parentRows.value = result.items;
+  } catch (error) {
+    if (request === parentRequest) parentFailure.value = docsFailureMessage(error, '父文档加载失败，请重试');
+  } finally { if (request === parentRequest) parentLoading.value = false; }
+}
+watch([parentOpen, parentQuery, treeCollectionId, selectedVersionKey, () => form.locale], loadParents);
+const parentOptions = computed(() => [
+  { label: '（无父文档）', value: ROOT },
+  ...parentRows.value.map(row => ({ label: row.title, description: row.slugPath, value: row.id })),
+]);
+const parentLabel = computed(() => form.parentId === ROOT ? '（无父文档）' : selectedParent.value?.title || '当前父文档');
+function selectParent(value: unknown) {
+  const id = selectedValue(value); form.parentId = id;
+  if (id === ROOT) selectedParent.value = null;
+  else { const row = parentRows.value.find(row => row.id === id); if (row) selectedParent.value = row; }
+}
+const currentSlugPath = computed(() => {
+  const parent = form.parentId !== ROOT ? selectedParent.value?.slugPath.split('/').filter(Boolean) || [] : [];
+  return form.slug.trim() ? [...parent, form.slug.trim()] : parent;
+});
+async function savedDocRoute(id: string) {
+  const result = await call<ManageDocsResponse>('/api/v1/manage/docs', { query: { id, size: 1, page: 1 } });
+  const row = result.items[0];
+  if (!row) throw new Error('Saved document location is unavailable');
+  return { path: docManageRoute(row.collectionSlug, row.slugPath.split('/')), query: { locale: row.locale, version: row.versionKey } };
 }
 
-const parentOptions = computed(() => [
-  { label: "（无父文档）", value: ROOT },
-  ...flattenTree(treeData.value?.tree ?? [], isNew.value ? "" : docId.value),
-]);
-
-const currentSlugPath = computed(() => {
-  const parentPath =
-    form.parentId !== ROOT
-      ? (findDocSlugPathById(treeData.value?.tree ?? [], form.parentId) ?? [])
-      : [];
-  const editableSlug = form.slug.trim();
-  if (editableSlug) return [...parentPath, editableSlug];
-  if (isNew.value) return parentPath;
-  if (isSemanticEdit.value) return semanticDocPath.value;
-  return docId.value
-    ? (findDocSlugPathById(treeData.value?.tree ?? [], docId.value) ??
-        (doc.value?.slug ? [doc.value.slug] : []))
-    : [];
-});
 const publicDocUrl = computed(() =>
   collectionSlug.value && currentSlugPath.value.length
     ? [
@@ -470,11 +474,12 @@ const sm = computed(
 // ── quick publish / unpublish (edit mode) ──────────────────────────────────────
 const busy = ref("");
 async function setStatus(status: "draft" | "published" | "archived") {
-  if (!docId.value) return;
+  if ((!docId.value && !isNew.value) || busy.value) return;
   busy.value = status;
   try {
     if (status === "published") {
-      await call(`/api/v1/docs/${docId.value}/publish`, { method: "POST" });
+      await save(true);
+      return;
     } else if (status === "archived") {
       await call(`/api/v1/docs/${docId.value}/archive`, { method: "POST" });
     } else {
@@ -501,23 +506,23 @@ const lifecycleMenuItems = computed(() => {
     items.push({
       label: "发布",
       icon: "i-tabler-rocket",
-      disabled: Boolean(busy.value),
+      disabled: !editorReady.value || Boolean(busy.value) || saveStatus.value === "pending",
       onSelect: () => void setStatus("published"),
     });
   }
   if (form.status !== "draft") {
     items.push({
-      label: "转为草稿",
+      label: "下架",
       icon: "i-tabler-pencil",
-      disabled: Boolean(busy.value),
+      disabled: !editorReady.value || Boolean(busy.value) || saveStatus.value === "pending",
       onSelect: () => void setStatus("draft"),
     });
   }
-  if (form.status !== "archived") {
+  if (!isNew.value && form.status !== "archived") {
     items.push({
       label: "归档",
       icon: "i-tabler-archive",
-      disabled: Boolean(busy.value),
+      disabled: !editorReady.value || Boolean(busy.value) || saveStatus.value === "pending",
       onSelect: () => void setStatus("archived"),
     });
   }
@@ -539,7 +544,8 @@ function showValidationError(description: string) {
     icon: "i-tabler-alert-circle",
   });
 }
-async function save() {
+async function save(publish = false) {
+  if (!editorReady.value || saveStatus.value === "pending") return;
   if (!form.title.trim()) {
     showValidationError("请填写标题");
     return;
@@ -581,19 +587,13 @@ async function save() {
           body: { excerpt: form.excerpt },
         });
       }
+      if (publish) {
+        await call(`/api/v1/docs/${res.doc.id}/publish`, { method: "POST" });
+        form.status = "published";
+      }
       markSaved();
       editorComp.value?.markSaved();
-      const parentSlugPath =
-        form.parentId !== ROOT
-          ? (findDocSlugPathById(treeData.value?.tree ?? [], form.parentId) ??
-            [])
-          : [];
-      await navigateTo(
-        docManageRoute(collectionSlug.value, [
-          ...parentSlugPath,
-          res.doc!.slug,
-        ]),
-      );
+      await navigateTo(await savedDocRoute(res.doc.id));
     } else {
       if (!docId.value) {
         toast.add({
@@ -625,22 +625,14 @@ async function save() {
           },
         },
       );
+      if (publish) {
+        await call(`/api/v1/docs/${res.doc.id}/publish`, { method: "POST" });
+        form.status = "published";
+      }
       markSaved();
       editorComp.value?.markSaved();
-      await refreshTree();
+      await navigateTo(await savedDocRoute(res.doc.id), { replace: true });
       await refresh();
-      const savedSlug = res.doc?.slug || form.slug.trim();
-      const parentSlugPath =
-        form.parentId !== ROOT
-          ? (findDocSlugPathById(treeData.value?.tree ?? [], form.parentId) ??
-            [])
-          : [];
-      if (collectionSlug.value && savedSlug) {
-        await navigateTo(
-          docManageRoute(collectionSlug.value, [...parentSlugPath, savedSlug]),
-          { replace: true },
-        );
-      }
     }
   } catch (e: any) {
     resetSave();
@@ -726,87 +718,48 @@ watch(
     data-docs-editor
     :data-collaboration-mode="immersiveCollaboration ? 'immersive' : 'standard'"
   >
-    <div
-      v-if="!immersiveCollaboration"
-      class="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-2 border-b border-default bg-default px-3 py-1.5 sm:gap-4 sm:px-4 sm:py-2 lg:px-8"
-      data-docs-editor-commandbar
-    >
-      <div class="flex min-w-0 items-center gap-2">
-        <UDashboardSidebarToggle class="size-11 sm:size-8 lg:hidden" />
-        <UTooltip text="返回文档列表">
-          <UButton
-            to="/manage/docs"
-            icon="i-tabler-arrow-left"
-            color="neutral"
-            variant="ghost"
-            square
-            class="size-11 sm:size-8"
-            aria-label="返回文档列表"
-          />
-        </UTooltip>
-        <input
+    <EditorCommandBar v-if="!immersiveCollaboration"
+      v-model:immersive="immersiveCollaboration" v-model:settings-open="settingsOpen"
+      back-to="/manage/docs" back-label="返回文档列表" settings-label="文档设置"
+      data-docs-editor-commandbar>
+      <template #title><input
           v-model="form.title"
           class="min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold text-highlighted outline-none placeholder:text-dimmed md:text-base"
           placeholder="未命名文档"
           aria-label="文档标题"
-        />
-      </div>
-
-      <div class="flex shrink-0 items-center gap-1.5">
-        <UTooltip :text="immersiveCollaboration ? '退出沉浸式协作' : '沉浸式协作'">
-          <UButton
-            :icon="immersiveCollaboration ? 'i-tabler-minimize' : 'i-tabler-maximize'"
-            color="neutral"
-            :variant="immersiveCollaboration ? 'soft' : 'ghost'"
-            square
-            class="size-11 sm:size-8"
-            :aria-label="immersiveCollaboration ? '退出沉浸式协作' : '沉浸式协作'"
-            :aria-pressed="immersiveCollaboration"
-            @click="toggleImmersiveCollaboration"
-          />
-        </UTooltip>
-        <UTooltip v-if="!isNew && doc" text="预览公开页">
+        /></template>
+      <template #preview><UTooltip v-if="!isNew && doc?.status === 'published'" text="查看公开页">
           <UButton
             icon="i-tabler-eye"
             color="neutral"
             variant="ghost"
             square
-            class="size-11 sm:size-8"
-            aria-label="预览公开页"
+            class="size-8"
+            aria-label="查看公开页"
             :disabled="!publicDocUrl"
             @click="previewDoc"
           />
-        </UTooltip>
-        <UTooltip text="文档设置">
-          <UButton
-            icon="i-tabler-adjustments-horizontal"
-            :color="settingsOpen ? 'primary' : 'neutral'"
-            :variant="settingsOpen ? 'soft' : 'ghost'"
-            square
-            class="size-11 sm:size-8"
-            aria-label="文档设置"
-            :aria-pressed="settingsOpen"
-            @click="toggleSettings"
-          />
-        </UTooltip>
-        <div v-if="!isNew && doc" data-docs-lifecycle-actions>
-          <UFieldGroup v-if="form.status === 'draft'" size="sm">
+        </UTooltip></template>
+      <template #lifecycle><div data-docs-lifecycle-actions>
+          <UFieldGroup v-if="form.status !== 'published'" size="sm">
             <UButton
               label="发布"
               icon="i-tabler-rocket"
               color="primary"
               variant="soft"
-              class="min-h-11 sm:min-h-8"
+              class="h-8"
               :loading="busy === 'published'"
+              :disabled="!editorReady || saveStatus === 'pending'"
               @click="setStatus('published')"
             />
-            <UDropdownMenu :items="lifecycleMenuItems">
+            <UDropdownMenu v-if="lifecycleMenuItems[0]?.length" :items="lifecycleMenuItems">
               <UButton
                 icon="i-tabler-chevron-down"
                 color="primary"
                 variant="soft"
-                class="min-h-11 sm:min-h-8"
+                class="h-8"
                 aria-label="更多发布操作"
+                :disabled="!editorReady || Boolean(busy) || saveStatus === 'pending'"
               />
             </UDropdownMenu>
           </UFieldGroup>
@@ -817,25 +770,28 @@ watch(
               trailing-icon="i-tabler-chevron-down"
               color="neutral"
               variant="soft"
-              class="min-h-11 sm:min-h-8"
+              class="h-8"
               :loading="Boolean(busy)"
+              :disabled="!editorReady || saveStatus === 'pending'"
             />
           </UDropdownMenu>
-        </div>
-        <ActionFeedbackButton
+        </div></template>
+      <template #actions><ActionFeedbackButton
           :status="saveStatus"
           :idle-label="isNew ? '创建' : '保存'"
           :pending-label="isNew ? '创建中' : '保存中'"
           :success-label="isNew ? '已创建' : '已保存'"
           :idle-icon="isNew ? 'i-tabler-check' : undefined"
-          class="min-h-11 sm:min-h-8"
-          @click="save"
-        />
-      </div>
-    </div>
+          class="h-8"
+          :disabled="!editorReady || Boolean(busy)"
+          @click="save()"
+        /></template>
+    </EditorCommandBar>
 
+    <UAlert v-if="loadError || rowError" color="error" title="文档加载失败" description="请刷新页面重试。加载成功后才能保存或发布。" class="mx-auto my-6 max-w-4xl" />
+    <UAlert v-else-if="isSemanticEdit && rowStatus === 'success' && !currentRow" color="error" title="找不到文档" description="请检查文档地址，或返回列表重新打开。" class="mx-auto my-6 max-w-4xl" />
     <div
-      v-if="!mounted || (!isNew && pending && !doc)"
+      v-else-if="!mounted || (!isNew && !doc)"
       class="mx-auto max-w-4xl space-y-5 px-4 py-8 sm:px-6 lg:px-8"
       aria-label="正在加载文档编辑器"
     >
@@ -984,14 +940,21 @@ watch(
 
             <UFormField label="父文档">
               <USelectMenu
-                v-model="form.parentId"
+                v-model:open="parentOpen"
+                v-model:search-term="parentSearch"
+                :model-value="form.parentId"
                 :items="parentOptions"
+                :loading="parentLoading"
+                ignore-filter
+                @update:model-value="selectParent"
                 value-key="value"
                 placeholder="选择父文档"
                 aria-label="选择父文档"
                 :search-input="{ placeholder: '搜索标题或路径…' }"
                 class="w-full"
-              />
+              ><template #default><span class="truncate">{{ parentLabel }}</span></template></USelectMenu>
+              <p class="mt-1 text-xs text-muted">最多显示 20 条，输入标题或路径搜索更多文档。</p>
+              <div v-if="parentFailure" class="mt-2 text-sm text-error" role="alert">{{ parentFailure }} <UButton label="重试" variant="link" size="xs" @click="loadParents" /></div>
             </UFormField>
 
             <UFormField label="语言">
@@ -1097,7 +1060,8 @@ watch(
             idle-label="保存"
             pending-label="保存中"
             success-label="已保存"
-            @click="save"
+            :disabled="!editorReady || Boolean(busy)"
+          @click="save()"
           />
         </div>
       </template>

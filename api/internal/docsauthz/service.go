@@ -25,6 +25,7 @@ type Runtime interface {
 	authorization.PolicyManager
 	authorization.PolicyReader
 	authorization.Reconciler
+	authorization.AdministratorClaimer
 }
 
 type Service struct {
@@ -69,6 +70,9 @@ func (service *Service) Subject(ctx context.Context) authorization.SubjectRef {
 	if !ok {
 		return authorization.SubjectRef{Kind: authorization.SubjectAnonymous}
 	}
+	if principal.SubjectKind == foundationauth.SubjectUser && principal.Subject != "" {
+		return authorization.SubjectRef{Kind: authorization.SubjectUser, ID: principal.Subject}
+	}
 	subjectKind, _ := principal.Claim("subject_kind")
 	if subjectKind == "user" && principal.Subject != "" {
 		return authorization.SubjectRef{Kind: authorization.SubjectUser, ID: principal.Subject}
@@ -89,6 +93,9 @@ func (service *Service) Decide(
 		return authorization.Decision{}, &authorization.Error{
 			Kind: authorization.ErrorUnavailable, Field: "runtime", Message: "is not configured",
 		}
+	}
+	if !foundationauth.AllowsPersonalCapability(ctx, string(capability)) {
+		return authorization.Decision{Allowed: false}, nil
 	}
 	if err := service.ReconcileSubject(ctx); err != nil {
 		return authorization.Decision{}, err
@@ -184,4 +191,12 @@ func (service *Service) ReconcileSubject(ctx context.Context) error {
 		Subject: subject,
 	})
 	return err
+}
+
+func (service *Service) AdministratorClaimStatus(ctx context.Context) (authorization.AdministratorClaimStatus, error) {
+	return service.runtime.AdministratorClaimStatus(ctx)
+}
+
+func (service *Service) ClaimInitialAdministrator(ctx context.Context) (authorization.ClaimInitialAdministratorResult, error) {
+	return service.runtime.ClaimInitialAdministrator(ctx, authorization.ClaimInitialAdministratorCommand{Actor: service.Subject(ctx)})
 }

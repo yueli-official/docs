@@ -87,6 +87,9 @@ type ManageDocCountsView struct {
 }
 
 type ManageDocsReq struct {
+	ID           string `json:"id" in:"query"`
+	Path         string `json:"path" in:"query"`
+	ExcludeID    string `json:"excludeId" in:"query"`
 	g.Meta       `path:"/api/v1/manage/docs" method:"get" tags:"docs" summary:"Query docs for the admin workbench"`
 	Q            string `json:"q" in:"query"`
 	Status       string `json:"status" in:"query"`

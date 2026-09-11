@@ -49,6 +49,10 @@
       ]
     },
     {
+      "code": "docs.initial_administrator_already_claimed",
+      "messageKey": "errors.docs.initial_administrator_already_claimed"
+    },
+    {
       "code": "docs.invalid_input",
       "messageKey": "errors.docs.invalid_input",
       "params": [
@@ -61,6 +65,10 @@
       "params": [
         "id"
       ]
+    },
+    {
+      "code": "docs.project_sync_unavailable",
+      "messageKey": "errors.docs.project_sync_unavailable"
     },
     {
       "code": "docs.rate_limited",

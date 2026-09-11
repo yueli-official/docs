@@ -51,7 +51,7 @@ func TestDocumentImageUsesConsumerProfileAndStableDeliveryURL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("FinalizeDocumentImage() error = %v", err)
 	}
-	if want := "/media/31Pj0mXv7cfR5fdZIUvra?format=webp&name=inline&v=1"; got != want {
+	if want := "/media/31Pj0mXv7cfR5fdZIUvra?format=webp&preset=inline&v=1"; got != want {
 		t.Fatalf("FinalizeDocumentImage() = %q, want %q", got, want)
 	}
 }

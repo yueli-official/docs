@@ -6,6 +6,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!user.value) await refresh()
   if (!user.value) return login(to.fullPath)
 
+  const { status, refresh: refreshClaim } = useAdministratorClaim()
+  // Read before rendering any privileged console, including during SSR.
+  await refreshClaim()
+  if (!status.value?.claimed) {
+    if (to.path !== '/manage/setup') return navigateTo('/manage/setup')
+    return
+  }
+  if (to.path === '/manage/setup') return navigateTo('/manage')
+
   const { me, canManage, refresh: refreshMe } = useMe()
   if (!me.value) await refreshMe()
   // Resolve the product-local capability set during SSR so the navigation tree is

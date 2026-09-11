@@ -2,6 +2,7 @@
   "schemaVersion": "errors.yueli.dev/catalog/v1",
   "namespace": "docs",
   "errors": [
+    { "code": "docs.project_sync_unavailable", "status": 503, "messageKey": "errors.docs.project_sync_unavailable" },
     { "code": "docs.abuse_attempt_replayed", "status": 409, "messageKey": "errors.docs.abuse_attempt_replayed" },
     { "code": "docs.abuse_unavailable", "status": 503, "messageKey": "errors.docs.abuse_unavailable", "recoveryKey": "recovery.retry_later" },
     { "code": "docs.authorization_unavailable", "status": 503, "messageKey": "errors.docs.authorization_unavailable", "recoveryKey": "recovery.retry_later" },
@@ -15,6 +16,7 @@
         "challenge": { "type": "string", "required": true, "maxLength": 32 }
       }
     },
+    { "code": "docs.initial_administrator_already_claimed", "status": 409, "messageKey": "errors.docs.initial_administrator_already_claimed" },
     { "code": "docs.forbidden", "status": 403, "messageKey": "errors.docs.forbidden" },
     {
       "code": "docs.import_blocked",

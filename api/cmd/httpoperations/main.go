@@ -96,6 +96,14 @@ func project(doc document) []httpcontract.Operation {
 }
 
 var operationErrors = map[string][]string{
+	"GET /api/v1/import-sources":                                                     {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input"},
+	"POST /api/v1/import-sources":                                                    {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.project_sync_unavailable", "docs.not_found", "docs.upstream_failed"},
+	"GET /api/v1/import-sources/{id}":                                                {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.project_sync_unavailable", "docs.not_found", "docs.upstream_failed"},
+	"PATCH /api/v1/import-sources/{id}":                                              {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.project_sync_unavailable", "docs.not_found", "docs.upstream_failed"},
+	"DELETE /api/v1/import-sources/{id}":                                             {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.project_sync_unavailable", "docs.not_found", "docs.upstream_failed"},
+	"POST /api/v1/import-sources/{id}/check":                                         {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.project_sync_unavailable", "docs.not_found", "docs.upstream_failed"},
+	"GET /api/v1/authorization/setup":                                                {"docs.authorization_unavailable"},
+	"POST /api/v1/authorization/setup/claim":                                         {"docs.authorization_unavailable", "docs.forbidden", "docs.invalid_input", "docs.initial_administrator_already_claimed"},
 	"GET /api/v1/authorization/applications/mine":                                    {"docs.authorization_unavailable", "docs.forbidden"},
 	"GET /api/v1/authorization/manage/applications":                                  {"docs.authorization_unavailable", "docs.forbidden"},
 	"GET /api/v1/authorization/manage/console":                                       {"docs.authorization_unavailable", "docs.forbidden"},

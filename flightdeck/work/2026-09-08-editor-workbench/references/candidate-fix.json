@@ -1,0 +1,11 @@
+{
+  "image": "yueli/docs-web:server-20260908-editor-2",
+  "uiCandidate": "0.4.1-server.20260908.editor.1",
+  "archiveSHA256": "928da214b38c5d8a3b210699d47c4daf8c7b5b395f26810f385d2b656fe3252f",
+  "source": {
+    "app/components/manage/DocEditorWorkbench.vue": "fcd48ee6de165b1e376c430a8ffd65982b47e6cfbeb6c1c188ff7b3bb3e7dc2d"
+  },
+  "typecheck": "passed",
+  "build": "passed",
+  "runtime": "healthy"
+}

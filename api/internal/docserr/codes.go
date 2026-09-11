@@ -42,8 +42,14 @@ func AuthorizationUnavailable() error {
 	return mapped(CodeAuthorizationUnavailable, nil)
 }
 
+func ProjectSyncUnavailable() error { return mapped(CodeProjectSyncUnavailable, nil) }
+
 func AdministratorGrantProtected() error {
 	return mapped(CodeAdministratorGrantProtected, nil)
+}
+
+func InitialAdministratorAlreadyClaimed() error {
+	return mapped(CodeInitialAdministratorAlreadyClaimed, nil)
 }
 
 func RateLimited() error {

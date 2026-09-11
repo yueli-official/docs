@@ -1,0 +1,17 @@
+{
+  "count": 1119,
+  "editorMs": 6475,
+  "queries": [
+    "http://docs.dev.yuelili.test:3003/api/v1/docs?collectionId=01a06855-ff4d-7c85-bd8a-6e5a41c665a7&locale=zh-CN&version=default"
+  ],
+  "before": {
+    "status": 504,
+    "ms": 10090
+  },
+  "after": {
+    "status": 200,
+    "ms": 175,
+    "count": 1119
+  },
+  "authorizationRegression": "go test ./internal/controller ./internal/docsauthz passed; ungranted subject sees zero docs"
+}

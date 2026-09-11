@@ -1,0 +1,1 @@
+ALTER TABLE project_doc_sources ADD COLUMN auto_check BOOLEAN NOT NULL DEFAULT TRUE;

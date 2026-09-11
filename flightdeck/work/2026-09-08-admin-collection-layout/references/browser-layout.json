@@ -1,0 +1,54 @@
+{
+  "site": "docs",
+  "pages": [
+    {
+      "route": "/manage/docs",
+      "width": 390,
+      "pagination": 1,
+      "tools": 1
+    },
+    {
+      "route": "/manage/collections",
+      "width": 390,
+      "pagination": 1,
+      "tools": 1
+    },
+    {
+      "route": "/manage/comments",
+      "width": 390,
+      "pagination": 1,
+      "tools": 1
+    },
+    {
+      "route": "/manage/import",
+      "width": 390,
+      "pagination": 1,
+      "tools": 0
+    },
+    {
+      "route": "/manage/docs",
+      "width": 1440,
+      "pagination": 1,
+      "tools": 1
+    },
+    {
+      "route": "/manage/collections",
+      "width": 1440,
+      "pagination": 1,
+      "tools": 1
+    },
+    {
+      "route": "/manage/comments",
+      "width": 1440,
+      "pagination": 1,
+      "tools": 1
+    },
+    {
+      "route": "/manage/import",
+      "width": 1440,
+      "pagination": 1,
+      "tools": 0
+    }
+  ],
+  "errors": []
+}

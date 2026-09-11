@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CommentModerationCollection } from "@yueli/ui/comments/admin";
+import { CommentModerationCollection, CommentModerationToolbar } from "@yueli/ui/comments/admin";
 import type {
   CommentModerationCollectionActions,
   CommentModerationCollectionModel,
@@ -368,9 +368,7 @@ function moderationItem(comment: CommentAdminView): CommentModerationItem {
     approve: comment.status === "pending",
     approving: busy.value === comment.id,
     actions: rowActionItems(comment),
-    ...(comment.status === "approved"
-      ? {}
-      : { status: statusMeta[comment.status] }),
+    status: statusMeta[comment.status],
     source: {
       label: comment.documentTitle || "文档已删除",
       to: publicDocumentLink(comment),
@@ -436,7 +434,8 @@ const moderationActions: CommentModerationCollectionActions = {
     main-id="manage-main"
     body-class="w-full"
   >
-    <CommentModerationCollection
+    <template #tools><CommentModerationToolbar :model="moderationModel" :actions="moderationActions" /></template>
+    <CommentModerationCollection layout="columns" external-controls
       :model="moderationModel"
       :actions="moderationActions"
       :format-date="formatDate"

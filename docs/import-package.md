@@ -28,7 +28,7 @@ title: 快速开始
 description: 安装并运行示例项目
 slug: getting-started
 order: 10
-source_id: legacy-doc-123
+id: getting-started
 ---
 
 # 快速开始
@@ -36,10 +36,10 @@ source_id: legacy-doc-123
 ![界面概览](./assets/overview.png)
 ```
 
-支持字段为 `title`、`description`（兼容旧 `excerpt`）、`slug`、`order`（兼容 Docusaurus
-`sidebar_position`）和 `source_id`（兼容旧 `translationKey`）。缺失的标题和 slug 从文件路径推导。
+支持字段为 `title`、`description`、`slug`、`order`、`draft` 和 `id`。缺失标题和 slug 从文件路径推导。
 
-`source_id` 是跨语言或重复导入时的稳定逻辑页面标识，不是公开 URL。相对引用不能越出 ZIP 根目录；外部资源使用完整
+`id` 用于关联不同语言的同一逻辑页面。重复导入按语言和页面路径匹配；`id` 不是重命名文件的迁移键。
+相对引用不能越出 ZIP 根目录；外部资源使用完整
 `https` URL。MDX/JSX、Vue 组件和来源系统的可执行配置不属于通用格式，转换器必须先转为 Markdown/受限 HTML，或在预检报告
 中明确标记为不支持。
 

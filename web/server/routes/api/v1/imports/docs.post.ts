@@ -14,11 +14,12 @@ const MAX_IMPORT_PACKAGE_BYTES = 100 * 1024 * 1024;
 export default defineEventHandler(async (event) => {
   const config = oidcConfig(event);
   const target = identityBffTarget(config.downstreamBase);
-  let authHeaders = await sessionAuthHeaders(event);
-  if (!authHeaders.authorization) {
+  const personal = identityPersonalTokenCredential(getRequestHeader(event, "authorization"));
+  let authHeaders = personal ? {} : await sessionAuthHeaders(event);
+  if (!personal && !authHeaders.authorization) {
     authHeaders = await guestSessionAuthHeaders(event, config.clientId);
   }
-  const credential = identityBffCredential(authHeaders);
+  const credential = personal || identityBffCredential(authHeaders);
   const headers = new Headers();
   const contentType = getRequestHeader(event, "content-type");
   const contentLength = getRequestHeader(event, "content-length");

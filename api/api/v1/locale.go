@@ -3,6 +3,7 @@ package v1
 import "github.com/gogf/gf/v2/frame/g"
 
 type CollectionLocaleView struct {
+	Title        string `json:"title"`
 	CollectionID string `json:"collectionId"`
 	Locale       string `json:"locale"`
 	Label        string `json:"label"`
@@ -23,6 +24,7 @@ type ListManageCollectionLocalesRes struct {
 }
 
 type UpsertCollectionLocaleReq struct {
+	Title        *string `json:"title"`
 	g.Meta       `path:"/api/v1/manage/collections/{id}/locales" method:"post" tags:"docs" summary:"Create or update a collection locale"`
 	CollectionID string `json:"id" in:"path" v:"required"`
 	Locale       string `json:"locale" v:"required"`

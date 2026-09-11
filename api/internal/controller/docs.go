@@ -26,6 +26,28 @@ func (c *Docs) ListDocs(ctx context.Context, req *v1.ListDocsReq) (*v1.ListDocsR
 	if err != nil {
 		return nil, err
 	}
+	visible, err := readableDocuments(ctx, req.CollectionID, items)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ListDocsRes{Items: docViews(visible)}, nil
+}
+
+func readableDocuments(ctx context.Context, collectionID string, items []*model.Doc) ([]*model.Doc, error) {
+	// A collection-wide plan proves access to every descendant. Avoid registering
+	// and auditing each document again while loading the editor's navigation tree.
+	service := authorizationService(ctx)
+	if err := service.ReconcileSubject(ctx); err != nil {
+		return nil, docserr.AuthorizationUnavailable()
+	}
+	plan, planErr := service.Runtime().Plan(ctx, authorization.QueryRequest{
+		Subject: service.Subject(ctx), Capability: docsauthz.CapabilityDocumentRead,
+		ScopeID: docsauthz.CollectionScopeID(collectionID),
+	})
+	if planErr == nil && plan.Kind == authorization.QueryAll {
+		return items, nil
+	}
+	// Scoped grants and constraints still require individual decisions.
 	visible := make([]*model.Doc, 0, len(items))
 	for _, item := range items {
 		if err := ensureDocumentScope(ctx, item.ID, item.CollectionID); err != nil {
@@ -38,7 +60,7 @@ func (c *Docs) ListDocs(ctx context.Context, req *v1.ListDocsReq) (*v1.ListDocsR
 			visible = append(visible, item)
 		}
 	}
-	return &v1.ListDocsRes{Items: docViews(visible)}, nil
+	return visible, nil
 }
 
 func (c *Docs) ManageDocs(ctx context.Context, req *v1.ManageDocsReq) (*v1.ManageDocsRes, error) {
@@ -49,28 +71,53 @@ func (c *Docs) ManageDocs(ctx context.Context, req *v1.ManageDocsReq) (*v1.Manag
 		}
 		scopeID = docsauthz.CollectionScopeID(req.CollectionID)
 	}
-	constraint, err := authorizationService(ctx).Runtime().Plan(ctx, authorization.QueryRequest{
-		Subject:    authorizationService(ctx).Subject(ctx),
-		Capability: docsauthz.CapabilityDocumentRead,
-		ScopeID:    scopeID,
-	})
-	if err != nil {
-		return nil, docserr.AuthorizationUnavailable()
-	}
-	if constraint.Kind == authorization.QueryNone {
-		return nil, docserr.Forbidden()
-	}
-	ownerSub := ""
-	if constraint.Kind == authorization.QueryRelation && constraint.Relation == docsauthz.RelationOwner {
-		ownerSub = constraint.Subject.ID
-	} else if constraint.Kind != authorization.QueryAll {
-		return nil, docserr.AuthorizationUnavailable()
-	}
-	result, err := c.svc.ManageDocs(ctx, catalog.ManageDocsInput{
-		Q: req.Q, Status: req.Status, Quality: req.Quality,
-		CollectionID: req.CollectionID, Version: req.Version, Locale: req.Locale, ParentID: req.ParentID,
-		Sort: req.Sort, Direction: req.Direction, Page: req.Page, Size: req.Size, OwnerSub: ownerSub,
-	})
+	result, err := func() (*model.ManageDocsResult, error) {
+		if req.ID != "" || req.Path != "" {
+			result, err := c.svc.ManageDocs(ctx, catalog.ManageDocsInput{
+				ID: req.ID, Path: req.Path, CollectionID: req.CollectionID, Version: req.Version, Locale: req.Locale, Page: 1, Size: 1,
+			})
+			if err != nil {
+				return nil, err
+			}
+			for _, item := range result.Items {
+				d, err := c.svc.GetDoc(ctx, item.ID)
+				if err != nil {
+					return nil, err
+				}
+				if err := ensureDocumentHierarchy(ctx, d.ID, d.CollectionID); err != nil {
+					return nil, err
+				}
+				if err := requireCapability(ctx, docsauthz.CapabilityDocumentRead, docsauthz.DocumentScopeID(d.ID), docsauthz.DocumentResource(d.ID, d.AuthorSub)); err != nil {
+					return nil, err
+				}
+			}
+			return result, nil
+		}
+		constraint, err := authorizationService(ctx).Runtime().Plan(ctx, authorization.QueryRequest{
+			Subject:    authorizationService(ctx).Subject(ctx),
+			Capability: docsauthz.CapabilityDocumentRead,
+			ScopeID:    scopeID,
+		})
+		if err != nil {
+			return nil, docserr.AuthorizationUnavailable()
+		}
+		if constraint.Kind == authorization.QueryNone {
+			return nil, docserr.Forbidden()
+		}
+		ownerSub := ""
+		if constraint.Kind == authorization.QueryRelation && constraint.Relation == docsauthz.RelationOwner {
+			ownerSub = constraint.Subject.ID
+		} else if constraint.Kind != authorization.QueryAll {
+			return nil, docserr.AuthorizationUnavailable()
+		}
+		result, err := c.svc.ManageDocs(ctx, catalog.ManageDocsInput{
+			ID: req.ID, Path: req.Path, ExcludeID: req.ExcludeID,
+			Q: req.Q, Status: req.Status, Quality: req.Quality,
+			CollectionID: req.CollectionID, Version: req.Version, Locale: req.Locale, ParentID: req.ParentID,
+			Sort: req.Sort, Direction: req.Direction, Page: req.Page, Size: req.Size, OwnerSub: ownerSub,
+		})
+		return result, err
+	}()
 	if err != nil {
 		return nil, err
 	}
@@ -224,6 +271,15 @@ func (c *Docs) UpdateDoc(ctx context.Context, req *v1.UpdateDocReq) (*v1.UpdateD
 		docsauthz.DocumentResource(current.ID, current.AuthorSub),
 	); err != nil {
 		return nil, err
+	}
+	if req.Status != nil && *req.Status != current.Status {
+		capability := docsauthz.CapabilityDocumentArchive
+		if *req.Status == "published" {
+			capability = docsauthz.CapabilityDocumentPublish
+		}
+		if err := requireCapability(ctx, capability, docsauthz.DocumentScopeID(current.ID), docsauthz.DocumentResource(current.ID, current.AuthorSub)); err != nil {
+			return nil, err
+		}
 	}
 	d, err := c.svc.PatchDoc(ctx, req.ID, catalog.PatchDocInput{
 		Title:          req.Title,

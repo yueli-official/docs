@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { assetMediaUrl } from "@yueli/asset-nuxt/media";
 import { createDocsNotifier } from "~/utils/feedback";
 import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";
-import { TabbedSurface } from "@yueli/ui/admin";
+import { TabbedSurface, AuthorizationGrantBadge } from "@yueli/ui/admin";
 
 definePageMeta({ layout: "manage" });
 useSeoMeta({ title: "权限与申请 · 控制台" });
@@ -48,12 +49,14 @@ interface Capability {
   displayName: string;
 }
 interface Grant {
+  validFrom: string;
   id: string;
   subject: string;
   role: string;
   source: string;
 }
 interface PublicUser {
+  avatar?: { mediaKey: string };
   userKey: string;
   handle: string;
   displayName: string;
@@ -309,15 +312,15 @@ watch(
     const users: Record<string, PublicUser> = { ...identityUsers.value };
     try {
       for (let index = 0; index < subjects.length; index += 100) {
-        const result = await $fetch<{ users: PublicUser[] }>(
+        const result = await $fetch<{ items: PublicUser[] }>(
           "/identity-api/api/v1/users",
           { query: { ids: subjects.slice(index, index + 100).join(",") } },
         );
-        for (const user of result.users ?? []) users[user.userKey] = user;
+        for (const user of result.items) users[user.userKey] = user;
       }
       identityUsers.value = users;
     } catch {
-      // Identity enrichment is best-effort; authorization remains usable by subject ID.
+      toast.add({ title: "用户资料加载失败", description: "刷新页面后重试", color: "error" });
     }
   },
   { immediate: true },
@@ -651,6 +654,19 @@ function roleLabel(key: string) {
   return roles.value.find((role) => role.key === key)?.displayName ?? key;
 }
 
+
+const accountOrigin = useRuntimeConfig().public.accountUrl;
+function userProfile(subject: string) {
+  return `${String(accountOrigin).replace(/\/$/, "")}/u/${encodeURIComponent(subject)}`;
+}
+function userAvatar(subject: string) {
+  const avatar = identityUsers.value[subject]?.avatar;
+  return avatar ? { src: assetMediaUrl(avatar, "thumbnail"), alt: userName(subject) } : { icon: "i-tabler-user" };
+}
+function userSince(grants: { validFrom: string }[]) {
+  return grants.map((grant) => grant.validFrom).filter((value) => value && !value.startsWith("0001") && Number.isFinite(Date.parse(value))).sort((a,b) => Date.parse(a)-Date.parse(b))[0] || "";
+}
+
 function userName(subject: string) {
   const user = identityUsers.value[subject];
   return user?.displayName || user?.handle || subject;
@@ -660,19 +676,6 @@ function userMeta(subject: string) {
   const user = identityUsers.value[subject];
   if (!user) return subject;
   return user.handle ? `@${user.handle} · ${subject}` : subject;
-}
-
-function grantSourceLabel(source: string) {
-  return (
-    {
-      application: "申请批准",
-      invitation: "邀请加入",
-      direct: "直接授予",
-      automatic: "自动授权",
-      bootstrap: "系统初始化",
-      group: "用户组",
-    } as Record<string, string>
-  )[source] ?? source;
 }
 
 function toggleUser(subject: string, selected: boolean) {
@@ -813,7 +816,7 @@ function formatDate(value: string) {
   if (!value) return "未记录";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "未记录";
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat("zh-CN", {timeZone: "Asia/Shanghai",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -953,9 +956,7 @@ function formatDate(value: string) {
               >
                 <div class="min-w-0">
                   <div class="flex flex-wrap items-center gap-2">
-                    <p class="truncate text-sm font-medium text-highlighted">
-                      {{ application.subject }}
-                    </p>
+                    <UUser :name="userName(application.subject)" :description="userMeta(application.subject)" :avatar="userAvatar(application.subject)" :to="userProfile(application.subject)" target="_blank" rel="noopener noreferrer" title="查看用户主页" />
                     <UBadge
                       :label="
                         roles.find((role) => role.key === application.role)
@@ -973,7 +974,7 @@ function formatDate(value: string) {
                     class="mt-1 block text-xs text-dimmed"
                     :datetime="application.createdAt"
                   >
-                    {{ formatDate(application.createdAt) }}
+                    申请时间：{{ formatDate(application.createdAt) }}
                   </time>
                 </div>
                 <div class="flex gap-2">
@@ -1203,12 +1204,8 @@ function formatDate(value: string) {
                   @update:model-value="toggleUser(user.subject, Boolean($event))"
                 />
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-medium text-highlighted">
-                    {{ userName(user.subject) }}
-                  </p>
-                  <p class="mt-1 truncate text-xs text-muted">
-                    {{ userMeta(user.subject) }}
-                  </p>
+                  <UUser :name="userName(user.subject)" :description="userMeta(user.subject)" :avatar="userAvatar(user.subject)" :to="userProfile(user.subject)" target="_blank" rel="noopener noreferrer" title="查看用户主页" />
+                  <time class="mt-2 block text-xs text-muted" :datetime="userSince(user.grants) || undefined">授权生效：{{ formatDate(userSince(user.grants)) }}</time>
                 </div>
                 <div
                   class="ml-7 flex min-w-0 flex-wrap gap-2 sm:ml-0 sm:justify-end"
@@ -1218,11 +1215,7 @@ function formatDate(value: string) {
                     :key="grant.id"
                     class="inline-flex min-w-0 items-center gap-2"
                   >
-                    <UBadge
-                      :label="`${roleLabel(grant.role)} · ${grantSourceLabel(grant.source)}`"
-                      color="neutral"
-                      variant="soft"
-                    />
+                    <AuthorizationGrantBadge :role="roleLabel(grant.role)" :source="grant.source" />
                     <UButton
                       label="撤销"
                       icon="i-tabler-user-minus"

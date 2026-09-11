@@ -22,6 +22,9 @@ var manageDocsSorts = map[string]bool{"updatedAt": true, "title": true, "path": 
 var manageDocsDirections = map[string]bool{"asc": true, "desc": true}
 
 type ManageDocsInput struct {
+	ID           string
+	Path         string
+	ExcludeID    string
 	Q            string
 	Status       string
 	Quality      string
@@ -38,6 +41,7 @@ type ManageDocsInput struct {
 
 func normalizeManageDocsQuery(input ManageDocsInput) (model.ManageDocsQuery, error) {
 	query := model.ManageDocsQuery{
+		ID: strings.TrimSpace(input.ID), Path: strings.Trim(input.Path, "/"), ExcludeID: strings.TrimSpace(input.ExcludeID),
 		Q:            strings.TrimSpace(input.Q),
 		Status:       input.Status,
 		Quality:      input.Quality,
@@ -71,6 +75,10 @@ func normalizeManageDocsQuery(input ManageDocsInput) (model.ManageDocsQuery, err
 	}
 
 	switch {
+	case query.ID != "" && !isCanonicalUUID(query.ID), query.ExcludeID != "" && !isCanonicalUUID(query.ExcludeID):
+		return model.ManageDocsQuery{}, fmt.Errorf("id and excludeId must be UUIDs")
+	case query.Path != "" && query.CollectionID == "":
+		return model.ManageDocsQuery{}, fmt.Errorf("path requires collectionId")
 	case len(query.Q) > 200:
 		return model.ManageDocsQuery{}, fmt.Errorf("q must not exceed 200 characters")
 	case !manageDocsStatuses[query.Status]:

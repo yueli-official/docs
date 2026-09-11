@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { docsFailureMessage } from "~/utils/docsFailureFeedback";
 import { createDocsNotifier } from "~/utils/feedback";
 import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import { useMinimumLoading } from "@yueli/ui/feedback";

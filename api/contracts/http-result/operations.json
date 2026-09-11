@@ -47,6 +47,24 @@
       ]
     },
     {
+      "id": "docs.delete.api.v1.import-sources.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/import-sources/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.DeleteProjectDocSourceRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.project_sync_unavailable",
+        "docs.not_found",
+        "docs.upstream_failed"
+      ]
+    },
+    {
       "id": "docs.delete.api.v1.manage.collections.by-id.locales.by-locale",
       "method": "DELETE",
       "path": "/api/v1/manage/collections/{id}/locales/{locale}",
@@ -173,6 +191,19 @@
       "errors": [
         "docs.authorization_unavailable",
         "docs.forbidden"
+      ]
+    },
+    {
+      "id": "docs.get.api.v1.authorization.setup",
+      "method": "GET",
+      "path": "/api/v1/authorization/setup",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetInitialAdministratorClaimStatusRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable"
       ]
     },
     {
@@ -356,7 +387,7 @@
       "path": "/api/v1/docs/search",
       "success": {
         "status": 200,
-        "kind": "resource",
+        "kind": "page",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.SearchDocsRes"
       },
       "errors": [
@@ -372,6 +403,39 @@
         "kind": "resource",
         "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetHomeConfigRes"
       }
+    },
+    {
+      "id": "docs.get.api.v1.import-sources",
+      "method": "GET",
+      "path": "/api/v1/import-sources",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ListProjectDocSourcesRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input"
+      ]
+    },
+    {
+      "id": "docs.get.api.v1.import-sources.by-id",
+      "method": "GET",
+      "path": "/api/v1/import-sources/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.GetProjectDocSourceRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.project_sync_unavailable",
+        "docs.not_found",
+        "docs.upstream_failed"
+      ]
     },
     {
       "id": "docs.get.api.v1.imports.docs",
@@ -400,6 +464,16 @@
         "docs.forbidden",
         "docs.not_found"
       ]
+    },
+    {
+      "id": "docs.get.api.v1.internal.personal-token.permissions",
+      "method": "GET",
+      "path": "/api/v1/internal/personal-token/permissions",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.foundation.go.auth.PersonalPermissions"
+      }
     },
     {
       "id": "docs.get.api.v1.manage.collections.by-id.locales",
@@ -532,6 +606,24 @@
         "docs.authorization_unavailable",
         "docs.forbidden",
         "docs.invalid_input"
+      ]
+    },
+    {
+      "id": "docs.patch.api.v1.import-sources.by-id",
+      "method": "PATCH",
+      "path": "/api/v1/import-sources/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.UpdateProjectDocSourceRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.project_sync_unavailable",
+        "docs.not_found",
+        "docs.upstream_failed"
       ]
     },
     {
@@ -730,6 +822,22 @@
       ]
     },
     {
+      "id": "docs.post.api.v1.authorization.setup.claim",
+      "method": "POST",
+      "path": "/api/v1/authorization/setup/claim",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.ClaimInitialAdministratorRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.initial_administrator_already_claimed"
+      ]
+    },
+    {
       "id": "docs.post.api.v1.collections",
       "method": "POST",
       "path": "/api/v1/collections",
@@ -906,6 +1014,42 @@
       ]
     },
     {
+      "id": "docs.post.api.v1.import-sources",
+      "method": "POST",
+      "path": "/api/v1/import-sources",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CreateProjectDocSourceRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.project_sync_unavailable",
+        "docs.not_found",
+        "docs.upstream_failed"
+      ]
+    },
+    {
+      "id": "docs.post.api.v1.import-sources.by-id.check",
+      "method": "POST",
+      "path": "/api/v1/import-sources/{id}/check",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.CheckProjectDocSourceRes"
+      },
+      "errors": [
+        "docs.authorization_unavailable",
+        "docs.forbidden",
+        "docs.invalid_input",
+        "docs.project_sync_unavailable",
+        "docs.not_found",
+        "docs.upstream_failed"
+      ]
+    },
+    {
       "id": "docs.post.api.v1.imports.docs",
       "method": "POST",
       "path": "/api/v1/imports/docs",
@@ -1019,6 +1163,16 @@
         "docs.not_found",
         "docs.slug_taken"
       ]
+    },
+    {
+      "id": "docs.post.api.v1.personal-token.media-authorization",
+      "method": "POST",
+      "path": "/api/v1/personal-token/media-authorization",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.docs.api.api.v1.PersonalMediaAuthorizationRes"
+      }
     },
     {
       "id": "docs.put.api.v1.authorization.manage.policies.by-revision.automatic.by-rule",

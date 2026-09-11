@@ -2,6 +2,7 @@ package model
 
 // CollectionLocale is one language explicitly enabled by a document collection.
 type CollectionLocale struct {
+	Title        string `json:"title" orm:"title"`
 	CollectionID string `json:"collectionId" orm:"collection_id"`
 	Locale       string `json:"locale" orm:"locale"`
 	Label        string `json:"label" orm:"label"`

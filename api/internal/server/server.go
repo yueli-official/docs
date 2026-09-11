@@ -11,6 +11,7 @@ import (
 	"github.com/yueli-official/docs/api/internal/docsauthz"
 	"github.com/yueli-official/docs/api/internal/docscomments"
 	"github.com/yueli-official/docs/api/internal/identityclient"
+	"github.com/yueli-official/docs/api/internal/projectdocs"
 	"github.com/yueli-official/docs/api/internal/runtime"
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/discovery"
@@ -20,15 +21,18 @@ import (
 // Deps are the wiring dependencies. Catalog may be nil for a minimal
 // health-only server.
 type Deps struct {
-	Verifier       *foundationauth.Verifier
-	Catalog        *catalog.Service
-	Authorization  *docsauthz.Service
-	Discovery      *discovery.Module
-	DiscoveryCache *discovery.Cache
-	URLResolver    urllifecycle.Resolver
-	Analytics      *docsanalytics.Module
-	Comments       *docscomments.Module
-	Identity       identityclient.Client
+	ProjectDocs      *projectdocs.Service
+	Verifier         *foundationauth.Verifier
+	PersonalVerifier *foundationauth.PersonalTokenVerifier
+	PersonalSite     string
+	Catalog          *catalog.Service
+	Authorization    *docsauthz.Service
+	Discovery        *discovery.Module
+	DiscoveryCache   *discovery.Cache
+	URLResolver      urllifecycle.Resolver
+	Analytics        *docsanalytics.Module
+	Comments         *docscomments.Module
+	Identity         identityclient.Client
 }
 
 // Configure mounts: public health, identity probe, and the catalog API (if Catalog is set).
@@ -50,12 +54,13 @@ func Configure(s *ghttp.Server, d Deps) {
 			grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
 		}
 		grp.Bind(controller.NewMe())
+		grp.Bind(controller.NewAuthorizationSetup(d.Authorization))
 	})
 
 	if d.Authorization != nil {
 		s.Group("/", func(grp *ghttp.RouterGroup) {
 			if d.Verifier != nil {
-				grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+				grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(foundationauth.CompositeVerifier{JWT: d.Verifier, Personal: d.PersonalVerifier}), controller.PersonalTokenRoutes, controller.AuthorizationMiddleware(d.Authorization))
 			} else {
 				// OpenAPI export has no runtime verifier, but protected route shapes
 				// still belong in the generated contract.
@@ -72,7 +77,7 @@ func Configure(s *ghttp.Server, d Deps) {
 		})
 		s.Group("/", func(grp *ghttp.RouterGroup) {
 			if d.Verifier != nil {
-				grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+				grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(foundationauth.CompositeVerifier{JWT: d.Verifier, Personal: d.PersonalVerifier}), controller.PersonalTokenRoutes, controller.AuthorizationMiddleware(d.Authorization))
 			} else {
 				grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
 			}
@@ -99,10 +104,12 @@ func Configure(s *ghttp.Server, d Deps) {
 		}
 	})
 
-	// Admin API: envelope first, then mandatory JWT.
+	d.Catalog.WithImportGuard(controller.ImportAuthorizationGuard(d.PersonalVerifier, d.Authorization))
+
+	// Management API requires authentication.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
 		if d.Verifier != nil {
-			grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(d.Verifier), controller.AuthorizationMiddleware(d.Authorization))
+			grp.Middleware(apiMiddleware.Handle, runtime.RequiredAuth(foundationauth.CompositeVerifier{JWT: d.Verifier, Personal: d.PersonalVerifier}), controller.PersonalTokenRoutes, controller.AuthorizationMiddleware(d.Authorization))
 		} else {
 			// OpenAPI export has no runtime verifier, but protected route shapes
 			// still belong in the generated contract.
@@ -113,6 +120,8 @@ func Configure(s *ghttp.Server, d Deps) {
 		grp.Bind(controller.NewLocales(d.Catalog))
 		grp.Bind(controller.NewDocs(d.Catalog))
 		grp.Bind(controller.NewImports(d.Catalog))
+		grp.Bind(controller.NewProjectDocs(d.ProjectDocs))
+		grp.Bind(controller.NewPersonalPermissions(d.PersonalSite, d.Authorization))
 		if d.Analytics != nil {
 			grp.Bind(controller.NewDashboard(d.Analytics))
 		}

@@ -99,8 +99,20 @@ func (c *Imports) ConfirmDocsImport(ctx context.Context, req *v1.ConfirmDocsImpo
 	if err != nil {
 		return nil, err
 	}
-	if err := authorizationService(ctx).SyncCatalogScopes(ctx); err != nil {
+	_, items, err := c.svc.GetImport(ctx, batch.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ensureCollectionScope(ctx, batch.CollectionID); err != nil {
 		return nil, docserr.AuthorizationUnavailable()
+	}
+	for _, item := range items {
+		if item.TargetDocID == "" {
+			continue
+		}
+		if err := ensureDocumentScope(ctx, item.TargetDocID, batch.CollectionID); err != nil {
+			return nil, docserr.AuthorizationUnavailable()
+		}
 	}
 	g.RequestFromCtx(ctx).Response.WriteHeader(http.StatusAccepted)
 	return &v1.ConfirmDocsImportRes{Batch: importBatchView(batch), Summary: importSummaryView(summary)}, nil

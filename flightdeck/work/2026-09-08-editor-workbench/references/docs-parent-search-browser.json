@@ -1,0 +1,22 @@
+{
+  "fixture": "01a06856-1cf8-7367-ad2f-24400b566d4f",
+  "target": "01a06856-1cf9-7afd-bfaf-b0e8f49cbb08",
+  "checks": [
+    "editor requests no full collection",
+    "parents loaded only when opened; at most 20 candidates",
+    "server search locates item outside initial page",
+    "self and descendants excluded",
+    "selected label remains visible",
+    "desktop/mobile settings"
+  ],
+  "queries": [
+    "http://docs.dev.yuelili.test:3003/api/v1/authorization/setup",
+    "http://docs.dev.yuelili.test:3003/api/v1/collections",
+    "http://docs.dev.yuelili.test:3003/api/v1/collections/01a06855-ff4d-7c85-bd8a-6e5a41c665a7/versions",
+    "http://docs.dev.yuelili.test:3003/api/v1/manage/collections/01a06855-ff4d-7c85-bd8a-6e5a41c665a7/locales",
+    "http://docs.dev.yuelili.test:3003/api/v1/manage/docs?collectionId=01a06855-ff4d-7c85-bd8a-6e5a41c665a7&path=arrays%2Finsert&locale=zh-CN&version=default&size=1&page=1",
+    "http://docs.dev.yuelili.test:3003/api/v1/docs/01a06856-1cf8-7367-ad2f-24400b566d4f",
+    "http://docs.dev.yuelili.test:3003/api/v1/manage/docs?collectionId=01a06855-ff4d-7c85-bd8a-6e5a41c665a7&locale=zh-CN&version=default&q=&excludeId=01a06856-1cf8-7367-ad2f-24400b566d4f&size=20&page=1&sort=title&direction=asc",
+    "http://docs.dev.yuelili.test:3003/api/v1/manage/docs?collectionId=01a06855-ff4d-7c85-bd8a-6e5a41c665a7&locale=zh-CN&version=default&q=attributes-and-intrinsics%2Fremovepointattrib&excludeId=01a06856-1cf8-7367-ad2f-24400b566d4f&size=20&page=1&sort=title&direction=asc"
+  ]
+}

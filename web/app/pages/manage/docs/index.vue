@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isCollectionEditGesture, CollectionHeaderTools, CollectionPaginationBar } from "@yueli/ui/collection/pattern";
+import { navigateTo } from "#imports";
 import type { TableColumn } from "@nuxt/ui";
 import { AdminRowActions } from "@yueli/ui/admin";
 import type { AdminRowActionItem } from "@yueli/ui/admin";
@@ -675,6 +677,13 @@ const createTarget = computed(() => {
     : "/manage/docs/new";
 });
 
+function onDocRowDoubleClick(event: MouseEvent) {
+  if (!canUpdateDocs.value || !isCollectionEditGesture(event)) return;
+  const row = (event.target as Element).closest("tr");
+  const id = row?.querySelector<HTMLElement>("[data-doc-id]")?.dataset.docId;
+  if (id) openDoc(id);
+}
+
 function openDoc(docOrId: ManagedDoc | string) {
   const doc =
     typeof docOrId === "string" ? knownDocs.value.get(docOrId) : docOrId;
@@ -1348,7 +1357,25 @@ const docColumns = computed(() =>
     main-id="manage-main"
     body-class="w-full"
   >
-    <template #actions>
+    <template v-if="canReadDocs" #tools>
+      <CollectionHeaderTools v-if="viewMode === 'list'" v-model:search="search"
+        label="文档搜索与筛选" search-placeholder="搜索标题、路径、slug 或文档集…"
+        :controls="collectionFilterControls" :filter-count="activeFilterCount"
+        @search="submitSearch" @control-change="changeCollectionControl">
+        <template #view><CollectionViewToggle v-model="viewMode" :items="[
+          {key:'list',label:'列表',icon:'i-tabler-list'}, {key:'tree',label:'树状',icon:'i-tabler-sitemap'}
+        ]" /></template>
+      </CollectionHeaderTools>
+      <div v-else class="flex min-w-0 items-center gap-2">
+        <USelectMenu :model-value="treeSlug" :items="treeCollectionItems" value-key="value"
+          placeholder="选择文档集" :search-input="{ placeholder: '搜索文档集…' }"
+          class="h-9 min-w-0 flex-1" @update:model-value="treeSlug = selectedValue($event)" />
+        <CollectionViewToggle v-model="viewMode" :items="[
+          {key:'list',label:'列表',icon:'i-tabler-list'}, {key:'tree',label:'树状',icon:'i-tabler-sitemap'}
+        ]" />
+      </div>
+    </template>
+<template #actions>
       <UButton
         v-if="canCreateDocs"
         icon="i-tabler-plus"
@@ -1384,7 +1411,7 @@ const docColumns = computed(() =>
         :aria-busy="bulkBusy"
         aria-label="文档列表"
       >
-        <CollectionTableToolbar
+        <CollectionTableToolbar external-controls
           v-model:search="search"
           label="文档列表工具栏"
           search-placeholder="搜索标题、路径、slug 或文档集…"
@@ -1567,6 +1594,7 @@ const docColumns = computed(() =>
           :data="pagedDocs.slice()"
           :columns="docColumns"
           :get-row-id="getDocRowId"
+          @dblclick="onDocRowDoubleClick"
           :loading="collectionState === 'loading'"
           class="shrink-0"
           :ui="{
@@ -1580,19 +1608,18 @@ const docColumns = computed(() =>
           }"
         >
           <template #title-cell="{ row }">
-            <div class="min-w-0">
-              <button
+            <div class="min-w-0" :data-doc-id="row.original.id">
+              <NuxtLink
                 v-if="canUpdateDocs"
-                type="button"
                 class="block max-w-full truncate text-left text-sm font-medium text-highlighted hover:text-primary"
-                @click="openQuickEdit(row.original)"
+                :to="docManageRoute(row.original.collectionSlug, row.original.slugPath)"
               >
                 <span class="inline-flex min-w-0 items-center gap-2">
                   <span class="truncate">{{ row.original.title }}</span>
                   <UIcon v-if="row.original.badgeIcon" :name="row.original.badgeIcon" class="size-4 shrink-0 text-primary" />
                   <UBadge v-else-if="row.original.badgeText" :label="row.original.badgeText" color="neutral" variant="soft" size="xs" />
                 </span>
-              </button>
+              </NuxtLink>
               <p
                 v-else
                 class="max-w-full truncate text-sm font-medium text-highlighted"
@@ -1703,40 +1730,7 @@ const docColumns = computed(() =>
           </template>
         </UTable>
 
-        <footer
-          class="flex flex-col gap-3 border-t border-default bg-muted/20 px-3 py-3 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4"
-        >
-          <p class="text-muted">
-            <template v-if="selectedDocIds.length">
-              已选择 {{ selectedDocIds.length }} 篇文档
-            </template>
-            <template v-else>
-              显示 {{ firstVisibleDoc }}–{{ lastVisibleDoc }}，共
-              {{ docCollection.total }} 篇
-            </template>
-          </p>
-          <div class="flex flex-wrap items-center gap-2">
-            <UPagination
-              :page="page"
-              :total="docCollection.total"
-              :items-per-page="pageSize"
-              :show-edges="false"
-              :sibling-count="1"
-              size="xs"
-              @update:page="page = $event"
-            />
-            <span class="text-muted">每页</span>
-            <USelect
-              :model-value="pageSize"
-              :items="pageSizeItems"
-              value-key="value"
-              size="xs"
-              class="w-24"
-              aria-label="每页文档数量"
-              @update:model-value="setPageSize"
-            />
-          </div>
-        </footer>
+        <footer class="border-t border-default p-3 sm:px-4"><CollectionPaginationBar :page="page" :page-size="pageSize" :total="docCollection.total" :page-sizes="pageSizeItems.map(item => item.value)" :page-size-option="value => `${value} 篇`" @page-change="page = $event" @page-size-change="setPageSize" /></footer>
       </section>
 
       <div
@@ -1786,38 +1780,9 @@ const docColumns = computed(() =>
         />
       </div>
 
-      <template v-if="viewMode === 'tree'">
-        <div
-          class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-default bg-elevated/35 px-4 py-3"
-        >
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-highlighted">树状结构</p>
-            <p class="text-xs text-muted">
-              {{ tree?.tree?.length ?? 0 }} 个根节点 ·
-              {{ activeTreeSlug || "未选择文档集" }}
-            </p>
-          </div>
-          <div class="flex items-center gap-2">
-            <USelectMenu
-              :model-value="treeSlug"
-              :items="treeCollectionItems"
-              value-key="value"
-              placeholder="选择文档集"
-              :search-input="{ placeholder: '搜索文档集…' }"
-              class="w-56"
-              @update:model-value="treeSlug = selectedValue($event)"
-            />
-            <CollectionViewToggle
-              v-model="viewMode"
-              :items="[
-                { key: 'list', label: '列表', icon: 'i-tabler-list' },
-                { key: 'tree', label: '树状', icon: 'i-tabler-sitemap' },
-              ]"
-            />
-          </div>
-        </div>
-
-        <SkeletonList v-if="treePending" :rows="8" />
+            <template v-if="viewMode === 'tree'">
+        <p class="mb-3 text-xs text-muted">{{ tree?.tree?.length ?? 0 }} 个根节点 · {{ activeTreeSlug || "未选择文档集" }}</p>
+<SkeletonList v-if="treePending" :rows="8" />
         <ManageEmpty
           v-else-if="!tree?.tree?.length"
           icon="i-tabler-sitemap"

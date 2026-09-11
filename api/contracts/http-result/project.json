@@ -4,7 +4,11 @@
   "openapi": {
     "output": "../contracts/openapi/docs.json",
     "producer": {
-      "command": ["go", "run", "./cmd/docs"],
+      "command": [
+        "go",
+        "run",
+        "github.com/yueli-official/docs/api/cmd/docs"
+      ],
       "outputEnv": "DOCS_OPENAPI_OUTPUT"
     }
   },

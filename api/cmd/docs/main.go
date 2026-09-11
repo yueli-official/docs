@@ -13,6 +13,7 @@ import (
 	"github.com/gogf/gf/v2/os/gctx"
 	foundationabuse "github.com/yueli-official/foundation/go/abuse"
 	"github.com/yueli-official/foundation/go/abuse/turnstile"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
 	authorizationpostgres "github.com/yueli-official/foundation/go/authorization/postgres"
 	"github.com/yueli-official/foundation/go/traffic"
@@ -33,6 +34,7 @@ import (
 	"github.com/yueli-official/docs/api/internal/docstraffic"
 	"github.com/yueli-official/docs/api/internal/docsurls"
 	"github.com/yueli-official/docs/api/internal/identityclient"
+	"github.com/yueli-official/docs/api/internal/projectdocs"
 	"github.com/yueli-official/docs/api/internal/runtime"
 	"github.com/yueli-official/docs/api/internal/server"
 )
@@ -156,6 +158,7 @@ func main() {
 		Memory: authorization.MemoryOptions{
 			RootScopeID:       docsauthz.RootScopeID,
 			ProtectedSubjects: protected,
+			AllowUnclaimed:    len(protected) == 0,
 			Constraints:       docsauthz.ConstraintEvaluators(),
 			Predicates:        docsauthz.PredicateEvaluators(),
 		},
@@ -207,8 +210,30 @@ func main() {
 		panic(err)
 	}
 
+	personalSite := g.Cfg().MustGet(ctx, "docs.personalTokens.siteId").String()
+	var personalVerifier *foundationauth.PersonalTokenVerifier
+	if personalSite != "" {
+		if personalSite != jw.Audience {
+			panic("personal token site must match audience")
+		}
+		personalVerifier, err = foundationauth.NewPersonalTokenVerifier(strings.TrimRight(appconfig.IdentityBaseURL(ctx), "/")+"/api/v1/pat/verify", personalSite, nil, foundationauth.PersonalTransportOptions{AllowHTTP: g.Cfg().MustGet(ctx, "docs.personalTokens.allowHTTP").Bool()})
+		if err != nil {
+			panic(err)
+		}
+	}
+	var projectDocs *projectdocs.Service
+	if key := g.Cfg().MustGet(ctx, "docs.projectDocs.encryptionKey").String(); key != "" {
+		if personalVerifier == nil {
+			panic("project documentation sync requires personal token verification")
+		}
+		vault, e := projectdocs.NewVault(key)
+		if e != nil {
+			panic(e)
+		}
+		projectDocs = projectdocs.New(authDB, cat, authorizationService, personalVerifier, vault).WithGitHubToken(g.Cfg().MustGet(ctx, "docs.projectDocs.githubToken").String())
+	}
 	s := g.Server()
-	server.Configure(s, server.Deps{
+	server.Configure(s, server.Deps{ProjectDocs: projectDocs, PersonalSite: personalSite, PersonalVerifier: personalVerifier,
 		Verifier: verifier, Catalog: cat, Authorization: authorizationService,
 		Discovery: discoveryModule, DiscoveryCache: discoveryCache,
 		URLResolver: urlLifecycle.Resolver(), Analytics: analyticsModule,
@@ -222,6 +247,9 @@ func main() {
 		go referencesync.Run(ctx, authDB, "docs:asset-references", assetreferences.Source(appconfig.SiteURL(ctx), g.Cfg().MustGet(ctx, "docs.assetService.publicOrigin").String()), refClient, func(err error) { g.Log().Warning(ctx, "asset reference reconciliation:", err) })
 	}
 	g.Log().Info(ctx, "docs-service starting")
+	if projectDocs != nil {
+		go projectDocs.Run(ctx)
+	}
 	s.Run()
 }
 

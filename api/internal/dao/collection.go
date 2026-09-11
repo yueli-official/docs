@@ -70,6 +70,7 @@ func (p *PG) InsertCollectionWithDefaultVersion(
 			"collection_id": collection.ID,
 			"locale":        locale.Locale,
 			"label":         locale.Label,
+			"title":         locale.Title,
 			"html_lang":     locale.HTMLLang,
 			"direction":     locale.Direction,
 			"is_default":    true,
@@ -129,6 +130,9 @@ func (p *PG) UpdateCollectionWithHook(ctx context.Context, m *model.Collection, 
 			"semantic_version":           nilIfEmpty(m.SemanticVersion),
 			"derived_from_collection_id": nilIfEmpty(m.DerivedFromCollectionID),
 		}).Update(); err != nil {
+			return err
+		}
+		if _, err := tx.Model(tCollectionLocales).Ctx(ctx).Where("collection_id", m.ID).Where("is_default", true).Data(g.Map{"title": m.Title, "updated_at": gtime.Now()}).Update(); err != nil {
 			return err
 		}
 		return runTransactionHook(ctx, tx, hook)

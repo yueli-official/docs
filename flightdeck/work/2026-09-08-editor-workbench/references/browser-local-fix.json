@@ -1,0 +1,6 @@
+{
+  "checks": [
+    "create saves body then publishes publicly",
+    "existing document down 404 and republish 200; compact and desktop lifecycle visible"
+  ]
+}

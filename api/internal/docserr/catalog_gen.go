@@ -9,35 +9,39 @@ import (
 )
 
 const (
-	CodeAbuseAttemptReplayed         = "docs.abuse_attempt_replayed"
-	CodeAbuseUnavailable             = "docs.abuse_unavailable"
-	CodeAdministratorGrantProtected  = "docs.administrator_grant_protected"
-	CodeAuthorizationUnavailable     = "docs.authorization_unavailable"
-	CodeChallengeRequired            = "docs.challenge_required"
-	CodeForbidden                    = "docs.forbidden"
-	CodeImportCompressionUnsupported = "docs.import.compression_unsupported"
-	CodeImportBlocked                = "docs.import_blocked"
-	CodeInvalidInput                 = "docs.invalid_input"
-	CodeNotFound                     = "docs.not_found"
-	CodeRateLimited                  = "docs.rate_limited"
-	CodeSlugTaken                    = "docs.slug_taken"
-	CodeUpstreamFailed               = "docs.upstream_failed"
+	CodeAbuseAttemptReplayed               = "docs.abuse_attempt_replayed"
+	CodeAbuseUnavailable                   = "docs.abuse_unavailable"
+	CodeAdministratorGrantProtected        = "docs.administrator_grant_protected"
+	CodeAuthorizationUnavailable           = "docs.authorization_unavailable"
+	CodeChallengeRequired                  = "docs.challenge_required"
+	CodeForbidden                          = "docs.forbidden"
+	CodeImportCompressionUnsupported       = "docs.import.compression_unsupported"
+	CodeImportBlocked                      = "docs.import_blocked"
+	CodeInitialAdministratorAlreadyClaimed = "docs.initial_administrator_already_claimed"
+	CodeInvalidInput                       = "docs.invalid_input"
+	CodeNotFound                           = "docs.not_found"
+	CodeProjectSyncUnavailable             = "docs.project_sync_unavailable"
+	CodeRateLimited                        = "docs.rate_limited"
+	CodeSlugTaken                          = "docs.slug_taken"
+	CodeUpstreamFailed                     = "docs.upstream_failed"
 )
 
 var descriptors = map[string]problem.Descriptor{
-	CodeAbuseAttemptReplayed:         descriptor(CodeAbuseAttemptReplayed, 409),
-	CodeAbuseUnavailable:             descriptor(CodeAbuseUnavailable, 503),
-	CodeAdministratorGrantProtected:  descriptor(CodeAdministratorGrantProtected, 409),
-	CodeAuthorizationUnavailable:     descriptor(CodeAuthorizationUnavailable, 503),
-	CodeChallengeRequired:            descriptor(CodeChallengeRequired, 403),
-	CodeForbidden:                    descriptor(CodeForbidden, 403),
-	CodeImportCompressionUnsupported: descriptor(CodeImportCompressionUnsupported, 400),
-	CodeImportBlocked:                descriptor(CodeImportBlocked, 400),
-	CodeInvalidInput:                 descriptor(CodeInvalidInput, 400),
-	CodeNotFound:                     descriptor(CodeNotFound, 404),
-	CodeRateLimited:                  descriptor(CodeRateLimited, 429),
-	CodeSlugTaken:                    descriptor(CodeSlugTaken, 409),
-	CodeUpstreamFailed:               descriptor(CodeUpstreamFailed, 502),
+	CodeAbuseAttemptReplayed:               descriptor(CodeAbuseAttemptReplayed, 409),
+	CodeAbuseUnavailable:                   descriptor(CodeAbuseUnavailable, 503),
+	CodeAdministratorGrantProtected:        descriptor(CodeAdministratorGrantProtected, 409),
+	CodeAuthorizationUnavailable:           descriptor(CodeAuthorizationUnavailable, 503),
+	CodeChallengeRequired:                  descriptor(CodeChallengeRequired, 403),
+	CodeForbidden:                          descriptor(CodeForbidden, 403),
+	CodeImportCompressionUnsupported:       descriptor(CodeImportCompressionUnsupported, 400),
+	CodeImportBlocked:                      descriptor(CodeImportBlocked, 400),
+	CodeInitialAdministratorAlreadyClaimed: descriptor(CodeInitialAdministratorAlreadyClaimed, 409),
+	CodeInvalidInput:                       descriptor(CodeInvalidInput, 400),
+	CodeNotFound:                           descriptor(CodeNotFound, 404),
+	CodeProjectSyncUnavailable:             descriptor(CodeProjectSyncUnavailable, 503),
+	CodeRateLimited:                        descriptor(CodeRateLimited, 429),
+	CodeSlugTaken:                          descriptor(CodeSlugTaken, 409),
+	CodeUpstreamFailed:                     descriptor(CodeUpstreamFailed, 502),
 }
 
 func descriptor(code string, status int) problem.Descriptor {

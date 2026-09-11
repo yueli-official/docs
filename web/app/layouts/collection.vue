@@ -47,7 +47,7 @@ const currentPath = computed(() => {
   <div class="flex min-h-dvh flex-col bg-default text-default">
     <SiteHeader width-class="max-w-[1400px]" />
     <div class="mx-auto flex w-full max-w-[1400px] flex-1 gap-8 px-4 py-8">
-      <aside class="hidden w-64 shrink-0 lg:block">
+      <aside class="hidden w-[300px] shrink-0 lg:block">
         <div
           class="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto pb-8"
         >

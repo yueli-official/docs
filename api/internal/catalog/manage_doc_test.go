@@ -29,6 +29,9 @@ func TestNormalizeManageDocsQueryRejectsUnsafeOrAmbiguousValues(t *testing.T) {
 		{name: "oversized page", input: ManageDocsInput{Size: 101}},
 		{name: "version without collection", input: ManageDocsInput{Version: "v2"}},
 		{name: "invalid collection", input: ManageDocsInput{CollectionID: "docs"}},
+		{name: "invalid exact id", input: ManageDocsInput{ID: "bad-id"}},
+		{name: "invalid excluded document", input: ManageDocsInput{ExcludeID: "bad-id"}},
+		{name: "path without collection", input: ManageDocsInput{Path: "guide/start"}},
 		{name: "invalid parent", input: ManageDocsInput{ParentID: "top"}},
 	}
 	for _, test := range tests {

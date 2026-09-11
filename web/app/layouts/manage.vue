@@ -15,7 +15,8 @@ const currentLabel = computed(() => {
   if (route.path === "/manage") return "控制台";
   if (route.path.startsWith("/manage/docs")) return "文档";
   if (route.path.startsWith("/manage/collections")) return "文档集";
-  if (route.path.startsWith("/manage/import")) return "批量导入";
+  if (route.path.startsWith("/manage/import-sources")) return "项目同步";
+  if (route.path.startsWith("/manage/import")) return "文档导入";
   if (route.path.startsWith("/manage/home")) return "站点设置";
   if (route.path.startsWith("/manage/assets")) return "资源策略";
   if (route.path.startsWith("/manage/comments")) return "评论";
@@ -82,7 +83,7 @@ const navigation = computed<readonly AdminNavigationItem[]>(() => [
   ...(can("docs.import.manage")
     ? [
         {
-          label: "批量导入",
+          label: "导入与同步",
           icon: "i-tabler-file-import",
           to: "/manage/import",
           active: isActive("/manage/import"),
@@ -171,7 +172,7 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
           ? [
               {
                 id: "import",
-                label: "批量导入",
+                label: "导入与同步",
                 icon: "i-tabler-file-import",
                 to: "/manage/import",
               },
@@ -269,18 +270,3 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
     <slot />
   </YAdminConsoleLayout>
 </template>
-
-<style scoped>
-@media (max-width: 640px) {
-  [data-docs-manage-shell] :deep(button),
-  [data-docs-manage-shell] :deep(a[href]),
-  [data-docs-manage-shell] :deep(summary) {
-    min-height: 44px;
-  }
-
-  [data-docs-manage-shell] :deep(button[aria-label]),
-  [data-docs-manage-shell] :deep(a[aria-label]) {
-    min-width: 44px;
-  }
-}
-</style>

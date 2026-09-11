@@ -42,5 +42,5 @@ func publicImageURL(view assetclient.View, rendition string) (string, error) {
 	if view.MediaKey == "" {
 		return "", errors.New("asset finalize did not return mediaKey")
 	}
-	return "/media/" + url.PathEscape(view.MediaKey) + "?format=webp&name=" + url.QueryEscape(rendition) + "&v=1", nil
+	return "/media/" + url.PathEscape(view.MediaKey) + "?format=webp&preset=" + url.QueryEscape(rendition) + "&v=1", nil
 }

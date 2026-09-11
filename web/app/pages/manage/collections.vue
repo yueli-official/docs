@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CollectionHeaderTools, CollectionPaginationBar } from "@yueli/ui/collection/pattern";
 import { createCollectionRouteQueryCodec } from "@yueli/ui/collection";
 import { useVueRouterCollectionQuery } from "@yueli/ui/collection/vue-router";
 import {
@@ -170,6 +171,7 @@ async function onReleaseChanged() {
   await refresh();
   if (currentID) {
     current.value = (data.value?.items ?? []).find((item) => item.id === currentID) ?? current.value;
+    if (current.value) form.title = current.value.title;
   }
 }
 type CollectionEditorSection = "basic" | "languages" | "versions";
@@ -465,6 +467,7 @@ async function doDelete() {
     main-id="manage-main"
     body-class="w-full"
   >
+    <template v-if="canManageCollections" #tools><CollectionHeaderTools v-model:search="searchInput" label="搜索与排序文档集" search-placeholder="搜索标题、路径标识或说明…" :sort-options="sortItems" :sort-by="sort" :sort-order="direction" @sort="(by, order) => { sort = by as typeof sort; direction = order }" /></template>
     <template #actions>
       <UButton
         v-if="canManageCollections"
@@ -541,25 +544,6 @@ async function doDelete() {
 
     <template v-else>
       <section class="overflow-hidden rounded-xl border border-default bg-default">
-        <CollectionTableToolbar
-          v-model:search="searchInput"
-          label="文档集工具栏"
-          search-placeholder="搜索标题、路径标识或说明…"
-          filter-label="筛选"
-        >
-          <template #utilities>
-            <USelectMenu
-              v-model="sort"
-              :items="sortItems"
-              value-key="value"
-              icon="i-tabler-arrows-sort"
-              aria-label="排序方式"
-              size="sm"
-              class="w-36"
-            />
-            <CollectionSortDirectionButton v-model="direction" />
-          </template>
-        </CollectionTableToolbar>
 
         <ManageEmpty
           v-if="!items.length"
@@ -644,24 +628,7 @@ async function doDelete() {
         </template>
       </section>
 
-      <CollectionDock v-if="pagedItems.length" label="文档集统计与分页">
-        <template #selection>
-          <span>共 {{ filteredItems.length }} 个文档集</span>
-          <span v-if="q" class="text-xs text-muted"
-            >全部 {{ items.length }} 个</span
-          >
-        </template>
-        <template #pagination>
-          <USelect
-            v-model="size"
-            :items="pageSizeItems"
-            value-key="value"
-            size="sm"
-            class="w-24"
-          />
-          <CollectionPagination v-model="page" :total-pages="totalPages" />
-        </template>
-      </CollectionDock>
+      <CollectionPaginationBar :page="page" :page-size="size" :total="filteredItems.length" :page-sizes="pageSizes" :page-size-option="value => `${value} 个`" class="rounded-lg border border-default bg-default p-3" @page-change="page = $event" @page-size-change="size = $event" />
     </template>
 
     <USlideover

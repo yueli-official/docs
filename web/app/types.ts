@@ -118,6 +118,7 @@ export interface CollectionVersionsResponse {
   items: CollectionVersion[];
 }
 export interface CollectionLocale {
+  title: string;
   collectionId: string;
   locale: string;
   label: string;

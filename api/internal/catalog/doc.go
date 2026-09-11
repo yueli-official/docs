@@ -496,6 +496,7 @@ func (s *Service) PublicDocTree(ctx context.Context, collectionSlug, versionKey,
 		return nil, nil, err
 	}
 	locale = localeValue.Locale
+	col.Title = localeValue.Title
 	version, err := s.ResolveVersion(ctx, col.ID, versionKey, true)
 	if err != nil {
 		return nil, nil, err
@@ -521,6 +522,7 @@ func (s *Service) ManageDocTree(ctx context.Context, collectionSlug, versionKey,
 		return nil, nil, err
 	}
 	locale = localeValue.Locale
+	col.Title = localeValue.Title
 	version, err := s.ResolveVersion(ctx, col.ID, versionKey, false)
 	if err != nil {
 		return nil, nil, err

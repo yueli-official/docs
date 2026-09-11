@@ -42,6 +42,7 @@ const directionItems = [
   { label: "从右到左", value: "rtl" },
 ];
 const localeForm = reactive({
+  title: "",
   locale: "",
   label: "",
   htmlLang: "",
@@ -111,6 +112,7 @@ async function load() {
 
 function resetLocale() {
   Object.assign(localeForm, {
+    title: props.collection?.title || "",
     locale: "",
     label: "",
     htmlLang: "",
@@ -168,6 +170,7 @@ async function submitLocaleClone() {
 
 function editLocale(value: CollectionLocale) {
   Object.assign(localeForm, {
+    title: value.title,
     locale: value.locale,
     label: value.label,
     htmlLang: value.htmlLang,
@@ -187,7 +190,7 @@ function applyLocalePreset(value: string) {
 }
 
 async function saveLocale() {
-  if (!props.collection || !localeForm.locale.trim() || !localeForm.label.trim()) return;
+  if (!props.collection || !localeForm.locale.trim() || !localeForm.label.trim() || !localeForm.title.trim()) return;
   saving.value = true;
   try {
     await call(`/api/v1/manage/collections/${props.collection.id}/locales`, {
@@ -195,6 +198,8 @@ async function saveLocale() {
       body: localeForm,
     });
     localeEditorOpen.value = false;
+    const updated = await call<CollectionView>(`/api/v1/collections/${props.collection.slug}`);
+    emit("changed", updated);
     await load();
   } catch (error: any) {
     toast.add({ title: "语言设置保存失败", description: docsFailureMessage(error, "请检查设置后重试"), color: "error" });
@@ -344,7 +349,8 @@ async function initializeRelease() {
         <UFormField label="语言代码" required help="创建后保持稳定">
           <UInput v-model="localeForm.locale" :disabled="editingLocale" class="w-full" placeholder="zh-CN" />
         </UFormField>
-        <UFormField label="显示名称" required><UInput v-model="localeForm.label" class="w-full" /></UFormField>
+        <UFormField label="文档集标题" required :error="!localeForm.title.trim() ? '请输入文档集标题' : undefined"><UInput v-model="localeForm.title" class="w-full" /></UFormField>
+        <UFormField label="语言显示名称" required><UInput v-model="localeForm.label" class="w-full" /></UFormField>
         <UFormField label="HTML lang"><UInput v-model="localeForm.htmlLang" class="w-full" /></UFormField>
         <UFormField label="文字方向"><USelect v-model="localeForm.direction" :items="directionItems" value-key="value" class="w-full" /></UFormField>
         <UFormField label="展示顺序"><UInputNumber v-model="localeForm.sortOrder" class="w-full" /></UFormField>

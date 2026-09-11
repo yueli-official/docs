@@ -5,6 +5,9 @@ import "time"
 // ManageDocsQuery is the normalized, allowlisted query accepted by the admin
 // document workbench. Page is one-based.
 type ManageDocsQuery struct {
+	ID           string
+	Path         string
+	ExcludeID    string
 	Q            string
 	Status       string
 	Quality      string

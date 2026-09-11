@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { collectionCoverThumbUrl } from "~/utils/coverImage";
 import type { Collection, CollectionList, HomeConfigResponse } from "~/types";
 import {
   collectionCountLabel,
@@ -52,8 +53,9 @@ function coverVisible(c: { id: string; coverUrl?: string }) {
 function markCoverFailed(id: string) {
   failedCovers.value = { ...failedCovers.value, [id]: true };
 }
+let coversMounted = false;
 function sweepBrokenCovers() {
-  if (!import.meta.client) return;
+  if (!import.meta.client || !coversMounted) return;
   nextTick(() => {
     document
       .querySelectorAll<HTMLImageElement>("img[data-cover-id]")
@@ -64,7 +66,10 @@ function sweepBrokenCovers() {
   });
 }
 watch(collections, sweepBrokenCovers, { immediate: true });
-onMounted(sweepBrokenCovers);
+onMounted(() => {
+  coversMounted = true;
+  sweepBrokenCovers();
+});
 useSeoMeta({
   title: () => homeConfig.value.siteTitle,
   description: () => homeConfig.value.siteDescription,
@@ -165,11 +170,7 @@ useSeoMeta({
               class="size-full object-cover"
               @error="markCoverFailed(collection.id)"
             />
-            <UIcon
-              v-else
-              :name="collection.icon || 'i-tabler-book-2'"
-              class="size-5"
-            />
+            <UIcon v-else :name="collection.icon || 'i-tabler-book-2'" class="size-5" />
           </span>
           <span class="min-w-0 flex-1">
             <span
@@ -226,11 +227,7 @@ useSeoMeta({
               class="size-full object-cover"
               @error="markCoverFailed(collection.id)"
             />
-            <UIcon
-              v-else
-              :name="collection.icon || 'i-tabler-book-2'"
-              class="size-5"
-            />
+            <UIcon v-else :name="collection.icon || 'i-tabler-book-2'" class="size-5" />
           </span>
           <span class="min-w-0 flex-1">
             <span
