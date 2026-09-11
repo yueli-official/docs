@@ -24,3 +24,4 @@ api/manifest/sql/migrations/0003_versions_i18n.up.sql -text whitespace=cr-at-eol
 api/manifest/sql/migrations/0014_document_comments.up.sql -text whitespace=cr-at-eol
 api/manifest/sql/migrations/0014_document_comments.down.sql -text whitespace=cr-at-eol
 api/manifest/sql/migrations/0001_init.up.sql -text whitespace=cr-at-eol
+api/contracts/errors/catalog.json text eol=lf
