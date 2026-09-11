@@ -113,8 +113,8 @@ test("manage sidebar owns one direct brand link and one account footer", () => {
 test("document editor uses the shared immersive console seam", () => {
   const editor = readApp("components/manage/DocEditorWorkbench.vue");
   assert.match(editor, /data-docs-editor-commandbar/);
-  assert.match(editor, /<UDashboardSidebarToggle/);
-  assert.match(editor, /sticky top-0/);
+  assert.match(editor, /<EditorCommandBar/);
+  assert.match(editor, /v-model:immersive="immersiveCollaboration"/);
   assert.doesNotMatch(editor, /-mt-(?:5|8|10)|-mx-(?:5|8|10)/);
   assert.match(editor, /showValidationError\("请填写标题"\)/);
   assert.match(editor, /title: "操作失败"/);
@@ -266,7 +266,7 @@ test("document editor exposes frequent properties and lifecycle actions", () => 
   assert.match(editor, /label="父文档"/);
   assert.doesNotMatch(editor, /label="版本"/);
   assert.match(editor, /label="语言"/);
-  assert.match(editor, /label: "转为草稿"/);
+  assert.match(editor, /label: "下架"/);
   assert.match(editor, /label: "归档"/);
   assert.doesNotMatch(editor, /data-docs-editor-properties/);
   assert.doesNotMatch(editor, /<USlideover/);
