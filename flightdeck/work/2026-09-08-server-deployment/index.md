@@ -39,3 +39,7 @@ None
 
 ## 2026-09-11 引用机制更新
 当前API为server-20260911-lifecycle-1，Web保留server-20260911-pay-1。原正文1338条引用与封面1条保持，注册声明revision 2；数据配置保留，真实运行及桌面/手机通过。详见[记录](deployment-references-20260911.md)。
+
+## 当前重部署（2026-09-11）
+
+用户授权的其他改版已提交，本产品已切换至 `server-20260911-redeploy-1`，健康与线上 CLI Playwright 复验通过，原配置和引用保留。见[本轮部署](deployment-redeploy-20260911.md)。
