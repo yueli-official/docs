@@ -7,6 +7,7 @@
     { "kind": "oauth-client", "subject": "docs-main-web" },
     { "kind": "service-client", "subject": "docs-asset-svc" }
   ],
+  "referenceLifecycle": {"complete": true, "strategy": "snapshot", "coverage": "启动及每15秒以当前文档和合集封面快照登记；覆盖导入、GitHub同步、编辑、克隆、删除及恢复，草稿和归档保留；失败保留并重试。"},
   "profiles": [
     {
       "key": "docs-collection-cover",

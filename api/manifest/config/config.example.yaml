@@ -61,4 +61,8 @@ docs:
     baseUrl: "http://localhost:8081"
   assetService:
     baseUrl: "http://localhost:8082"
+    # Existing registered Asset machine client; production injects the secret.
+    clientId: "docs-asset-svc"
+    clientSecret: ""
+    publicOrigin: ""
   coverCategory: "docs-collection-cover"

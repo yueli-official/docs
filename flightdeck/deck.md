@@ -11,5 +11,7 @@
 
 ## Finished Work
 
+- [Docs 本地资产引用与独立库存修复](work/2026-09-11-asset-reference-lifecycle/index.md)：相关实现与验证已按用户授权本地提交，未推送。
+
 - [User 主体合同消费者迁移](work/2026-08-02-user-subject-contract/index.md)
 - [Docs 独立消费者迁移](work/2026-07-30-autonomous-consumer-migration/index.md)

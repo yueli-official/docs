@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"github.com/yueli-official/asset/referencesync"
+	"github.com/yueli-official/docs/api/internal/assetreferences"
 	"os"
 	"strings"
 	"time"
@@ -213,6 +215,12 @@ func main() {
 		Comments: commentsModule,
 		Identity: identityProfiles,
 	})
+	refSecret := g.Cfg().MustGet(ctx, "docs.assetService.clientSecret").String()
+	if refSecret != "" {
+		refClient := &referencesync.Client{BaseURL: g.Cfg().MustGet(ctx, "docs.assetService.baseUrl").String(), Token: referencesync.ClientCredentials(
+			strings.TrimRight(appconfig.IdentityBaseURL(ctx), "/")+"/oauth2/token", g.Cfg().MustGet(ctx, "docs.assetService.clientId", "docs-asset-svc").String(), refSecret)}
+		go referencesync.Run(ctx, authDB, "docs:asset-references", assetreferences.Source(appconfig.SiteURL(ctx), g.Cfg().MustGet(ctx, "docs.assetService.publicOrigin").String()), refClient, func(err error) { g.Log().Warning(ctx, "asset reference reconciliation:", err) })
+	}
 	g.Log().Info(ctx, "docs-service starting")
 	s.Run()
 }
