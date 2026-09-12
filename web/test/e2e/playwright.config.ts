@@ -52,7 +52,7 @@ const runID =
 
 export default defineConfig({
   testDir: e2eRoot,
-  testMatch: ["product.spec.ts", "admin-access-regression.spec.ts", "import-and-collection-regression.spec.ts", "toc-layout-regression.spec.ts", "code-copy-regression.spec.ts", "editor-workspace-regression.spec.ts"],
+  testMatch: ["product.spec.ts", "admin-access-regression.spec.ts", "import-and-collection-regression.spec.ts", "toc-layout-regression.spec.ts", "code-copy-regression.spec.ts", "editor-workspace-regression.spec.ts", "personal-token-publishing.spec.ts"],
   fullyParallel: false,
   workers: 1,
   retries: inCI ? 1 : 0,

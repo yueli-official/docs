@@ -8,6 +8,7 @@ import (
 	"github.com/yueli-official/docs/api/internal/dao"
 	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/model"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/identifier"
 )
 
@@ -216,16 +217,21 @@ func (s *Service) FinalizeCollectionCover(ctx context.Context, id, bearer, uploa
 	if err := s.dao.UpdateCollection(ctx, c); err != nil {
 		return nil, err
 	}
-	if err := s.asset.RegisterReference(ctx, bearer, assetclient.ReferenceInput{
-		AssetID: view.ID, RefType: "collection-cover", RefID: c.ID,
-		RefLabel: c.Title, RefURL: "/" + c.Slug,
-	}); err != nil {
-		return nil, err
-	}
-	if old != "" && old != view.ID {
-		_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
-			AssetID: old, RefType: "collection-cover", RefID: c.ID,
-		})
+	// PATs only authorize Asset upload/finalize. The persisted cover is picked up
+	// by the service's authoritative reference reconciler with its own credential.
+	principal, _ := foundationauth.FromContext(ctx)
+	if principal == nil || !principal.IsPersonalToken() {
+		if err := s.asset.RegisterReference(ctx, bearer, assetclient.ReferenceInput{
+			AssetID: view.ID, RefType: "collection-cover", RefID: c.ID,
+			RefLabel: c.Title, RefURL: "/" + c.Slug,
+		}); err != nil {
+			return nil, err
+		}
+		if old != "" && old != view.ID {
+			_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
+				AssetID: old, RefType: "collection-cover", RefID: c.ID,
+			})
+		}
 	}
 	return s.dao.GetCollectionByID(ctx, id)
 }

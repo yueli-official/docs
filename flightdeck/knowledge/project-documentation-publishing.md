@@ -10,9 +10,11 @@ Docs `docs.personalTokens.siteId` 必须等于自己的 OIDC audience，例如 `
 
 服务间使用可达的内部地址，HTTPS 为默认要求；本机 loopback HTTP 允许。不要把 PAT 校验地址指向用户提供的 URL。
 
-Asset 的 `asset.personalTokens.authorities` 将 `docs-main-web` 映射到 Docs `/api/v1/personal-token/media-authorization`。仅为 `docs-import-image` 派生上传授权，仍验证当前 Docs 导入权限。
+Asset 的 `asset.personalTokens.authorities` 将 `docs-main-web` 映射到 Docs `/api/v1/personal-token/media-authorization`。按令牌勾选及账号当前权限派生 Profile：导入对应 `docs-import-image`，文档集管理对应 `docs-collection-cover`，文档创建/编辑对应 `docs-content-image`。具体上传端点还必须检查目标文档集/文档；媒体 Profile 不代表内容管理授权。
 
 本地通过 Workspace CLI 的进程环境设置 `GF_PAT_APPLICATIONS`、`GF_DOCS_PERSONALTOKENS_SITEID`、`GF_ASSET_PERSONALTOKENS_AUTHORITIES`，不手改 Workspace 生成配置。
+
+Docs 的 `scripts/dev-publishing.ps1` 统一设置上述环境并调用 Workspace Isolated 入口。9 项令牌能力、完整投稿接口与脚本示例见[开发者令牌投稿](../../docs/developer-tokens.md)。创建/克隆新文档集检查站点根范围；内部版本管理按站点级能力检查。读取版本元数据也必须取目标范围的当前账号权限与 PAT 权限交集。
 
 ## 验证范围
 

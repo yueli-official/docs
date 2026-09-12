@@ -26,19 +26,18 @@ Docs 是独立的文档消费者产品，拥有文档集合、层级页面、版
 推荐从相邻 `workspace` 仓启动：
 
 ```powershell
-# Identity + Account + Docs 专属 Asset + Docs
-.\environments\docs-local\run.ps1 -Mode Complete
+# 独立 Identity + Account + Asset + Docs
+.\environments\docs-local\run.ps1 -Mode Isolated
 
-# 复用已有 Identity，管理 Docs 专属 Asset
-.\environments\docs-local\run.ps1 -Mode Hybrid
-
-# 复用已有 Identity 与 Asset，只启动 Docs
-.\environments\docs-local\run.ps1 -Mode Attach
+# 通过 Workspace Binding 复用兼容的基础服务
+.\environments\docs-local\run.ps1 -Mode Shared
 
 .\environments\docs-local\run.ps1 -Action Down
 ```
 
 所有端口均可通过 `LOCAL_*_PORT` 覆盖；`down docs` 只停止 Docs target 对应的 Workspace 会话，不会终止其他项目。
+
+开发者令牌的完整本地投稿使用本仓 `./scripts/dev-publishing.ps1 -Action Up`，默认使用 Docs 独立端口并接通权限目录与媒体授权。权限列表、API 及本地脚本示例见[开发者令牌投稿](docs/developer-tokens.md)。
 
 `docs-local` 默认启用正式 Dev Seed：2 个文档集、6 篇发布文档，以及可重复执行的 7 天浏览、来源和搜索样本。Seed 只在
 `DOCS_DEV_SEED=true` 时运行，使用稳定 ID 且不覆盖已编辑记录；生产 Compose 不启用。需要空白本地库时，在启动前设置：

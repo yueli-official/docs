@@ -8,7 +8,9 @@ import (
 	v1 "github.com/yueli-official/docs/api/api/v1"
 	"github.com/yueli-official/docs/api/internal/catalog"
 	"github.com/yueli-official/docs/api/internal/docsauthz"
+	"github.com/yueli-official/docs/api/internal/docserr"
 	"github.com/yueli-official/docs/api/internal/model"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 )
 
 type Versions struct{ svc *catalog.Service }
@@ -16,6 +18,9 @@ type Versions struct{ svc *catalog.Service }
 func NewVersions(svc *catalog.Service) *Versions { return &Versions{svc: svc} }
 
 func (c *Versions) ListCollectionVersions(ctx context.Context, req *v1.ListCollectionVersionsReq) (*v1.ListCollectionVersionsRes, error) {
+	if err := authorizePersonalVersionRead(ctx, req.CollectionID); err != nil {
+		return nil, err
+	}
 	items, err := c.svc.ListVersions(ctx, req.CollectionID)
 	if err != nil {
 		return nil, err
@@ -27,11 +32,40 @@ func (c *Versions) ListCollectionVersions(ctx context.Context, req *v1.ListColle
 	return &v1.ListCollectionVersionsRes{Items: out}, nil
 }
 
+func authorizePersonalVersionRead(ctx context.Context, collectionID string) error {
+	principal, _ := foundationauth.FromContext(ctx)
+	if principal == nil || !principal.IsPersonalToken() {
+		return nil
+	}
+	if err := ensureCollectionScope(ctx, collectionID); err != nil {
+		return err
+	}
+	service := authorizationService(ctx)
+	if err := service.ReconcileSubject(ctx); err != nil {
+		return docserr.AuthorizationUnavailable()
+	}
+	access, err := service.Runtime().EffectiveAccess(ctx, authorization.EffectiveAccessQuery{
+		Subject: service.Subject(ctx), ScopeID: docsauthz.CollectionScopeID(collectionID), IncludeDescendants: true,
+	})
+	if err != nil {
+		return docserr.AuthorizationUnavailable()
+	}
+	for _, capability := range access.Capabilities {
+		switch capability {
+		case docsauthz.CapabilityVersionManage, docsauthz.CapabilityCollectionManage, docsauthz.CapabilityDocumentRead, docsauthz.CapabilityDocumentCreate:
+			if foundationauth.AllowsPersonalCapability(ctx, string(capability)) {
+				return nil
+			}
+		}
+	}
+	return docserr.Forbidden()
+}
+
 func (c *Versions) CreateCollectionVersion(ctx context.Context, req *v1.CreateCollectionVersionReq) (*v1.CreateCollectionVersionRes, error) {
 	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
 		return nil, err
 	}
-	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.CollectionScopeID(req.CollectionID), authorization.ResourceFacts{}); err != nil {
+	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
 		return nil, err
 	}
 	v, err := c.svc.CreateVersion(ctx, catalog.CreateVersionInput{
@@ -52,7 +86,7 @@ func (c *Versions) UpdateCollectionVersion(ctx context.Context, req *v1.UpdateCo
 	if err := ensureCollectionScope(ctx, req.CollectionID); err != nil {
 		return nil, err
 	}
-	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.CollectionScopeID(req.CollectionID), authorization.ResourceFacts{}); err != nil {
+	if err := requireCapability(ctx, docsauthz.CapabilityVersionManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
 		return nil, err
 	}
 	value, err := c.svc.UpdateVersion(ctx, catalog.UpdateVersionInput{

@@ -120,6 +120,10 @@ func (c *Collections) DeleteCollection(ctx context.Context, req *v1.DeleteCollec
 }
 
 func (c *Collections) CloneCollectionRelease(ctx context.Context, req *v1.CloneCollectionReleaseReq) (*v1.CloneCollectionReleaseRes, error) {
+	// A release clone creates another root collection in addition to reading the source.
+	if err := requireCapability(ctx, docsauthz.CapabilityCollectionManage, docsauthz.RootScopeID, authorization.ResourceFacts{}); err != nil {
+		return nil, err
+	}
 	if err := ensureCollectionScope(ctx, req.ID); err != nil {
 		return nil, err
 	}
