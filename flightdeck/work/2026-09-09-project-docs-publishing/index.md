@@ -6,6 +6,8 @@ Status: Open
 项目在源仓库维护 Markdown，通过开发者令牌与可复用 Skill 发布到 Docs，并支持绑定 GitHub Release 文档包、一键导入和自动更新。
 
 ## Current
+2026-09-12 用户授权的本轮生产更新已完成：所属服务使用 `server-20260912-1`，九个相关服务均 healthy。独立构建、线上桌面/手机、登录刷新及普通账户 PAT 边界检查通过；Docs robots.txt 仍有已定位的历史 500。使用固定私有源码/包候选，未发布正式 SDK 或推送 Git。见 [本轮部署与限制](deployment-20260912.md)。
+
 2026-09-12 开发者令牌扩展已本地交付：9 项操作覆盖文档集、语言/版本、封面/正文图片、文档发布维护及包导入。Go、80 操作合同、真实 PostgreSQL、独立 E2E 类型检查和桌面/手机完整 Playwright 通过。全站 Nuxt typecheck 受共享源码依赖类型解析影响，正式 Foundation 制品也未包含当前 PAT API；详见[本轮验收和限制](pat-publishing-20260912.md)。仅修改 Docs；用户已授权本地提交，未推送或部署。Docs session `20260912T073711Z-2200` 保持 ready；Blog 原会话未受影响。
 
 ### 上次交付（历史记录）
@@ -24,7 +26,7 @@ Status: Open
 当时 session `20260909T102415Z-32708` 已被本轮 Docs session 替代。Skill 安装在 `C:/Users/yl/.codex/skills/yueli-docs-publish`，源在本仓 skills 同名目录。
 
 ## Next
-本轮令牌扩展无待实现项。收到真实项目的 Release `docs.zip` 后，继续 plan.md 保留的外部附件正向联调；本地操作参考[开发者令牌投稿](../../../docs/developer-tokens.md)。生产部署与共享依赖发布需按后续用户指令开展。
+本轮用户授权的生产更新已完成。GlyphShift 两个 Release 的文档附件相同，线上 6 篇正文均匹配；有更新内容的 docs.zip 发布后再做增量同步验收。用户已确认升级后当前使用正常，要求暂不继续排查；历史 robots.txt 排序错误保留在部署记录中，不作为本轮继续修复的任务。正式 SDK 发布仍独立处理。
 
 ## References
 - [执行计划](plan.md)
