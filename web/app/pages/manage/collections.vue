@@ -467,7 +467,7 @@ async function doDelete() {
     main-id="manage-main"
     body-class="w-full"
   >
-    <template v-if="canManageCollections" #tools><CollectionHeaderTools v-model:search="searchInput" label="搜索与排序文档集" search-placeholder="搜索标题、路径标识或说明…" :sort-options="sortItems" :sort-by="sort" :sort-order="direction" @sort="(by, order) => { sort = by as typeof sort; direction = order }" /></template>
+
     <template #actions>
       <UButton
         v-if="canManageCollections"
@@ -543,7 +543,8 @@ async function doDelete() {
     <SkeletonList v-else-if="showSkeleton" :rows="8" />
 
     <template v-else>
-      <section class="overflow-hidden rounded-xl border border-default bg-default">
+      <section data-admin-collection class="overflow-hidden rounded-xl border border-default bg-default">
+        <div data-admin-collection-tools><CollectionHeaderTools v-model:search="searchInput" label="搜索与排序文档集" search-placeholder="搜索标题、路径标识或说明…" :sort-options="sortItems" :sort-by="sort" :sort-order="direction" @sort="(by, order) => { sort = by as typeof sort; direction = order }" /></div>
 
         <ManageEmpty
           v-if="!items.length"
@@ -558,6 +559,7 @@ async function doDelete() {
 
         <template v-else>
         <div
+          data-admin-collection-columns
           class="hidden grid-cols-[minmax(16rem,1.4fr)_minmax(10rem,.8fr)_7rem_8rem] items-center gap-3 border-b border-default bg-elevated/45 px-4 py-2.5 text-xs font-medium text-muted lg:grid"
         >
           <span>文档集</span>
@@ -626,9 +628,8 @@ async function doDelete() {
           </div>
         </div>
         </template>
+        <CollectionPaginationBar :page="page" :page-size="size" :total="filteredItems.length" :page-sizes="pageSizes" :page-size-option="value => `${value} 个`" class="border-t border-default p-3" @page-change="page = $event" @page-size-change="size = $event" />
       </section>
-
-      <CollectionPaginationBar :page="page" :page-size="size" :total="filteredItems.length" :page-sizes="pageSizes" :page-size-option="value => `${value} 个`" class="rounded-lg border border-default bg-default p-3" @page-change="page = $event" @page-size-change="size = $event" />
     </template>
 
     <USlideover

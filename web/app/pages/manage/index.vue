@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AdminOverview } from "@yueli/ui/admin";
 import DashboardTrendChart from "~/components/DashboardTrendChart.vue";
 import ManageMetricCard from "~/components/ManageMetricCard.vue";
 import type { DashboardOverview } from "~/types";
@@ -13,7 +14,7 @@ const periodItems = [
   { label: "14 天", value: 14 },
   { label: "30 天", value: 30 },
 ];
-const dashboardCardClass = "bg-elevated shadow-sm";
+const dashboardCardClass = "bg-default shadow-sm";
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
@@ -182,12 +183,32 @@ function publicDocumentLink(document: DashboardOverview["topDocuments"][number])
 <template>
   <ManagePage
     id="dashboard"
-    title="控制台"
+    title="控制台" description="管理文档、知识库与阅读表现"
     icon="i-tabler-dashboard"
     main-id="manage-main"
     body-class="w-full space-y-5"
     data-docs-dashboard-analytics
   >
+    <template #tools>
+      <AdminOverview>
+        <template #artwork><ManageOverviewArtwork /></template>
+        <div v-if="!mounted || (analyticsPending && !analytics?.series.length)" data-admin-metrics>
+          <USkeleton v-for="item in 4" :key="item" class="h-28 rounded-xl" />
+        </div>
+        <div v-else data-admin-metrics>
+          <ManageMetricCard
+            v-for="card in metricCards"
+            :key="card.label"
+            :label="card.label"
+            :value="formatMetricValue(card.value)"
+            :detail="card.detail"
+            :icon="card.icon"
+            :tone="card.tone"
+            data-docs-dashboard-metric
+          />
+        </div>
+      </AdminOverview>
+    </template>
     <UAlert
       v-if="analyticsError"
       color="error"
@@ -207,21 +228,7 @@ function publicDocumentLink(document: DashboardOverview["topDocuments"][number])
       </template>
     </UAlert>
 
-    <div v-if="!mounted || (analyticsPending && !analytics?.series.length)" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <USkeleton v-for="item in 4" :key="item" class="h-28 rounded-xl" />
-    </div>
-    <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <ManageMetricCard
-        v-for="card in metricCards"
-        :key="card.label"
-        :label="card.label"
-        :value="formatMetricValue(card.value)"
-        :detail="card.detail"
-        :icon="card.icon"
-        :tone="card.tone"
-        data-docs-dashboard-metric
-      />
-    </div>
+
 
     <div class="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
       <UCard

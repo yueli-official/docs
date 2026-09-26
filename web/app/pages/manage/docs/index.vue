@@ -1279,8 +1279,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     header: sortableHeader("标题", "title"),
     meta: {
       class: {
-        th: "w-[40%] min-w-60",
-        td: "w-[40%] min-w-60",
+        th: "docs-document-title-cell w-[40%] min-w-60",
+        td: "docs-document-title-cell w-[40%] min-w-60",
       },
     },
   },
@@ -1289,8 +1289,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     header: sortableHeader("路径 / 父级", "path"),
     meta: {
       class: {
-        th: "hidden w-[22%] lg:table-cell",
-        td: "hidden w-[22%] lg:table-cell",
+        th: "docs-document-secondary-cell hidden w-[22%] lg:table-cell",
+        td: "docs-document-secondary-cell hidden w-[22%] lg:table-cell",
       },
     },
   },
@@ -1300,8 +1300,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     header: "文档集 / 语言",
     meta: {
       class: {
-        th: "hidden w-[18%] xl:table-cell",
-        td: "hidden w-[18%] xl:table-cell",
+        th: "docs-document-secondary-cell hidden w-[18%] xl:table-cell",
+        td: "docs-document-secondary-cell hidden w-[18%] xl:table-cell",
       },
     },
   },
@@ -1310,8 +1310,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     header: "状态",
     meta: {
       class: {
-        th: "hidden w-24 md:table-cell",
-        td: "hidden w-24 md:table-cell",
+        th: "docs-document-secondary-cell hidden w-24 md:table-cell",
+        td: "docs-document-secondary-cell hidden w-24 md:table-cell",
       },
     },
   },
@@ -1321,8 +1321,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     header: sortableHeader("更新", "updatedAt"),
     meta: {
       class: {
-        th: "hidden w-28 lg:table-cell",
-        td: "hidden w-28 lg:table-cell",
+        th: "docs-document-secondary-cell hidden w-28 lg:table-cell",
+        td: "docs-document-secondary-cell hidden w-28 lg:table-cell",
       },
     },
   },
@@ -1333,8 +1333,8 @@ const allDocColumns: TableColumn<ManagedDoc>[] = [
     enableHiding: false,
     meta: {
       class: {
-        th: "w-32 text-right",
-        td: "w-32 text-right",
+        th: "docs-document-secondary-cell w-32 text-right",
+        td: "docs-document-secondary-cell w-32 text-right",
       },
     },
   },
@@ -1357,16 +1357,9 @@ const docColumns = computed(() =>
     main-id="manage-main"
     body-class="w-full"
   >
-    <template v-if="canReadDocs" #tools>
-      <CollectionHeaderTools v-if="viewMode === 'list'" v-model:search="search"
-        label="文档搜索与筛选" search-placeholder="搜索标题、路径、slug 或文档集…"
-        :controls="collectionFilterControls" :filter-count="activeFilterCount"
-        @search="submitSearch" @control-change="changeCollectionControl">
-        <template #view><CollectionViewToggle v-model="viewMode" :items="[
-          {key:'list',label:'列表',icon:'i-tabler-list'}, {key:'tree',label:'树状',icon:'i-tabler-sitemap'}
-        ]" /></template>
-      </CollectionHeaderTools>
-      <div v-else class="flex min-w-0 items-center gap-2">
+    <template v-if="canReadDocs && viewMode === 'tree'" #tools>
+
+      <div class="flex min-w-0 items-center gap-2">
         <USelectMenu :model-value="treeSlug" :items="treeCollectionItems" value-key="value"
           placeholder="选择文档集" :search-input="{ placeholder: '搜索文档集…' }"
           class="h-9 min-w-0 flex-1" @update:model-value="treeSlug = selectedValue($event)" />
@@ -1406,12 +1399,14 @@ const docColumns = computed(() =>
     <ClientOnly v-else>
       <section
         v-if="viewMode === 'list'"
-        class="overflow-hidden rounded-xl border border-default bg-default shadow-sm"
+        class="docs-document-collection overflow-hidden rounded-xl border border-default bg-default shadow-sm"
         :inert="bulkBusy"
         :aria-busy="bulkBusy"
         aria-label="文档列表"
+        data-admin-collection
       >
-        <CollectionTableToolbar external-controls
+        <div data-admin-collection-tools>
+        <CollectionTableToolbar presentation="header"
           v-model:search="search"
           label="文档列表工具栏"
           search-placeholder="搜索标题、路径、slug 或文档集…"
@@ -1559,6 +1554,7 @@ const docColumns = computed(() =>
             </div>
           </template>
         </CollectionTableToolbar>
+        </div>
 
         <div
           v-if="collectionState === 'error'"
@@ -1600,7 +1596,7 @@ const docColumns = computed(() =>
           :ui="{
             root: 'overflow-x-auto',
             base: 'table-fixed border-separate border-spacing-0',
-            thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+            thead: '[&>tr]:bg-primary/[0.03] [&>tr]:after:content-none',
             tbody: '[&>tr]:last:[&>td]:border-b-0',
             th: 'border-b border-default px-4 py-2 text-xs font-medium text-muted',
             td: 'border-b border-default px-4 py-3 align-middle',
@@ -1608,14 +1604,14 @@ const docColumns = computed(() =>
           }"
         >
           <template #title-cell="{ row }">
-            <div class="min-w-0" :data-doc-id="row.original.id">
+            <div class="docs-document-title min-w-0" :data-doc-id="row.original.id">
               <NuxtLink
                 v-if="canUpdateDocs"
                 class="block max-w-full truncate text-left text-sm font-medium text-highlighted hover:text-primary"
                 :to="docManageRoute(row.original.collectionSlug, row.original.slugPath)"
               >
                 <span class="inline-flex min-w-0 items-center gap-2">
-                  <span class="truncate">{{ row.original.title }}</span>
+                  <span class="docs-document-title-text truncate">{{ row.original.title }}</span>
                   <UIcon v-if="row.original.badgeIcon" :name="row.original.badgeIcon" class="size-4 shrink-0 text-primary" />
                   <UBadge v-else-if="row.original.badgeText" :label="row.original.badgeText" color="neutral" variant="soft" size="xs" />
                 </span>
@@ -1625,18 +1621,24 @@ const docColumns = computed(() =>
                 class="max-w-full truncate text-sm font-medium text-highlighted"
               >
                 <span class="inline-flex min-w-0 items-center gap-2">
-                  <span class="truncate">{{ row.original.title }}</span>
+                  <span class="docs-document-title-text truncate">{{ row.original.title }}</span>
                   <UIcon v-if="row.original.badgeIcon" :name="row.original.badgeIcon" class="size-4 shrink-0 text-primary" />
                   <UBadge v-else-if="row.original.badgeText" :label="row.original.badgeText" color="neutral" variant="soft" size="xs" />
                 </span>
               </p>
-              <p class="mt-1 truncate text-xs text-muted">
-                {{ row.original.excerpt || "暂无摘要" }}
+              <p v-if="row.original.excerpt" class="docs-document-excerpt mt-1 truncate text-xs text-muted">
+                {{ row.original.excerpt }}
               </p>
-              <p class="mt-1 truncate font-mono text-xs text-dimmed lg:hidden">
+              <p class="docs-document-path mt-1 truncate font-mono text-xs text-dimmed lg:hidden">
                 /{{ row.original.slugPath.join("/") }} ·
                 {{ row.original.collectionTitle }}
               </p>
+              <p class="docs-document-summary mt-1 items-center gap-2 text-xs text-muted">
+                <span class="shrink-0">{{ statusLabel(row.original.status) }}</span>
+                <span class="truncate">{{ row.original.collectionTitle }}</span>
+              </p>
+              <AdminRowActions class="docs-document-compact-actions" presentation="overflow"
+                :label="`${row.original.title} 的操作`" :items="docRowActions(row.original)" />
               <p
                 v-if="qualityIssues(row.original).length"
                 class="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-warning"
@@ -1864,3 +1866,18 @@ const docColumns = computed(() =>
     />
   </ManagePage>
 </template>
+
+<style scoped>
+.docs-document-collection { container: docs-documents / inline-size; }
+.docs-document-summary, .docs-document-compact-actions { display: none; }
+@container docs-documents (max-width: 52rem) {
+  :deep(.docs-document-secondary-cell) { display: none; }
+  :deep(.docs-document-title-cell) { width: auto; min-width: 0; }
+  .docs-document-title { position: relative; padding-inline-end: 2.75rem; }
+  .docs-document-title > a, .docs-document-title > p { white-space: normal; }
+  .docs-document-title-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; overflow-wrap: anywhere; font-weight: 600; }
+  .docs-document-excerpt, .docs-document-path { display: none; }
+  .docs-document-summary { display: flex; }
+  .docs-document-compact-actions { display: flex; position: absolute; inset-inline-end: 0; top: 0; }
+}
+</style>

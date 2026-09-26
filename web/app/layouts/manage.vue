@@ -246,6 +246,7 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
 
 <template>
   <YAdminConsoleLayout
+    :class="{ 'yueli-admin-branded': !isDocumentEditor }"
     :navigation="navigation"
     :search-groups="searchGroups"
     :messages="messages"
@@ -260,11 +261,11 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
     back-to-top-label="返回顶部"
     data-docs-manage-shell
   >
-    <template #account="{ collapsed }">
+    <template #topbar-right>
       <ConsumerManageAccountControl
         home-to=""
         show-appearance
-        :trigger-mode="collapsed ? 'collapsed' : 'sidebar'"
+        trigger-mode="inline"
       />
     </template>
     <slot />

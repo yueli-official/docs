@@ -90,6 +90,9 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    optimizeDeps: {
+      include: ['@yueli/asset-nuxt > cropperjs', '@yueli/asset-nuxt > vue-picture-cropper'],
+    },
     resolve: {
       dedupe: ['vue', 'vue-router', '@vue/runtime-core', '@vue/runtime-dom'],
     },

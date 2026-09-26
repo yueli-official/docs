@@ -434,12 +434,16 @@ const moderationActions: CommentModerationCollectionActions = {
     main-id="manage-main"
     body-class="w-full"
   >
-    <template #tools><CommentModerationToolbar :model="moderationModel" :actions="moderationActions" /></template>
+
     <CommentModerationCollection layout="columns" external-controls
       :model="moderationModel"
       :actions="moderationActions"
       :format-date="formatDate"
     >
+      <template #navigation>
+        <div data-admin-collection-tools><CommentModerationToolbar :model="moderationModel" :actions="moderationActions" />
+        </div>
+      </template>
       <template #bulk-actions>
         <USelect
           v-model="batchAction"

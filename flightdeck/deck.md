@@ -7,6 +7,7 @@
 ## Open Work
 
 
+
 - [项目文档发布与 GitHub 同步](work/2026-09-09-project-docs-publishing/index.md)：Docs PAT、可复用发布 Skill、GitHub Release 导入与自动同步。
 
 
@@ -17,6 +18,8 @@
 - [Docs 语言与版本闭环](work/2026-08-27-docs-language-versioning/index.md)：补齐文档集语言注册、语言/版本管理、前台上下文切换与缺失内容回退。
 
 ## Finished Work
+
+- [后台品牌布局](work/2026-09-26-admin-brand-layout/index.md)：共享概览/统计卡，本站品牌与独立装饰图；`server-20260926-admin-brand-2` 已部署，图标接口与登录跳转通过。
 
 - [本地资产引用与独立库存](work/2026-09-11-asset-reference-lifecycle/index.md)：库存、1170 条引用及媒体浏览器验收完成。
 

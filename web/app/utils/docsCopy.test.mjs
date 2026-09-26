@@ -95,13 +95,14 @@ test("Identity BFF downstream configuration stays origin-only", () => {
   );
 });
 
-test("manage sidebar owns one direct brand link and one account footer", () => {
+test("manage shell uses the direct brand link and topbar account control", () => {
   const layout = readApp("layouts/manage.vue");
   assert.match(layout, /brand-to="\/"/);
   assert.match(layout, /brand-icon="i-tabler-book"/);
-  assert.match(layout, /#account="\{ collapsed \}"/);
+  assert.match(layout, /#topbar-right/);
+  assert.doesNotMatch(layout, /#account=/);
   assert.match(layout, /show-appearance/);
-  assert.match(layout, /trigger-mode/);
+  assert.match(layout, /trigger-mode="inline"/);
   assert.match(layout, /:current-label="currentLabel"/);
   assert.match(layout, /:immersive="isDocumentEditor"/);
   assert.match(layout, /route\.path\.startsWith\("\/manage\/docs\/"\)/);
